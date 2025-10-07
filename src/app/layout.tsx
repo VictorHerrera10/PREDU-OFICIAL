@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { FirebaseClientProvider } from '@/firebase/client-provider';
-import { cookies } from 'next/headers';
+import { FirebaseProvider } from '@/firebase/provider';
 
 export const metadata: Metadata = {
   title: 'Predu',
@@ -14,9 +13,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = cookies();
-  const sidebarState = cookieStore.get('sidebar_state');
-
   return (
     <html lang="en" className="dark">
       <head>
@@ -36,10 +32,10 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <FirebaseClientProvider>
+        <FirebaseProvider>
           {children}
           <Toaster />
-        </FirebaseClientProvider>
+        </FirebaseProvider>
       </body>
     </html>
   );
