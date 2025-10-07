@@ -9,6 +9,7 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
 } from 'firebase/auth';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { redirect } from 'next/navigation';
 import { initializeServerApp } from '@/firebase/server-init';
 import { headers } from 'next/headers';
@@ -16,8 +17,8 @@ import { headers } from 'next/headers';
 // This function is now simplified and we don't await for the result here.
 // The client will react to the auth state change.
 async function getAuthenticatedAppForUser() {
-  const { auth } = await initializeServerApp();
-  return { auth };
+  const { auth, firestore } = await initializeServerApp();
+  return { auth, firestore };
 }
 
 function getFirebaseErrorMessage(errorCode: string): string {
@@ -42,13 +43,18 @@ function getFirebaseErrorMessage(errorCode: string): string {
 }
 
 export async function login(prevState: any, formData: FormData) {
-  const { auth } = await getAuthenticatedAppForUser();
+  const { auth, firestore } = await getAuthenticatedAppForUser();
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
 
   try {
-    // We don't await here. Let the client-side onAuthStateChanged handle the redirect.
-    await signInWithEmailAndPassword(auth, email, password);
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    
+    // Update last login timestamp
+    const userProfileRef = doc(firestore, `users/${user.uid}/profile`);
+    await setDoc(userProfileRef, { lastLogin: serverTimestamp() }, { merge: true });
+
   } catch (e: any) {
     return { message: getFirebaseErrorMessage(e.code) };
   }
@@ -56,15 +62,24 @@ export async function login(prevState: any, formData: FormData) {
 }
 
 export async function register(prevState: any, formData: FormData) {
-  const { auth } = await getAuthenticatedAppForUser();
+  const { auth, firestore } = await getAuthenticatedAppForUser();
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
   const username = formData.get('username') as string;
 
   try {
-    // We don't await here.
-    await createUserWithEmailAndPassword(auth, email, password);
-    // You might want to save the username to Firestore here
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    const userProfileRef = doc(firestore, `users/${user.uid}/profile`);
+    await setDoc(userProfileRef, {
+      id: user.uid,
+      username: username,
+      email: user.email,
+      creationDate: serverTimestamp(),
+      lastLogin: serverTimestamp(),
+    });
+
   } catch (e: any) {
     return { message: getFirebaseErrorMessage(e.code) };
   }
@@ -102,11 +117,27 @@ export async function logout() {
 }
 
 export async function signInWithGoogle(prevState: any, formData: FormData) {
-  const { auth } = await getAuthenticatedAppForUser();
+  const { auth, firestore } = await getAuthenticatedAppForUser();
   const provider = new GoogleAuthProvider();
   try {
-    // We don't await here.
-    await signInWithPopup(auth, provider);
+    const userCredential = await signInWithPopup(auth, provider);
+    const user = userCredential.user;
+    
+    // Create or update user profile on Google sign-in
+    const userProfileRef = doc(firestore, `users/${user.uid}/profile`);
+    await setDoc(userProfileRef, { 
+      id: user.uid,
+      username: user.displayName,
+      email: user.email,
+      lastLogin: serverTimestamp() 
+    }, { merge: true });
+    
+    // If it's a new user, also set the creation date
+    const isNewUser = userCredential.user.metadata.creationTime === userCredential.user.metadata.lastSignInTime;
+    if (isNewUser) {
+      await setDoc(userProfileRef, { creationDate: serverTimestamp() }, { merge: true });
+    }
+
   } catch (e: any) {
     return { message: getFirebaseErrorMessage(e.code) };
   }
