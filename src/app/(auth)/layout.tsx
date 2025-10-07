@@ -12,7 +12,7 @@ export default function AuthLayout({
         <div className="mb-8 flex justify-center">
           <Logo />
         </div>
-        <Card className="p-6 md:p-8 shadow-2xl bg-card/80 backdrop-blur-sm border-primary/20 card-float">
+        <Card className="p-6 md:p-8 bg-card/80 backdrop-blur-sm border-border">
           {children}
         </Card>
       </div>

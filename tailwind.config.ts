@@ -67,9 +67,9 @@ export default {
         },
       },
       borderRadius: {
-        lg: '0rem',
-        md: '0rem',
-        sm: '0rem',
+        lg: 'var(--radius)',
+        md: 'var(--radius)',
+        sm: 'var(--radius)',
       },
       keyframes: {
         'accordion-down': {

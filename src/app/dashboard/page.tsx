@@ -17,14 +17,14 @@ export default async function DashboardPage() {
       <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center">
         <Logo />
         <form action={logout}>
-          <Button variant="ghost" type="submit" className="text-muted-foreground hover:text-primary">
+          <Button variant="ghost" type="submit" className="text-muted-foreground hover:text-primary-foreground">
             <LogOut className="mr-2 h-4 w-4" />
             Logout
           </Button>
         </form>
       </header>
       <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-2xl text-center shadow-2xl bg-card/80 backdrop-blur-sm border-primary/20 card-float">
+        <Card className="w-full max-w-2xl text-center bg-card/80 backdrop-blur-sm border-border">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-primary">LEVEL 1: The Vault</CardTitle>
           </CardHeader>
