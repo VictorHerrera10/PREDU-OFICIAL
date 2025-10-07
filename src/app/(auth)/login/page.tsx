@@ -1,9 +1,8 @@
-// @ts-nocheck
-'use client'
+'use client';
 
 import Link from 'next/link';
 import { useFormState } from 'react-dom';
-import { login } from '@/app/actions';
+import { login, signInWithGoogle } from '@/app/actions';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SubmitButton } from '@/components/submit-button';
@@ -21,18 +20,46 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const message = searchParams.get('message');
 
+  const handleGoogleSignIn = async () => {
+    const result = await signInWithGoogle();
+    if (result?.message) {
+      // Handle error, maybe show it in an alert
+      console.error(result.message);
+    }
+  };
+
   return (
     <>
       <CardHeader className="p-0 mb-6 text-center">
-        <CardTitle className="text-2xl font-bold text-primary">Bienvenido de Nuevo</CardTitle>
-        <CardDescription>Ingresa tus credenciales para acceder a tu perfil.</CardDescription>
+        <CardTitle className="text-2xl font-bold text-primary">
+          Bienvenido de Nuevo
+        </CardTitle>
+        <CardDescription>
+          Ingresa tus credenciales para acceder a tu perfil.
+        </CardDescription>
       </CardHeader>
 
       <div className="space-y-4">
-        <Button variant="outline" className="w-full">
-          <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 381.5 512 244 512 110.1 512 0 401.9 0 265.8 0 129.8 110.1 20 244 20c66.5 0 123.9 24.5 166.9 65.3l-66.2 62.5C314.5 118.9 282.8 100 244 100c-78.2 0-141.6 63.4-141.6 141.4s63.4 141.4 141.6 141.4c86.2 0 120.3-64.2 124.9-95.2H244v-73.9h234.4c4.8 26.2 7.6 54.6 7.6 84.8z"></path></svg>
-          Iniciar sesión con Google
-        </Button>
+        <form action={handleGoogleSignIn}>
+          <Button variant="outline" className="w-full" type="submit">
+            <svg
+              className="mr-2 h-4 w-4"
+              aria-hidden="true"
+              focusable="false"
+              data-prefix="fab"
+              data-icon="google"
+              role="img"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 488 512"
+            >
+              <path
+                fill="currentColor"
+                d="M488 261.8C488 403.3 381.5 512 244 512 110.1 512 0 401.9 0 265.8 0 129.8 110.1 20 244 20c66.5 0 123.9 24.5 166.9 65.3l-66.2 62.5C314.5 118.9 282.8 100 244 100c-78.2 0-141.6 63.4-141.6 141.4s63.4 141.4 141.6 141.4c86.2 0 120.3-64.2 124.9-95.2H244v-73.9h234.4c4.8 26.2 7.6 54.6 7.6 84.8z"
+              ></path>
+            </svg>
+            Iniciar sesión con Google
+          </Button>
+        </form>
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
@@ -49,12 +76,22 @@ export default function LoginPage() {
       <form action={formAction} className="space-y-6 mt-6">
         <div className="space-y-2">
           <Label htmlFor="email">✉️ Email</Label>
-          <Input id="email" name="email" type="email" placeholder="estudiante@email.com" required />
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="estudiante@email.com"
+            required
+          />
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="password">🔒 Contraseña</Label>
-            <Link href="/forgot-password" passHref className="text-sm text-primary/80 hover:text-primary transition-colors">
+            <Link
+              href="/forgot-password"
+              passHref
+              className="text-sm text-primary/80 hover:text-primary transition-colors"
+            >
               ¿Olvidaste tu contraseña?
             </Link>
           </div>
@@ -67,9 +104,12 @@ export default function LoginPage() {
           </Alert>
         )}
         {message && (
-            <Alert variant="default" className="bg-primary/10 border-primary/30 text-primary-foreground">
-                <AlertDescription>{message}</AlertDescription>
-            </Alert>
+          <Alert
+            variant="default"
+            className="bg-primary/10 border-primary/30 text-primary-foreground"
+          >
+            <AlertDescription>{message}</AlertDescription>
+          </Alert>
         )}
 
         <SubmitButton variant="secondary">Iniciar Sesión</SubmitButton>
@@ -77,7 +117,11 @@ export default function LoginPage() {
 
       <div className="mt-6 text-center text-sm">
         ¿Nuevo estudiante?{' '}
-        <Link href="/register" passHref className="font-semibold text-primary/80 hover:text-primary transition-colors">
+        <Link
+          href="/register"
+          passHref
+          className="font-semibold text-primary/80 hover:text-primary transition-colors"
+        >
           Comenzar
         </Link>
       </div>
