@@ -3,25 +3,24 @@
 import { useUser } from '@/firebase/provider';
 import { redirect } from 'next/navigation';
 import { ComponentType, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+
 
 export default function withAuth<P extends object>(
   WrappedComponent: ComponentType<P>
 ) {
   const WithAuthComponent = (props: P) => {
     const { user, isUserLoading } = useUser();
+    const pathname = usePathname();
 
     useEffect(() => {
       if (!isUserLoading && !user) {
-        redirect('/login');
+        redirect(`/login?redirect=${pathname}`);
       }
-    }, [user, isUserLoading]);
+    }, [user, isUserLoading, pathname]);
 
-    if (isUserLoading) {
+    if (isUserLoading || !user) {
       return <div>Loading...</div>; // Or a spinner
-    }
-
-    if (!user) {
-      return null; // or a loading component, redirect is happening in useEffect
     }
 
     return <WrappedComponent {...props} />;

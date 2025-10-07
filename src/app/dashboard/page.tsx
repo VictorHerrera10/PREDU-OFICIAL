@@ -5,22 +5,25 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/logo';
 import { LogOut, Terminal } from 'lucide-react';
-import withAuth from '@/components/with-auth';
 import { useEffect, useState } from 'react';
+import { useUser } from '@/firebase/provider';
 
 function DashboardPage() {
   const [welcomeMessage, setWelcomeMessage] = useState('');
+  const { user } = useUser();
 
   useEffect(() => {
     async function getMessage() {
-      const welcomeMessageData = await generateGameStyleMessage({
-        username: 'Estudiante',
-        event: 'login',
-      });
-      setWelcomeMessage(welcomeMessageData.message);
+      if (user) {
+        const welcomeMessageData = await generateGameStyleMessage({
+          username: user.displayName || 'Estudiante',
+          event: 'login',
+        });
+        setWelcomeMessage(welcomeMessageData.message);
+      }
     }
     getMessage();
-  }, []);
+  }, [user]);
 
   return (
     <>
@@ -63,4 +66,4 @@ function DashboardPage() {
   );
 }
 
-export default withAuth(DashboardPage);
+export default DashboardPage;

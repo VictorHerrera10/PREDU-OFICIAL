@@ -97,11 +97,11 @@ export async function logout() {
   redirect('/login');
 }
 
-export async function signInWithGoogle() {
+export async function signInWithGoogle(prevState: any, formData: FormData) {
   const { auth } = await getAuthenticatedAppForUser();
   const provider = new GoogleAuthProvider();
   try {
-    await signInWithPopup(auth, provider);
+    const result = await signInWithPopup(auth, provider);
   } catch (e: any) {
     return { message: getFirebaseErrorMessage(e.code) };
   }
