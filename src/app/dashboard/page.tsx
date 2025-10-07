@@ -18,14 +18,14 @@ function DashboardPage() {
         <Card className="w-full max-w-2xl text-center bg-card/80 backdrop-blur-sm border-border">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-primary">
-              ¡Bienvenido al Dashboard, {user?.displayName || 'Aventurero'}! 👑
+              ¡Bienvenido al Aula, {user?.displayName || 'Estudiante'}! 🎓
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">
             <p className="text-muted-foreground mt-4">
-              Aquí comienza tu gran aventura. ¡Prepárate para la acción! 🚀
+              Aquí comienza tu viaje para descubrir tu vocación. ¡Prepárate para aprender! 💡
             </p>
-            <p className='text-sm text-muted-foreground'>Tu ID de jugador es: {user?.uid}</p>
+            <p className='text-sm text-muted-foreground'>Tu ID de estudiante es: {user?.uid}</p>
           </CardContent>
         </Card>
       </main>

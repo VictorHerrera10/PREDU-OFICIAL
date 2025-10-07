@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
     <>
       <CardHeader className="p-0 mb-6 text-center">
         <CardTitle className="text-2xl font-bold text-primary">🤔 ¿Olvidaste tu Contraseña?</CardTitle>
-        <CardDescription>No te preocupes, ¡a todos nos pasa! Te enviaremos instrucciones para recuperarla. 🚀</CardDescription>
+        <CardDescription>¡Hasta al mejor estudiante le pasa! Te enviaremos instrucciones a tu correo para que puedas volver a clase. 🧑‍🏫</CardDescription>
       </CardHeader>
       
       {formSubmitted ? (

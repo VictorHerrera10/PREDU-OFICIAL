@@ -16,8 +16,8 @@ export function LogoutButton() {
     try {
       await signOut(auth);
       toast({
-        title: '¡Sesión cerrada con éxito! 👋',
-        description: 'Vuelve pronto, ¡la aventura te esperará!',
+        title: '¡Hasta la próxima clase! 👋',
+        description: 'Vuelve pronto, ¡el conocimiento te espera!',
       });
       // El layout del dashboard se encargará de redirigir a /login
     } catch (error) {
@@ -37,7 +37,7 @@ export function LogoutButton() {
       className="text-muted-foreground hover:text-primary-foreground"
     >
       <LogOut className="mr-2 h-4 w-4" />
-      Cerrar Sesión
+      Salir del Aula
     </Button>
   );
 }

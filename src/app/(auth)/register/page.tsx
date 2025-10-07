@@ -62,7 +62,7 @@ export default function RegisterPage() {
             ¡Felicidades, {state.username}! 🎉
           </CardTitle>
           <CardDescription>
-            ¡Tu cuenta ha sido creada! Ya puedes iniciar tu aventura.
+            ¡Tu registro está completo! Ya puedes iniciar sesión.
           </CardDescription>
         </CardHeader>
         <Button onClick={() => router.push('/login')}>
@@ -79,7 +79,7 @@ export default function RegisterPage() {
           Crea tu Cuenta
         </CardTitle>
         <CardDescription>
-          ¡Únete a la aventura y descubre tu vocación! 🌟
+          ¡Únete a la clase y descubre tu vocación! 💡
         </CardDescription>
       </CardHeader>
 
@@ -117,8 +117,8 @@ export default function RegisterPage() {
 
       <form action={formAction} className="space-y-4 mt-6">
         <div className="space-y-2">
-            <Label htmlFor="username">🕹️ Nombre de usuario</Label>
-            <Input id="username" name="username" type="text" placeholder="Tu nombre de aventurero" required />
+            <Label htmlFor="username">🧑‍🎓 Nombre de Estudiante</Label>
+            <Input id="username" name="username" type="text" placeholder="Tu nombre de estudiante" required />
         </div>
         <div className="space-y-2">
           <Label htmlFor="email">✉️ Email</Label>
@@ -126,7 +126,7 @@ export default function RegisterPage() {
             id="email"
             name="email"
             type="email"
-            placeholder="aventurero@email.com"
+            placeholder="tu@email.com"
             required
           />
         </div>
@@ -135,11 +135,11 @@ export default function RegisterPage() {
           <Input id="password" name="password" type="password" required placeholder="Una contraseña secreta..." />
         </div>
 
-        <SubmitButton>Forjar mi Cuenta ⚔️</SubmitButton>
+        <SubmitButton>Crear mi Cuenta 📝</SubmitButton>
       </form>
 
       <div className="mt-6 text-center text-sm">
-        ¿Ya eres parte de la legión?{' '}
+        ¿Ya estás en la lista?{' '}
         <Link
           href="/login"
           passHref

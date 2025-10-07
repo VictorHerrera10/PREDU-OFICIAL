@@ -37,8 +37,8 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({
-        title: '¡Bienvenido de nuevo! 👋',
-        description: '¡Qué bueno verte por aquí!',
+        title: '¡Qué bueno verte de nuevo! 👋',
+        description: '¡Listo para empezar la lección!',
       });
       // La redirección se maneja en el useEffect de arriba
     } catch (error: any) {
@@ -70,7 +70,7 @@ export default function LoginPage() {
           ¡Bienvenido de Nuevo!
         </CardTitle>
         <CardDescription>
-          Ingresa tus credenciales para continuar tu aventura. ⚔️
+          Ingresa tus credenciales para continuar tu aprendizaje. 📚
         </CardDescription>
       </CardHeader>
 
@@ -100,7 +100,7 @@ export default function LoginPage() {
             autoComplete="current-password"
           />
         </div>
-        <Button type="submit" className="w-full">Ingresar al Castillo 🏰</Button>
+        <Button type="submit" className="w-full">Entrar al Aula 🎒</Button>
       </form>
       <div className="mt-4 text-center text-sm">
         ¿Aún no tienes cuenta?{' '}
@@ -108,7 +108,7 @@ export default function LoginPage() {
           href="/register"
           className="font-semibold text-primary/80 hover:text-primary transition-colors"
         >
-          ¡Únete a la aventura!
+          ¡Inscríbete aquí!
         </Link>
       </div>
        <div className="mt-2 text-center text-sm">
