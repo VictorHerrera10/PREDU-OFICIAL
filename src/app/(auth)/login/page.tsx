@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useFormState } from 'react-dom';
+import { useActionState } from 'react';
 import { login, signInWithGoogle } from '@/app/actions';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,10 +16,10 @@ const initialState = {
 };
 
 export default function LoginPage() {
-  const [state, formAction] = useFormState(login, initialState);
+  const [state, formAction] = useActionState(login, initialState);
   const searchParams = useSearchParams();
   const message = searchParams.get('message');
-  const [googleState, setGoogleState] = useFormState(signInWithGoogle, initialState);
+  const [googleState, googleFormAction] = useActionState(signInWithGoogle, initialState);
 
   return (
     <>
@@ -33,7 +33,7 @@ export default function LoginPage() {
       </CardHeader>
 
       <div className="space-y-4">
-        <form action={setGoogleState}>
+        <form action={googleFormAction}>
           <Button variant="outline" className="w-full" type="submit">
             <svg
               className="mr-2 h-4 w-4"

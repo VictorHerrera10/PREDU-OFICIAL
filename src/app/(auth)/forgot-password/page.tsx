@@ -2,7 +2,7 @@
 'use client'
 
 import Link from 'next/link';
-import { useFormState } from 'react-dom';
+import { useActionState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { forgotPassword } from '@/app/actions';
 import { Input } from '@/components/ui/input';
@@ -17,7 +17,7 @@ const initialState = {
 };
 
 export default function ForgotPasswordPage() {
-  const [state, formAction] = useFormState(forgotPassword, initialState);
+  const [state, formAction] = useActionState(forgotPassword, initialState);
   const searchParams = useSearchParams();
   const message = searchParams.get('message');
 
