@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['"Space Grotesk"', 'sans-serif'],
-        headline: ['"Space Grotesk"', 'sans-serif'],
+        body: ['"VT323"', 'monospace'],
+        headline: ['"Press Start 2P"', 'cursive'],
         code: ['monospace'],
       },
       colors: {
@@ -67,8 +67,8 @@ export default {
         },
       },
       borderRadius: {
-        lg: '0.3rem',
-        md: '0.15rem',
+        lg: '0rem',
+        md: '0rem',
         sm: '0rem',
       },
       keyframes: {

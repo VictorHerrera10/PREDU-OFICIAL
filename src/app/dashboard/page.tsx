@@ -24,12 +24,12 @@ export default async function DashboardPage() {
         </form>
       </header>
       <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-2xl text-center shadow-2xl shadow-primary/10 border-primary/20">
+        <Card className="w-full max-w-2xl text-center shadow-2xl bg-card/80 backdrop-blur-sm border-primary/20 card-float">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-primary">LEVEL 1: The Vault</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">
-            <div className="w-full rounded-md border border-dashed border-secondary/50 bg-secondary/10 p-6">
+            <div className="w-full border border-dashed border-secondary/50 bg-black/50 p-6">
                 <div className="flex items-center gap-3 justify-center">
                     <Terminal className="h-6 w-6 text-secondary" />
                     <p className="font-mono text-lg font-bold text-secondary">
