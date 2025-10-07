@@ -1,7 +1,6 @@
 'use server';
 
 import {
-  getAuth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
@@ -11,6 +10,9 @@ import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { redirect } from 'next/navigation';
 import { initializeServerApp } from '@/firebase/server-init';
 import { headers } from 'next/headers';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
+
 
 async function getAuthenticatedAppForUser() {
   const { auth, firestore } = await initializeServerApp();
@@ -66,13 +68,24 @@ export async function register(prevState: any, formData: FormData) {
     const user = userCredential.user;
 
     const userProfileRef = doc(firestore, 'users', user.uid);
-    await setDoc(userProfileRef, {
+    const userProfileData = {
       id: user.uid,
       username: username,
       email: user.email,
       creationDate: serverTimestamp(),
       lastLogin: serverTimestamp(),
-    });
+    };
+    
+    await setDoc(userProfileRef, userProfileData).catch(error => {
+        errorEmitter.emit(
+          'permission-error',
+          new FirestorePermissionError({
+            path: userProfileRef.path,
+            operation: 'create',
+            requestResourceData: userProfileData,
+          })
+        )
+      });
 
   } catch (e: any) {
     return { message: getFirebaseErrorMessage(e.code) };
