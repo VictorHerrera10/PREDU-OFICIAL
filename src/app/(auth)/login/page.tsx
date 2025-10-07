@@ -10,7 +10,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CardTitle, CardDescription, CardHeader } from '@/components/ui/card';
 import Link from 'next/link';
-import { SubmitButton } from '@/components/submit-button';
 
 export default function LoginPage() {
   const { user, isUserLoading } = useUser();
@@ -38,15 +37,14 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({
-        title: '¡Bienvenido de nuevo!',
-        description: 'Has iniciado sesión correctamente.',
+        title: '¡Bienvenido de nuevo! 👋',
+        description: '¡Qué bueno verte por aquí!',
       });
       // La redirección se maneja en el useEffect de arriba
     } catch (error: any) {
-      console.error('Error al iniciar sesión:', error);
       toast({
         variant: 'destructive',
-        title: 'Error al iniciar sesión',
+        title: 'Error al iniciar sesión 😵',
         description:
           error.code === 'auth/invalid-credential'
             ? 'Las credenciales no son correctas. Por favor, inténtalo de nuevo.'
@@ -59,7 +57,7 @@ export default function LoginPage() {
   if (isUserLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-full">
-        <p className="text-primary-foreground">Verificando sesión...</p>
+        <p className="text-primary-foreground animate-pulse">Verificando sesión...</p>
       </div>
     );
   }
@@ -69,10 +67,10 @@ export default function LoginPage() {
     <>
       <CardHeader className="p-0 mb-6 text-center">
         <CardTitle className="text-2xl font-bold text-primary">
-          Iniciar Sesión
+          ¡Bienvenido de Nuevo!
         </CardTitle>
         <CardDescription>
-          Ingresa tus credenciales para acceder a tu aventura.
+          Ingresa tus credenciales para continuar tu aventura. ⚔️
         </CardDescription>
       </CardHeader>
 
@@ -102,15 +100,15 @@ export default function LoginPage() {
             autoComplete="current-password"
           />
         </div>
-        <Button type="submit" className="w-full">Ingresar</Button>
+        <Button type="submit" className="w-full">Ingresar al Castillo 🏰</Button>
       </form>
       <div className="mt-4 text-center text-sm">
-        ¿No tienes cuenta?{' '}
+        ¿Aún no tienes cuenta?{' '}
         <Link
           href="/register"
           className="font-semibold text-primary/80 hover:text-primary transition-colors"
         >
-          Regístrate
+          ¡Únete a la aventura!
         </Link>
       </div>
        <div className="mt-2 text-center text-sm">
@@ -118,7 +116,7 @@ export default function LoginPage() {
             href="/forgot-password"
             className="text-xs text-primary/70 hover:text-primary transition-colors"
         >
-            ¿Olvidaste tu contraseña?
+            ¿Problemas para entrar?
         </Link>
        </div>
     </>

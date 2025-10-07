@@ -24,21 +24,21 @@ async function getAuthenticatedAppForUser() {
 function getFirebaseErrorMessage(errorCode: string): string {
   switch (errorCode) {
     case 'auth/invalid-credential':
-      return 'Las credenciales proporcionadas no son válidas o han expirado. Por favor, inténtalo de nuevo.';
+      return 'Las credenciales no son correctas. Por favor, revisa tu email y contraseña. 🤔';
     case 'auth/user-not-found':
-      return 'No se encontró ninguna cuenta con esta dirección de correo electrónico.';
+      return 'No encontramos a ningún aventurero con ese correo. ¿Quizás te registraste con otro?';
     case 'auth/wrong-password':
-      return 'La contraseña es incorrecta. Por favor, inténtalo de nuevo.';
+      return '¡Contraseña incorrecta! Inténtalo de nuevo. 🤫';
     case 'auth/email-already-in-use':
-      return 'Esta dirección de correo electrónico ya está en uso por otra cuenta.';
+      return '¡Ese email ya está en uso! Parece que ya tienes una cuenta. Intenta iniciar sesión. 😉';
     case 'auth/weak-password':
-      return 'La contraseña es demasiado débil. Debe tener al menos 6 caracteres.';
+      return 'Tu contraseña es muy débil. ¡Necesitas al menos 6 caracteres para proteger tu cuenta! 🛡️';
     case 'auth/operation-not-allowed':
-      return 'El inicio de sesión con correo electrónico y contraseña no está habilitado.';
+      return 'Esta operación no está permitida. Contacta a soporte si crees que es un error.';
     case 'auth/popup-closed-by-user':
-      return 'La ventana de inicio de sesión fue cerrada antes de completar la operación.';
+      return 'La ventana emergente fue cerrada antes de terminar. ¡No te rindas! Inténtalo de nuevo.';
     default:
-      return 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo más tarde.';
+      return 'Ocurrió un error inesperado en el castillo. Por favor, inténtalo de nuevo más tarde. 🏰';
   }
 }
 
@@ -87,11 +87,11 @@ export async function forgotPassword(prevState: any, formData: FormData) {
 
   if (refererUrl) {
     redirect(
-      `${refererUrl.pathname}?message=Si existe una cuenta para este correo, se ha enviado un enlace para restablecer la contraseña.`
+      `${refererUrl.pathname}?message=Si existe una cuenta para este correo, hemos enviado un pergamino mágico 📜 para restablecer tu contraseña.`
     );
   } else {
     redirect(
-      '/login?message=Si existe una cuenta para este correo, se ha enviado un enlace para restablecer la contraseña.'
+      '/login?message=Si existe una cuenta para este correo, hemos enviado un pergamino mágico 📜 para restablecer tu contraseña.'
     );
   }
 }

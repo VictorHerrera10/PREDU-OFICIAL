@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useActionState, useEffect } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import { register } from '@/app/actions';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,6 +10,8 @@ import { CardTitle, CardDescription, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import Confetti from 'react-confetti';
+import useResizeObserver from 'use-resize-observer';
 
 type State = {
   message: string | null;
@@ -27,31 +29,57 @@ export default function RegisterPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [state, formAction] = useActionState(register, initialState);
+  const { ref, width = 0, height = 0 } = useResizeObserver<HTMLBodyElement>();
+
+   useEffect(() => {
+    // This is to ensure the body ref is available on the client
+    if (typeof window !== 'undefined') {
+      ref(document.body);
+    }
+  }, [ref]);
 
   useEffect(() => {
-    if (state.success && state.username) {
-      toast({
-        title: `¡Felicidades, ${state.username}! 🎉`,
-        description: '¡Ahora puedes iniciar sesión en Predu! ✨',
-      });
-      router.push('/login');
-    } else if (state.message) {
+    if (!state.success && state.message) {
       toast({
         variant: 'destructive',
-        title: 'Error de registro',
+        title: 'Ups... Algo salió mal 😵',
         description: state.message,
       });
     }
   }, [state, toast, router]);
 
+  if (state.success && state.username) {
+    return (
+      <div className="text-center flex flex-col items-center justify-center">
+        <Confetti
+          width={width}
+          height={height}
+          recycle={false}
+          numberOfPieces={500}
+        />
+        <CardHeader className="p-0 mb-6 text-center">
+          <CardTitle className="text-2xl font-bold text-primary">
+            ¡Felicidades, {state.username}! 🎉
+          </CardTitle>
+          <CardDescription>
+            ¡Tu cuenta ha sido creada! Ya puedes iniciar tu aventura.
+          </CardDescription>
+        </CardHeader>
+        <Button onClick={() => router.push('/login')}>
+          Ir a Iniciar Sesión 🚀
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <>
       <CardHeader className="p-0 mb-6 text-center">
         <CardTitle className="text-2xl font-bold text-primary">
-          Crear Cuenta
+          Crea tu Cuenta
         </CardTitle>
         <CardDescription>
-          Crea tu cuenta para comenzar tu aventura.
+          ¡Únete a la aventura y descubre tu vocación! 🌟
         </CardDescription>
       </CardHeader>
 
@@ -90,7 +118,7 @@ export default function RegisterPage() {
       <form action={formAction} className="space-y-4 mt-6">
         <div className="space-y-2">
             <Label htmlFor="username">🕹️ Nombre de usuario</Label>
-            <Input id="username" name="username" type="text" placeholder="Tu nombre de gamer" required />
+            <Input id="username" name="username" type="text" placeholder="Tu nombre de aventurero" required />
         </div>
         <div className="space-y-2">
           <Label htmlFor="email">✉️ Email</Label>
@@ -98,26 +126,26 @@ export default function RegisterPage() {
             id="email"
             name="email"
             type="email"
-            placeholder="estudiante@email.com"
+            placeholder="aventurero@email.com"
             required
           />
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">🔒 Contraseña</Label>
-          <Input id="password" name="password" type="password" required />
+          <Input id="password" name="password" type="password" required placeholder="Una contraseña secreta..." />
         </div>
 
-        <SubmitButton>Crear Cuenta</SubmitButton>
+        <SubmitButton>Forjar mi Cuenta ⚔️</SubmitButton>
       </form>
 
       <div className="mt-6 text-center text-sm">
-        ¿Ya eres estudiante?{' '}
+        ¿Ya eres parte de la legión?{' '}
         <Link
           href="/login"
           passHref
           className="font-semibold text-primary/80 hover:text-primary transition-colors"
         >
-          Continuar
+          ¡Inicia Sesión!
         </Link>
       </div>
     </>

@@ -25,7 +25,7 @@ export default function ForgotPasswordPage() {
     if (state?.message) {
       toast({
         variant: 'destructive',
-        title: 'Error',
+        title: 'Ups... Algo salió mal 😵',
         description: state.message,
       });
     }
@@ -34,7 +34,7 @@ export default function ForgotPasswordPage() {
   useEffect(() => {
     if (formSubmitted) {
       toast({
-        title: 'Petición enviada',
+        title: '✉️ ¡Petición enviada!',
         description: formSubmitted,
       });
     }
@@ -44,8 +44,8 @@ export default function ForgotPasswordPage() {
   return (
     <>
       <CardHeader className="p-0 mb-6 text-center">
-        <CardTitle className="text-2xl font-bold text-primary">Olvidé mi Contraseña</CardTitle>
-        <CardDescription>No te preocupes, te enviaremos instrucciones para restablecerla.</CardDescription>
+        <CardTitle className="text-2xl font-bold text-primary">🤔 ¿Olvidaste tu Contraseña?</CardTitle>
+        <CardDescription>No te preocupes, ¡a todos nos pasa! Te enviaremos instrucciones para recuperarla. 🚀</CardDescription>
       </CardHeader>
       
       {formSubmitted ? (
@@ -59,7 +59,7 @@ export default function ForgotPasswordPage() {
             <Input id="email" name="email" type="email" placeholder="estudiante@email.com" required />
           </div>
           
-          <SubmitButton variant="secondary">Enviar Instrucciones</SubmitButton>
+          <SubmitButton variant="secondary">Enviar Instrucciones 📬</SubmitButton>
         </form>
       )}
 

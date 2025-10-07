@@ -16,16 +16,16 @@ export function LogoutButton() {
     try {
       await signOut(auth);
       toast({
-        title: 'Sesión cerrada',
-        description: 'Has cerrado sesión correctamente.',
+        title: '¡Sesión cerrada con éxito! 👋',
+        description: 'Vuelve pronto, ¡la aventura te esperará!',
       });
       // El layout del dashboard se encargará de redirigir a /login
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
       toast({
         variant: 'destructive',
-        title: 'Error',
-        description: 'No se pudo cerrar la sesión.',
+        title: 'Error al salir 😵',
+        description: 'No pudimos cerrar la sesión. Inténtalo de nuevo.',
       });
     }
   };
