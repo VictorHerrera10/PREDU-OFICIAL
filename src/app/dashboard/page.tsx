@@ -1,5 +1,4 @@
 'use client';
-import { generateGameStyleMessage } from '@/ai/flows/generate-game-style-message';
 import { logout } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,23 +6,21 @@ import { Logo } from '@/components/logo';
 import { LogOut, Terminal } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useUser } from '@/firebase/provider';
+import { useToast } from '@/hooks/use-toast';
 
 function DashboardPage() {
-  const [welcomeMessage, setWelcomeMessage] = useState('');
   const { user } = useUser();
+  const { toast } = useToast();
 
   useEffect(() => {
-    async function getMessage() {
-      if (user) {
-        const welcomeMessageData = await generateGameStyleMessage({
-          username: user.displayName || 'Estudiante',
-          event: 'login',
-        });
-        setWelcomeMessage(welcomeMessageData.message);
-      }
+    if (user) {
+      toast({
+        title: `¡Bienvenido, ${user.displayName || 'Estudiante'}!`,
+        description: 'Has iniciado sesión correctamente.',
+      });
     }
-    getMessage();
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, toast]);
 
   return (
     <>
@@ -44,20 +41,12 @@ function DashboardPage() {
         <Card className="w-full max-w-2xl text-center bg-card/80 backdrop-blur-sm border-border">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-primary">
-              LEVEL 1: The Vault
+              Bienvenido al Dashboard
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">
-            <div className="w-full border border-dashed border-secondary/50 bg-black/50 p-6">
-              <div className="flex items-center gap-3 justify-center">
-                <Terminal className="h-6 w-6 text-secondary" />
-                <p className="font-mono text-lg font-bold text-secondary">
-                  {welcomeMessage || 'Loading...'}
-                </p>
-              </div>
-            </div>
             <p className="text-muted-foreground mt-4">
-              Your digital treasures are safe here.
+              Aquí comienza tu aventura.
             </p>
           </CardContent>
         </Card>
