@@ -20,16 +20,17 @@ export default function LoginPage() {
   const { toast } = useToast();
   const router = useRouter();
   const { user, isUserLoading } = useUser();
+  const searchParams = useSearchParams();
 
   const [state, formAction] = useActionState(login, initialState);
-  const searchParams = useSearchParams();
   const [googleState, googleFormAction] = useActionState(signInWithGoogle, initialState);
 
-    useEffect(() => {
+  useEffect(() => {
     if (!isUserLoading && user) {
-      router.push('/dashboard');
+      const redirectUrl = searchParams.get('redirect') || '/dashboard';
+      router.push(redirectUrl);
     }
-  }, [user, isUserLoading, router]);
+  }, [user, isUserLoading, router, searchParams]);
 
   useEffect(() => {
     if (state?.message) {
