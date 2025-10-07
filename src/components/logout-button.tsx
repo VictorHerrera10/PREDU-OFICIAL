@@ -13,13 +13,14 @@ export function LogoutButton() {
   const { toast } = useToast();
 
   const handleLogout = async () => {
+    if (!auth) return;
     try {
       await signOut(auth);
       toast({
         title: '¡Hasta la próxima clase! 👋',
         description: 'Vuelve pronto, ¡el conocimiento te espera!',
       });
-      // El layout del dashboard se encargará de redirigir a /login
+      router.push('/login'); // Redirección explícita
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
       toast({
