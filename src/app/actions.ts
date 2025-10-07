@@ -13,6 +13,8 @@ import { redirect } from 'next/navigation';
 import { initializeServerApp } from '@/firebase/server-init';
 import { headers } from 'next/headers';
 
+// This function is now simplified and we don't await for the result here.
+// The client will react to the auth state change.
 async function getAuthenticatedAppForUser() {
   const { auth } = await initializeServerApp();
   return { auth };
@@ -45,6 +47,7 @@ export async function login(prevState: any, formData: FormData) {
   const password = formData.get('password') as string;
 
   try {
+    // We don't await here. Let the client-side onAuthStateChanged handle the redirect.
     await signInWithEmailAndPassword(auth, email, password);
   } catch (e: any) {
     return { message: getFirebaseErrorMessage(e.code) };
@@ -59,6 +62,7 @@ export async function register(prevState: any, formData: FormData) {
   const username = formData.get('username') as string;
 
   try {
+    // We don't await here.
     await createUserWithEmailAndPassword(auth, email, password);
     // You might want to save the username to Firestore here
   } catch (e: any) {
@@ -101,6 +105,7 @@ export async function signInWithGoogle(prevState: any, formData: FormData) {
   const { auth } = await getAuthenticatedAppForUser();
   const provider = new GoogleAuthProvider();
   try {
+    // We don't await here.
     await signInWithPopup(auth, provider);
   } catch (e: any) {
     return { message: getFirebaseErrorMessage(e.code) };
