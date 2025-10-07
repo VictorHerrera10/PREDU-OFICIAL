@@ -10,37 +10,39 @@ import { CardTitle, CardDescription, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/firebase/provider';
 
 type State = {
   message: string | null;
+  success?: boolean;
+  username?: string | null;
 };
 
 const initialState: State = {
   message: null,
+  success: false,
+  username: null,
 };
 
 export default function RegisterPage() {
   const { toast } = useToast();
   const router = useRouter();
-  const { user, isUserLoading } = useUser();
   const [state, formAction] = useActionState(register, initialState);
 
   useEffect(() => {
-    if (!isUserLoading && user) {
-      router.push('/dashboard');
-    }
-  }, [user, isUserLoading, router]);
-
-  useEffect(() => {
-    if (state?.message) {
+    if (state.success && state.username) {
+      toast({
+        title: `¡Felicidades, ${state.username}! 🎉`,
+        description: '¡Ahora puedes iniciar sesión en Predu! ✨',
+      });
+      router.push('/login');
+    } else if (state.message) {
       toast({
         variant: 'destructive',
         title: 'Error de registro',
         description: state.message,
       });
     }
-  }, [state, toast]);
+  }, [state, toast, router]);
 
   return (
     <>

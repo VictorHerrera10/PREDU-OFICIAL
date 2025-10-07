@@ -11,7 +11,9 @@ import { initializeServerApp } from '@/firebase/server-init';
 import { headers } from 'next/headers';
 
 type State = {
-  message: string | null;
+  message?: string | null;
+  success?: boolean;
+  username?: string | null;
 };
 
 async function getAuthenticatedAppForUser() {
@@ -50,10 +52,8 @@ export async function register(prevState: State, formData: FormData): Promise<St
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // Actualiza el perfil de Firebase Auth con el nombre de usuario
     await updateProfile(user, { displayName: username });
 
-    // Guarda el perfil en Firestore
     const userProfileRef = doc(firestore, 'users', user.uid);
     const userProfileData = {
       id: user.uid,
@@ -65,12 +65,11 @@ export async function register(prevState: State, formData: FormData): Promise<St
     
     await setDoc(userProfileRef, userProfileData);
 
+    return { success: true, username: username };
+
   } catch (e: any) {
     return { message: getFirebaseErrorMessage(e.code) };
   }
-
-  // La redirección la maneja el cliente al detectar el cambio de estado de auth
-  return { message: null };
 }
 
 export async function forgotPassword(prevState: any, formData: FormData) {
