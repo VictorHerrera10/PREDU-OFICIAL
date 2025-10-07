@@ -7,9 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SubmitButton } from '@/components/submit-button';
 import { CardTitle, CardDescription, CardHeader } from '@/components/ui/card';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useUser } from '@/firebase/provider';
 
 const initialState = {
   message: null,
@@ -17,9 +18,18 @@ const initialState = {
 
 export default function LoginPage() {
   const { toast } = useToast();
+  const router = useRouter();
+  const { user, isUserLoading } = useUser();
+
   const [state, formAction] = useActionState(login, initialState);
   const searchParams = useSearchParams();
   const [googleState, googleFormAction] = useActionState(signInWithGoogle, initialState);
+
+    useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, isUserLoading, router]);
 
   useEffect(() => {
     if (state?.message) {

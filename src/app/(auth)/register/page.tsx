@@ -9,6 +9,8 @@ import { SubmitButton } from '@/components/submit-button';
 import { CardTitle, CardDescription, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@/firebase/provider';
 
 const initialState = {
   message: null,
@@ -16,8 +18,16 @@ const initialState = {
 
 export default function RegisterPage() {
   const { toast } = useToast();
+  const router = useRouter();
+  const { user, isUserLoading } = useUser();
   const [state, formAction] = useActionState(register, initialState);
   const [googleState, googleFormAction] = useActionState(signInWithGoogle, initialState);
+
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, isUserLoading, router]);
 
   useEffect(() => {
     if (state?.message) {

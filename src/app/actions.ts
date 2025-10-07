@@ -49,7 +49,7 @@ export async function login(prevState: any, formData: FormData) {
   } catch (e: any) {
     return { message: getFirebaseErrorMessage(e.code) };
   }
-  redirect('/dashboard');
+  // DO NOT REDIRECT HERE. The client will handle it.
 }
 
 export async function register(prevState: any, formData: FormData) {
@@ -64,7 +64,7 @@ export async function register(prevState: any, formData: FormData) {
   } catch (e: any) {
     return { message: getFirebaseErrorMessage(e.code) };
   }
-  redirect('/dashboard');
+  // DO NOT REDIRECT HERE. The client will handle it.
 }
 
 export async function forgotPassword(prevState: any, formData: FormData) {
@@ -101,9 +101,9 @@ export async function signInWithGoogle(prevState: any, formData: FormData) {
   const { auth } = await getAuthenticatedAppForUser();
   const provider = new GoogleAuthProvider();
   try {
-    const result = await signInWithPopup(auth, provider);
+    await signInWithPopup(auth, provider);
   } catch (e: any) {
     return { message: getFirebaseErrorMessage(e.code) };
   }
-  redirect('/dashboard');
+  // DO NOT REDIRECT HERE. The client will handle it.
 }
