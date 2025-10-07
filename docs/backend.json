@@ -28,6 +28,11 @@
           "type": "string",
           "description": "The date and time of the user's last login.",
           "format": "date-time"
+        },
+        "role": {
+          "type": "string",
+          "description": "The role of the user within the application.",
+          "enum": ["student", "tutor", "admin"]
         }
       },
       "required": [
