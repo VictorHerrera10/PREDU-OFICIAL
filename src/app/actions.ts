@@ -51,7 +51,16 @@ export async function login(prevState: any, formData: FormData) {
     const user = userCredential.user;
     
     const userProfileRef = doc(firestore, 'users', user.uid);
-    await setDoc(userProfileRef, { lastLogin: serverTimestamp() }, { merge: true });
+    setDoc(userProfileRef, { lastLogin: serverTimestamp() }, { merge: true }).catch(error => {
+        errorEmitter.emit(
+          'permission-error',
+          new FirestorePermissionError({
+            path: userProfileRef.path,
+            operation: 'update',
+            requestResourceData: { lastLogin: 'SERVER_TIMESTAMP' },
+          })
+        )
+      });
 
   } catch (e: any) {
     return { message: getFirebaseErrorMessage(e.code) };
@@ -105,7 +114,7 @@ export async function forgotPassword(prevState: any, formData: FormData) {
     return { message: getFirebaseErrorMessage(e.code) };
   }
 
-  const referer = headers().get('referer');
+  const referer = (await headers()).get('referer');
   const refererUrl = referer ? new URL(referer) : null;
 
   if (refererUrl) {
