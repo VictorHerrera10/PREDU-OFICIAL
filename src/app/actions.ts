@@ -5,6 +5,7 @@ import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   signOut,
+  updateProfile,
 } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { redirect } from 'next/navigation';
@@ -67,6 +68,8 @@ export async function register(prevState: any, formData: FormData) {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
+    await updateProfile(user, { displayName: username });
+
     const userProfileRef = doc(firestore, 'users', user.uid);
     const userProfileData = {
       id: user.uid,
@@ -76,7 +79,7 @@ export async function register(prevState: any, formData: FormData) {
       lastLogin: serverTimestamp(),
     };
     
-    await setDoc(userProfileRef, userProfileData).catch(error => {
+    setDoc(userProfileRef, userProfileData).catch(error => {
         errorEmitter.emit(
           'permission-error',
           new FirestorePermissionError({
