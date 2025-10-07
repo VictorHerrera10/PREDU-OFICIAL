@@ -52,7 +52,7 @@ export async function login(prevState: any, formData: FormData) {
     const user = userCredential.user;
     
     // Update last login timestamp
-    const userProfileRef = doc(firestore, `users/${user.uid}/profile`);
+    const userProfileRef = doc(firestore, `users/${user.uid}`);
     await setDoc(userProfileRef, { lastLogin: serverTimestamp() }, { merge: true });
 
   } catch (e: any) {
@@ -71,7 +71,7 @@ export async function register(prevState: any, formData: FormData) {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    const userProfileRef = doc(firestore, `users/${user.uid}/profile`);
+    const userProfileRef = doc(firestore, 'users', user.uid);
     await setDoc(userProfileRef, {
       id: user.uid,
       username: username,
@@ -124,7 +124,7 @@ export async function signInWithGoogle(prevState: any, formData: FormData) {
     const user = userCredential.user;
     
     // Create or update user profile on Google sign-in
-    const userProfileRef = doc(firestore, `users/${user.uid}/profile`);
+    const userProfileRef = doc(firestore, `users/${user.uid}`);
     await setDoc(userProfileRef, { 
       id: user.uid,
       username: user.displayName,
