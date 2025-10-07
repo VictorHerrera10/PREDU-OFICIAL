@@ -24,8 +24,8 @@ export default function ForgotPasswordPage() {
   return (
     <>
       <CardHeader className="p-0 mb-6">
-        <CardTitle className="text-2xl font-bold text-primary">Forgot Password</CardTitle>
-        <CardDescription>No worries, we'll send you reset instructions.</CardDescription>
+        <CardTitle className="text-2xl font-bold text-primary">Olvidé mi Contraseña</CardTitle>
+        <CardDescription>No te preocupes, te enviaremos instrucciones para restablecerla.</CardDescription>
       </CardHeader>
       
       {message ? (
@@ -35,8 +35,8 @@ export default function ForgotPasswordPage() {
       ) : (
         <form action={formAction} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" placeholder="player1@email.com" required />
+            <Label htmlFor="email">✉️ Email</Label>
+            <Input id="email" name="email" type="email" placeholder="estudiante@email.com" required />
           </div>
 
           {state?.message && (
@@ -45,14 +45,14 @@ export default function ForgotPasswordPage() {
             </Alert>
           )}
           
-          <SubmitButton variant="secondary">Send Instructions</SubmitButton>
+          <SubmitButton variant="secondary">Enviar Instrucciones</SubmitButton>
         </form>
       )}
 
       <div className="mt-6 text-center text-sm">
         <Link href="/login" passHref className="font-semibold text-primary/80 hover:text-primary transition-colors flex items-center justify-center gap-2">
           <ArrowLeft className="w-4 h-4" />
-          Back to Login
+          Volver a Iniciar Sesión
         </Link>
       </div>
     </>

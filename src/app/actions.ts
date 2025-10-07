@@ -42,9 +42,9 @@ export async function forgotPassword(prevState: any, formData: FormData) {
   const refererUrl = referer ? new URL(referer) : null;
 
   if (refererUrl) {
-    redirect(`${refererUrl.pathname}?message=If an account exists for this email, a password reset link has been sent.`);
+    redirect(`${refererUrl.pathname}?message=Si existe una cuenta para este correo, se ha enviado un enlace para restablecer la contraseña.`);
   } else {
-    redirect('/login?message=If an account exists for this email, a password reset link has been sent.');
+    redirect('/login?message=Si existe una cuenta para este correo, se ha enviado un enlace para restablecer la contraseña.');
   }
 }
 
