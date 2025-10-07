@@ -10,7 +10,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CardTitle, CardDescription, CardHeader } from '@/components/ui/card';
 import Link from 'next/link';
-import { SubmitButton } from '@/components/submit-button';
 
 export default function LoginPage() {
   const { user, isUserLoading } = useUser();
@@ -38,18 +37,17 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({
-        title: '¡Bienvenido de nuevo!',
-        description: 'Has iniciado sesión correctamente.',
+        title: '¡Bienvenido de nuevo! 👋',
+        description: '¡Qué bueno verte por aquí!',
       });
       // La redirección se maneja en el useEffect de arriba
     } catch (error: any) {
-      console.error('Error al iniciar sesión:', error);
       toast({
         variant: 'destructive',
-        title: 'Error al iniciar sesión',
+        title: 'Error al iniciar sesión 😥',
         description:
           error.code === 'auth/invalid-credential'
-            ? 'Las credenciales no son correctas. Por favor, inténtalo de nuevo.'
+            ? 'Las credenciales no son correctas. ¡Inténtalo de nuevo!'
             : 'Ha ocurrido un error inesperado.',
       });
     }
@@ -72,7 +70,7 @@ export default function LoginPage() {
           Iniciar Sesión
         </CardTitle>
         <CardDescription>
-          Ingresa tus credenciales para acceder a tu aventura.
+          Ingresa tus credenciales para acceder a tu aventura. 🚀
         </CardDescription>
       </CardHeader>
 
@@ -83,7 +81,7 @@ export default function LoginPage() {
             id="email"
             name="email"
             type="email"
-            placeholder="estudiante@email.com"
+            placeholder="jugador@email.com"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -118,7 +116,7 @@ export default function LoginPage() {
             href="/forgot-password"
             className="text-xs text-primary/70 hover:text-primary transition-colors"
         >
-            ¿Olvidaste tu contraseña?
+            ¿Olvidaste tu contraseña? 🤔
         </Link>
        </div>
     </>
