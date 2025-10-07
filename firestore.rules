@@ -1,63 +1,42 @@
-/**
- * @file Firebase Security Rules for Pixel Vault User Profiles
- *
- * Core Philosophy:
- * This ruleset enforces a strict user-ownership model. Users can only access their own profile data.
- *
- * Data Structure:
- * All user data is nested under /users/{userId}/profile.
- *
- * Key Security Decisions:
- * - Listing all users is disallowed.
- * - Users can only create, read, update, and delete their own profile data.
- * - The 'id' field within the UserProfile document MUST match the 'userId' in the path. This is enforced on creation and cannot be changed thereafter.
- */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Secures access to user profile data, ensuring only the owning user can manage it.
+     * @description Secure user profiles stored under /users/{userId}/profile.
      * @path /users/{userId}/profile
-     * @allow (create) - A user with UID 'user_abc' can create their profile at /users/user_abc/profile if the document's 'id' field also equals 'user_abc'.
-     * @allow (get) - A user with UID 'user_abc' can read their profile at /users/user_abc/profile.
-     * @allow (update) - A user with UID 'user_abc' can update their profile at /users/user_abc/profile.
-     * @allow (delete) - A user with UID 'user_abc' can delete their profile at /users/user_abc/profile.
-     * @deny (create) - A user with UID 'user_xyz' cannot create a profile at /users/user_abc/profile because the 'userId' in the path does not match their UID.
-     * @deny (get) - A user with UID 'user_xyz' cannot read the profile at /users/user_abc/profile.
-     * @deny (update) - A user with UID 'user_xyz' cannot update the profile at /users/user_abc/profile.
-     * @deny (delete) - A user with UID 'user_xyz' cannot delete the profile at /users/user_abc/profile.
-     * @principle Enforces document ownership for writes, restricts access to a user's own data tree, and validates relational integrity between documents.
+     * @allow (create) - User 'test_user' with UID 'user_abc' can create their profile at /users/user_abc/profile if request.auth.uid == 'user_abc' and request.resource.data.id == 'user_abc'.
+     * @allow (get) - User 'test_user' with UID 'user_abc' can read their profile at /users/user_abc/profile.
+     * @allow (update) - User 'test_user' with UID 'user_abc' can update their profile at /users/user_abc/profile if request.auth.uid == 'user_abc' and request.resource.data.id == resource.data.id.
+     * @allow (delete) - User 'test_user' with UID 'user_abc' can delete their profile at /users/user_abc/profile if request.auth.uid == 'user_abc'.
+     * @deny (create) - User 'test_user' with UID 'user_xyz' cannot create a profile at /users/user_abc/profile.
+     * @deny (get) - User 'test_user' with UID 'user_xyz' cannot read the profile at /users/user_abc/profile.
+     * @deny (update) - User 'test_user' with UID 'user_xyz' cannot update the profile at /users/user_abc/profile.
+     * @deny (delete) - User 'test_user' with UID 'user_xyz' cannot delete the profile at /users/user_abc/profile.
+     * @principle Enforces document ownership and path consistency for user profiles.
      */
     match /users/{userId}/profile {
-      // Helper function to check if the user is signed in
+      // Helper function to check if the user is signed in.
       function isSignedIn() {
         return request.auth != null;
       }
 
-      // Helper function to check if the authenticated user is the owner of the profile
+      // Helper function to check if the authenticated user is the owner of the document.
       function isOwner(userId) {
         return isSignedIn() && request.auth.uid == userId;
       }
 
-       // Helper function to check if the authenticated user is the existing owner of the profile
+      // Helper function to check if the authenticated user is the existing owner of the document.
       function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
+        return isSignedIn() && request.auth.uid == userId && exists(resource);
       }
 
-      // Allow a user to read their own profile
+      // Read rules
       allow get: if isOwner(userId);
 
-      // Allow a user to list their own (single) profile document.  This is effectively disabled as there is only one document per path.
-      allow list: if isOwner(userId);
-
-      // Allow a user to create their own profile if the ID matches
+      // Write rules
       allow create: if isOwner(userId) && request.resource.data.id == userId;
-
-      // Allow a user to update their own profile, ensuring the ID remains consistent
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
-
-      // Allow a user to delete their own profile
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.data.id;
       allow delete: if isExistingOwner(userId);
     }
   }
