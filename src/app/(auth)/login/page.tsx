@@ -19,14 +19,7 @@ export default function LoginPage() {
   const [state, formAction] = useFormState(login, initialState);
   const searchParams = useSearchParams();
   const message = searchParams.get('message');
-
-  const handleGoogleSignIn = async () => {
-    const result = await signInWithGoogle();
-    if (result?.message) {
-      // Handle error, maybe show it in an alert
-      console.error(result.message);
-    }
-  };
+  const [googleState, setGoogleState] = useFormState(signInWithGoogle, initialState);
 
   return (
     <>
@@ -40,7 +33,7 @@ export default function LoginPage() {
       </CardHeader>
 
       <div className="space-y-4">
-        <form action={handleGoogleSignIn}>
+        <form action={setGoogleState}>
           <Button variant="outline" className="w-full" type="submit">
             <svg
               className="mr-2 h-4 w-4"
@@ -60,6 +53,11 @@ export default function LoginPage() {
             Iniciar sesión con Google
           </Button>
         </form>
+         {googleState?.message && (
+          <Alert variant="destructive" className="mt-4">
+            <AlertDescription>{googleState.message}</AlertDescription>
+          </Alert>
+        )}
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">

@@ -16,15 +16,7 @@ const initialState = {
 
 export default function RegisterPage() {
   const [state, formAction] = useFormState(register, initialState);
-  
-  const handleGoogleSignIn = async () => {
-    const result = await signInWithGoogle();
-    if (result?.message) {
-      // Handle error, maybe show it in an alert
-      console.error(result.message);
-    }
-  };
-
+  const [googleState, setGoogleState] = useFormState(signInWithGoogle, initialState);
 
   return (
     <>
@@ -38,7 +30,7 @@ export default function RegisterPage() {
       </CardHeader>
 
       <div className="space-y-4">
-        <form action={handleGoogleSignIn}>
+        <form action={setGoogleState}>
         <Button variant="outline" className="w-full" type="submit">
           <svg
             className="mr-2 h-4 w-4"
@@ -58,6 +50,11 @@ export default function RegisterPage() {
           Registrarse con Google
         </Button>
         </form>
+        {googleState?.message && (
+          <Alert variant="destructive" className="mt-4">
+            <AlertDescription>{googleState.message}</AlertDescription>
+          </Alert>
+        )}
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
@@ -106,7 +103,7 @@ export default function RegisterPage() {
         <SubmitButton>Crear Cuenta</SubmitButton>
       </form>
 
-      <div className="mt-6 text-center-text-sm">
+      <div className="mt-6 text-center text-sm">
         ¿Ya eres estudiante?{' '}
         <Link
           href="/login"
