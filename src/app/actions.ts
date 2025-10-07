@@ -1,7 +1,6 @@
 'use server';
 
 import {
-  signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   signOut,
@@ -11,9 +10,6 @@ import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { redirect } from 'next/navigation';
 import { initializeServerApp } from '@/firebase/server-init';
 import { headers } from 'next/headers';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
-
 
 async function getAuthenticatedAppForUser() {
   const { auth, firestore } = await initializeServerApp();
@@ -41,32 +37,6 @@ function getFirebaseErrorMessage(errorCode: string): string {
   }
 }
 
-export async function login(prevState: any, formData: FormData) {
-  const { auth, firestore } = await getAuthenticatedAppForUser();
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
-
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    
-    const userProfileRef = doc(firestore, 'users', user.uid);
-    setDoc(userProfileRef, { lastLogin: serverTimestamp() }, { merge: true }).catch(error => {
-        errorEmitter.emit(
-          'permission-error',
-          new FirestorePermissionError({
-            path: userProfileRef.path,
-            operation: 'update',
-            requestResourceData: { lastLogin: 'SERVER_TIMESTAMP' },
-          })
-        )
-      });
-
-  } catch (e: any) {
-    return { message: getFirebaseErrorMessage(e.code) };
-  }
-}
-
 export async function register(prevState: any, formData: FormData) {
   const { auth, firestore } = await getAuthenticatedAppForUser();
   const email = formData.get('email') as string;
@@ -88,20 +58,13 @@ export async function register(prevState: any, formData: FormData) {
       lastLogin: serverTimestamp(),
     };
     
-    setDoc(userProfileRef, userProfileData).catch(error => {
-        errorEmitter.emit(
-          'permission-error',
-          new FirestorePermissionError({
-            path: userProfileRef.path,
-            operation: 'create',
-            requestResourceData: userProfileData,
-          })
-        )
-      });
+    await setDoc(userProfileRef, userProfileData);
 
   } catch (e: any) {
     return { message: getFirebaseErrorMessage(e.code) };
   }
+
+  redirect('/dashboard');
 }
 
 export async function forgotPassword(prevState: any, formData: FormData) {

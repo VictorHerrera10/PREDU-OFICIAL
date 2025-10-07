@@ -1,107 +1,81 @@
 'use client';
 
-import Link from 'next/link';
-import { useActionState, useEffect } from 'react';
-import { login } from '@/app/actions';
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useUser, useAuth } from '@/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { SubmitButton } from '@/components/submit-button';
 import { CardTitle, CardDescription, CardHeader } from '@/components/ui/card';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/firebase/provider';
-
-type State = {
-  message: string | null;
-};
-
-const initialState: State = {
-  message: null,
-};
+import Link from 'next/link';
+import { SubmitButton } from '@/components/submit-button';
 
 export default function LoginPage() {
-  const { toast } = useToast();
-  const router = useRouter();
   const { user, isUserLoading } = useUser();
+  const auth = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
   const searchParams = useSearchParams();
-  const [state, formAction] = useActionState(login, initialState);
 
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  // Redirigir si el usuario ya está autenticado
   useEffect(() => {
+    const redirectUrl = searchParams.get('redirect') || '/dashboard';
     if (!isUserLoading && user) {
+      router.push(redirectUrl);
+    }
+  }, [user, isUserLoading, router, searchParams]);
+
+  // Manejar el envío del formulario de inicio de sesión
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
       toast({
         title: '¡Bienvenido!',
-        description: `Has iniciado sesión como ${user.displayName || user.email}.`,
+        description: 'Has iniciado sesión correctamente.',
       });
       const redirectUrl = searchParams.get('redirect') || '/dashboard';
       router.push(redirectUrl);
-    }
-  }, [user, isUserLoading, router, searchParams, toast]);
-
-  useEffect(() => {
-    if (state?.message) {
+    } catch (error: any) {
+      console.error('Error al iniciar sesión:', error);
       toast({
         variant: 'destructive',
-        title: 'Error de inicio de sesión',
-        description: state.message,
+        title: 'Error al iniciar sesión',
+        description:
+          error.code === 'auth/invalid-credential'
+            ? 'Las credenciales no son correctas. Por favor, inténtalo de nuevo.'
+            : 'Ha ocurrido un error inesperado.',
       });
     }
-  }, [state, toast]);
+  };
 
-  useEffect(() => {
-    const message = searchParams.get('message');
-    if (message) {
-      toast({
-        title: 'Información',
-        description: message,
-      });
-    }
-  }, [searchParams, toast]);
+  // Muestra un estado de carga mientras se verifica la autenticación
+  if (isUserLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full">
+        <p className="text-primary-foreground">Cargando...</p>
+      </div>
+    );
+  }
 
+  // Si no hay usuario, mostrar el formulario de login
   return (
     <>
       <CardHeader className="p-0 mb-6 text-center">
         <CardTitle className="text-2xl font-bold text-primary">
-          Bienvenido de Nuevo
+          Iniciar Sesión
         </CardTitle>
         <CardDescription>
-          Ingresa tus credenciales para acceder a tu perfil.
+          Ingresa tus credenciales para acceder a tu aventura.
         </CardDescription>
       </CardHeader>
 
-      <div className="space-y-4">
-        <Button variant="outline" className="w-full" disabled>
-          <svg
-            className="mr-2 h-4 w-4"
-            aria-hidden="true"
-            focusable="false"
-            data-prefix="fab"
-            data-icon="google"
-            role="img"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 488 512"
-          >
-            <path
-              fill="currentColor"
-              d="M488 261.8C488 403.3 381.5 512 244 512 110.1 512 0 401.9 0 265.8 0 129.8 110.1 20 244 20c66.5 0 123.9 24.5 166.9 65.3l-66.2 62.5C314.5 118.9 282.8 100 244 100c-78.2 0-141.6 63.4-141.6 141.4s63.4 141.4 141.6 141.4c86.2 0 120.3-64.2 124.9-95.2H244v-73.9h234.4c4.8 26.2 7.6 54.6 7.6 84.8z"
-            ></path>
-          </svg>
-          Iniciar sesión con Google
-        </Button>
-
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">
-              O continuar con
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <form action={formAction} className="space-y-6 mt-6">
+      <form onSubmit={handleLogin} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email">✉️ Email</Label>
           <Input
@@ -110,35 +84,40 @@ export default function LoginPage() {
             type="email"
             placeholder="estudiante@email.com"
             required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">🔒 Contraseña</Label>
-            <Link
-              href="/forgot-password"
-              passHref
-              className="text-sm text-primary/80 hover:text-primary transition-colors"
-            >
-              ¿Olvidaste tu contraseña?
-            </Link>
-          </div>
-          <Input id="password" name="password" type="password" required />
+          <Label htmlFor="password">🔒 Contraseña</Label>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
         </div>
-
-        <SubmitButton variant="secondary">Iniciar Sesión</SubmitButton>
+        <SubmitButton>Ingresar</SubmitButton>
       </form>
-
-      <div className="mt-6 text-center text-sm">
-        ¿Nuevo estudiante?{' '}
+      <div className="mt-4 text-center text-sm">
+        ¿No tienes cuenta?{' '}
         <Link
           href="/register"
-          passHref
           className="font-semibold text-primary/80 hover:text-primary transition-colors"
         >
-          Comenzar
+          Regístrate
         </Link>
       </div>
+       <div className="mt-2 text-center text-sm">
+        <Link
+            href="/forgot-password"
+            className="text-xs text-primary/70 hover:text-primary transition-colors"
+        >
+            ¿Olvidaste tu contraseña?
+        </Link>
+       </div>
     </>
   );
 }
