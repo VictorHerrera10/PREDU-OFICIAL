@@ -21,8 +21,8 @@ export default function LoginPage() {
   const router = useRouter();
   const { user, isUserLoading } = useUser();
   const searchParams = useSearchParams();
-
   const [state, formAction] = useActionState(login, initialState);
+
 
   useEffect(() => {
     if (!isUserLoading && user) {
