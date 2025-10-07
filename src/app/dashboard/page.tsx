@@ -2,16 +2,53 @@
 
 import { Logo } from '@/components/logo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useDoc } from '@/firebase';
 import { LogoutButton } from '@/components/logout-button';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, GraduationCap, School } from 'lucide-react';
+import { ArrowRight, GraduationCap, School, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { TutorRegistrationForm } from '@/components/tutor-registration-form';
+import { doc } from 'firebase/firestore';
+import { useEffect, useMemo } from 'react';
+import { redirect } from 'next/navigation';
+import { updateUserRole } from '@/app/actions';
 
 function DashboardPage() {
   const { user } = useUser();
+  const firestore = useFirestore();
   const isAdmin = user?.email === 'admin@predu.com';
+
+  const userProfileRef = useMemo(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [user, firestore]);
+
+  const { data: userProfile, isLoading } = useDoc(userProfileRef);
+
+  useEffect(() => {
+    if (!isLoading && userProfile?.role) {
+      if (userProfile.role === 'student') {
+        redirect('/student-dashboard');
+      } else if (userProfile.role === 'tutor') {
+        redirect('/tutor-dashboard');
+      }
+    }
+  }, [isLoading, userProfile]);
+
+  const handleSetRole = async (role: 'student' | 'tutor') => {
+    if (user) {
+      await updateUserRole(user.uid, role);
+    }
+  };
+  
+  if (isLoading || !userProfile || userProfile.role) {
+    return (
+       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <p className="mt-4 text-muted-foreground">Cargando tu aula...</p>
+       </div>
+    )
+  }
 
   return (
     <>
@@ -46,11 +83,9 @@ function DashboardPage() {
                 <p className="text-muted-foreground mb-4">
                   Accede a herramientas, tests vocacionales y contenido exclusivo para empezar tu viaje profesional.
                 </p>
-                <Link href="/student-dashboard" passHref>
-                  <Button className="w-full">
-                    Entrar como Estudiante <ArrowRight className="ml-2" />
-                  </Button>
-                </Link>
+                <Button className="w-full" onClick={() => handleSetRole('student')}>
+                  Entrar como Estudiante <ArrowRight className="ml-2" />
+                </Button>
               </CardContent>
             </Card>
 

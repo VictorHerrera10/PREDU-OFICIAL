@@ -5,10 +5,11 @@ import {
   sendPasswordResetEmail,
   updateProfile,
 } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { redirect } from 'next/navigation';
 import { initializeServerApp } from '@/firebase/server-init';
 import { headers } from 'next/headers';
+import { revalidatePath } from 'next/cache';
 
 type State = {
   message?: string | null;
@@ -59,6 +60,7 @@ export async function register(prevState: State, formData: FormData): Promise<St
       email: user.email,
       creationDate: serverTimestamp(),
       lastLogin: serverTimestamp(),
+      role: null, // Initialize role as null
     };
     
     await setDoc(userProfileRef, userProfileData);
@@ -91,5 +93,24 @@ export async function forgotPassword(prevState: any, formData: FormData) {
     redirect(
       '/login?message=Si existe una cuenta para este correo, hemos enviado un mensaje 🧑‍🏫 para restablecer tu contraseña.'
     );
+  }
+}
+
+export async function updateUserRole(userId: string, role: 'student' | 'tutor') {
+  const { firestore } = await getAuthenticatedAppForUser();
+  const userProfileRef = doc(firestore, 'users', userId);
+
+  try {
+    await updateDoc(userProfileRef, { role });
+    revalidatePath('/dashboard');
+    if (role === 'student') {
+      redirect('/student-dashboard');
+    } else {
+      redirect('/tutor-dashboard');
+    }
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    // Handle the error appropriately
+    return { message: 'No se pudo actualizar el rol del usuario.' };
   }
 }
