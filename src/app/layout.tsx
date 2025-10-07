@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'Pixel Vault',
-  description: 'A retro-gamer themed application',
+  title: 'Predu',
+  description: 'A retro-gamer themed application for vocational orientation.',
 };
 
 export default function RootLayout({
