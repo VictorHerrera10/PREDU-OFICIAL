@@ -10,11 +10,11 @@ import {
   GoogleAuthProvider,
 } from 'firebase/auth';
 import { redirect } from 'next/navigation';
-import { initializeFirebase } from '@/firebase';
+import { initializeServerApp } from '@/firebase/server-init';
 import { headers } from 'next/headers';
 
 async function getAuthenticatedAppForUser() {
-  const { auth } = initializeFirebase();
+  const { auth } = await initializeServerApp();
   return { auth };
 }
 
