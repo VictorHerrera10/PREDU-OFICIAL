@@ -69,15 +69,6 @@ export default function LoginForm() {
 
   return (
     <>
-      <CardHeader className="p-0 mb-6 text-center">
-        <CardTitle className="text-2xl font-bold text-primary">
-          ¡Bienvenido de Nuevo!
-        </CardTitle>
-        <CardDescription>
-          Ingresa tus credenciales para continuar tu aprendizaje. 📚
-        </CardDescription>
-      </CardHeader>
-      
       {showNotRegisteredAlert ? (
         <div className="space-y-4">
             <Alert className="border-primary/50 bg-card/70 text-center">
@@ -98,6 +89,14 @@ export default function LoginForm() {
         </div>
       ) : (
         <>
+            <CardHeader className="p-0 mb-6 text-center">
+                <CardTitle className="text-2xl font-bold text-primary">
+                ¡Bienvenido de Nuevo!
+                </CardTitle>
+                <CardDescription>
+                Ingresa tus credenciales para continuar tu aprendizaje. 📚
+                </CardDescription>
+            </CardHeader>
             <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
                 <Label htmlFor="email">✉️ Email</Label>
