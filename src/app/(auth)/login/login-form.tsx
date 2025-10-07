@@ -12,6 +12,7 @@ import { CardTitle, CardDescription, CardHeader } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import Link from 'next/link';
 import { Eye, EyeOff, Rocket } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LoginForm() {
   const { user, isUserLoading } = useUser();
@@ -69,26 +70,41 @@ export default function LoginForm() {
 
   return (
     <>
-      {showNotRegisteredAlert ? (
-        <div className="space-y-4">
-            <Alert className="border-primary/50 bg-card/70 text-center">
-                <Rocket className="h-4 w-4 -translate-y-0.5" />
-                <AlertTitle className="font-bold text-lg text-primary">¡Hola, futuro estudiante! 🚀</AlertTitle>
-                <AlertDescription className="text-muted-foreground mb-4">
-                    Parece que aún no estás en nuestra lista. ¡No te preocupes! Regístrate para empezar tu aventura vocacional.
-                </AlertDescription>
-                <Button onClick={() => router.push('/register')}>
-                    ¡Quiero Registrarme!
-                </Button>
-            </Alert>
-             <div className="mt-4 text-center text-sm">
-                <Button variant="link" onClick={() => setShowNotRegisteredAlert(false)} className="text-primary/80">
-                    O volver a intentar
-                </Button>
+      <AnimatePresence mode="wait">
+        {showNotRegisteredAlert ? (
+          <motion.div
+            key="alert"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="space-y-4">
+                <Alert className="border-primary/50 bg-card/70 text-center">
+                    <Rocket className="h-4 w-4 -translate-y-0.5" />
+                    <AlertTitle className="font-bold text-lg text-primary">¡Hola, futuro estudiante! 🚀</AlertTitle>
+                    <AlertDescription className="text-muted-foreground mb-4">
+                        Parece que aún no estás en nuestra lista. ¡No te preocupes! Regístrate para empezar tu aventura vocacional.
+                    </AlertDescription>
+                    <Button onClick={() => router.push('/register')}>
+                        ¡Quiero Registrarme!
+                    </Button>
+                </Alert>
+                 <div className="mt-4 text-center text-sm">
+                    <Button variant="link" onClick={() => setShowNotRegisteredAlert(false)} className="text-primary/80">
+                        O volver a intentar
+                    </Button>
+                </div>
             </div>
-        </div>
-      ) : (
-        <>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="form"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
             <CardHeader className="p-0 mb-6 text-center">
                 <CardTitle className="text-2xl font-bold text-primary">
                 ¡Bienvenido de Nuevo!
@@ -147,8 +163,9 @@ export default function LoginForm() {
                 ¡Inscríbete aquí!
                 </Link>
             </div>
-        </>
-      )}
+        </motion.div>
+        )}
+      </AnimatePresence>
 
        <div className="mt-2 text-center text-sm">
         <Link
