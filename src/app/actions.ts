@@ -61,9 +61,7 @@ export async function register(prevState: any, formData: FormData) {
   const { auth, firestore } = await getAuthenticatedAppForUser();
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
-  
-  // Derive username from email
-  const username = email.split('@')[0];
+  const username = formData.get('username') as string;
 
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);

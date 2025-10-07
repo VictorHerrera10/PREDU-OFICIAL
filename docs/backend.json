@@ -32,6 +32,7 @@
       },
       "required": [
         "id",
+        "username",
         "email",
         "creationDate"
       ]
