@@ -3,13 +3,16 @@
 import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
-  signOut,
   updateProfile,
 } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { redirect } from 'next/navigation';
 import { initializeServerApp } from '@/firebase/server-init';
 import { headers } from 'next/headers';
+
+type State = {
+  message: string | null;
+};
 
 async function getAuthenticatedAppForUser() {
   const { auth, firestore } = await initializeServerApp();
@@ -37,7 +40,7 @@ function getFirebaseErrorMessage(errorCode: string): string {
   }
 }
 
-export async function register(prevState: any, formData: FormData) {
+export async function register(prevState: State, formData: FormData): Promise<State> {
   const { auth, firestore } = await getAuthenticatedAppForUser();
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
@@ -47,8 +50,10 @@ export async function register(prevState: any, formData: FormData) {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
+    // Actualiza el perfil de Firebase Auth con el nombre de usuario
     await updateProfile(user, { displayName: username });
 
+    // Guarda el perfil en Firestore
     const userProfileRef = doc(firestore, 'users', user.uid);
     const userProfileData = {
       id: user.uid,
@@ -64,7 +69,8 @@ export async function register(prevState: any, formData: FormData) {
     return { message: getFirebaseErrorMessage(e.code) };
   }
 
-  redirect('/dashboard');
+  // La redirección la maneja el cliente al detectar el cambio de estado de auth
+  return { message: null };
 }
 
 export async function forgotPassword(prevState: any, formData: FormData) {
@@ -89,10 +95,4 @@ export async function forgotPassword(prevState: any, formData: FormData) {
       '/login?message=Si existe una cuenta para este correo, se ha enviado un enlace para restablecer la contraseña.'
     );
   }
-}
-
-export async function logout() {
-  const { auth } = await getAuthenticatedAppForUser();
-  await signOut(auth);
-  redirect('/login');
 }

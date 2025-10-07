@@ -22,7 +22,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Redirigir si el usuario ya está autenticado
+  // 1. Redirigir si el usuario ya está autenticado
   useEffect(() => {
     const redirectUrl = searchParams.get('redirect') || '/dashboard';
     if (!isUserLoading && user) {
@@ -30,17 +30,18 @@ export default function LoginPage() {
     }
   }, [user, isUserLoading, router, searchParams]);
 
-  // Manejar el envío del formulario de inicio de sesión
+  // 2. Manejar el envío del formulario de inicio de sesión
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!auth) return;
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({
-        title: '¡Bienvenido!',
+        title: '¡Bienvenido de nuevo!',
         description: 'Has iniciado sesión correctamente.',
       });
-      const redirectUrl = searchParams.get('redirect') || '/dashboard';
-      router.push(redirectUrl);
+      // La redirección se maneja en el useEffect de arriba
     } catch (error: any) {
       console.error('Error al iniciar sesión:', error);
       toast({
@@ -54,16 +55,16 @@ export default function LoginPage() {
     }
   };
 
-  // Muestra un estado de carga mientras se verifica la autenticación
+  // 3. Muestra un estado de carga mientras se verifica la autenticación
   if (isUserLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-full">
-        <p className="text-primary-foreground">Cargando...</p>
+        <p className="text-primary-foreground">Verificando sesión...</p>
       </div>
     );
   }
 
-  // Si no hay usuario, mostrar el formulario de login
+  // 4. Si no hay usuario, mostrar el formulario de login
   return (
     <>
       <CardHeader className="p-0 mb-6 text-center">
@@ -86,6 +87,7 @@ export default function LoginPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
           />
         </div>
         <div className="space-y-2">
@@ -97,9 +99,10 @@ export default function LoginPage() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
           />
         </div>
-        <SubmitButton>Ingresar</SubmitButton>
+        <Button type="submit" className="w-full">Ingresar</Button>
       </form>
       <div className="mt-4 text-center text-sm">
         ¿No tienes cuenta?{' '}
