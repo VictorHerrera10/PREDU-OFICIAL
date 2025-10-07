@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <>
-      <CardHeader className="p-0 mb-6">
+      <CardHeader className="p-0 mb-6 text-center">
         <CardTitle className="text-2xl font-bold text-primary">Olvidé mi Contraseña</CardTitle>
         <CardDescription>No te preocupes, te enviaremos instrucciones para restablecerla.</CardDescription>
       </CardHeader>

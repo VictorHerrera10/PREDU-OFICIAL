@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Logo } from "@/components/logo";
+import { WindowControls } from "@/components/window-controls";
 
 export default function AuthLayout({
   children,
@@ -8,12 +8,12 @@ export default function AuthLayout({
 }) {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-8 flex justify-center">
-          <Logo />
-        </div>
-        <Card className="p-6 md:p-8 bg-card/80 backdrop-blur-sm border-t-4 border-primary">
-          {children}
+      <div className="w-full max-w-md">
+        <Card className="bg-card/60 backdrop-blur-lg border-border/50 overflow-hidden">
+          <WindowControls />
+          <div className="p-6 md:p-8">
+            {children}
+          </div>
         </Card>
       </div>
     </main>

@@ -20,7 +20,7 @@ export default function RegisterPage() {
 
   return (
     <>
-      <CardHeader className="p-0 mb-6">
+      <CardHeader className="p-0 mb-6 text-center">
         <CardTitle className="text-2xl font-bold text-primary">Crear Cuenta</CardTitle>
         <CardDescription>Crea tu cuenta para comenzar tu aventura.</CardDescription>
       </CardHeader>

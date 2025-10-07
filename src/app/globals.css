@@ -10,7 +10,7 @@
     --card-foreground: 210 40% 98%;
     --popover: 220 13% 10%;
     --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 90%;
+    --primary: 45 90% 65%;
     --primary-foreground: 220 13% 10%;
     --secondary: 220 10% 25%;
     --secondary-foreground: 210 40% 98%;
@@ -18,12 +18,12 @@
     --muted-foreground: 215 20% 65%;
     --accent: 220 10% 25%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
+    --destructive: 0 70% 60%;
     --destructive-foreground: 210 40% 98%;
-    --border: 220 13% 25%;
+    --border: 220 13% 30%;
     --input: 220 13% 20%;
-    --ring: 210 40% 90%;
-    --radius: 0rem;
+    --ring: 45 90% 65%;
+    --radius: 0.3rem;
   }
  
   .dark {
@@ -33,7 +33,7 @@
     --card-foreground: 210 40% 98%;
     --popover: 220 13% 10%;
     --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 90%;
+    --primary: 45 90% 65%;
     --primary-foreground: 220 13% 10%;
     --secondary: 220 10% 25%;
     --secondary-foreground: 210 40% 98%;
@@ -41,11 +41,11 @@
     --muted-foreground: 215 20% 65%;
     --accent: 220 10% 25%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
+    --destructive: 0 70% 60%;
     --destructive-foreground: 210 40% 98%;
-    --border: 220 13% 25%;
+    --border: 220 13% 30%;
     --input: 220 13% 20%;
-    --ring: 210 40% 90%;
+    --ring: 45 90% 65%;
   }
 }
 
@@ -57,7 +57,11 @@
     @apply bg-background text-foreground;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+    background-image:
+      linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--background)), hsl(var(--muted)));
+    background-size: 40px 40px, 40px 40px, 100% 100%;
     background-attachment: fixed;
   }
 
@@ -88,4 +92,20 @@
     animation: subtle-float 6s ease-in-out infinite;
   }
 
+}
+
+@layer components {
+  .btn-retro {
+    @apply relative inline-flex items-center justify-center h-10 px-6 font-bold text-primary-foreground bg-primary border-2 border-primary-foreground/50 shadow-md;
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+    transition: all 0.2s ease-in-out;
+  }
+  .btn-retro:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px hsl(var(--primary) / 0.3);
+  }
+  .btn-retro:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 5px hsl(var(--primary) / 0.2);
+  }
 }
