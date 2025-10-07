@@ -6,10 +6,8 @@ import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   signOut,
-  signInWithPopup,
-  GoogleAuthProvider,
 } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { redirect } from 'next/navigation';
 import { initializeServerApp } from '@/firebase/server-init';
 import { headers } from 'next/headers';
@@ -109,33 +107,4 @@ export async function logout() {
   const { auth } = await getAuthenticatedAppForUser();
   await signOut(auth);
   redirect('/login');
-}
-
-export async function signInWithGoogle(prevState: any, formData: FormData) {
-  const { auth, firestore } = await getAuthenticatedAppForUser();
-  const provider = new GoogleAuthProvider();
-  try {
-    const userCredential = await signInWithPopup(auth, provider);
-    const user = userCredential.user;
-    
-    const userProfileRef = doc(firestore, 'users', user.uid);
-    const docSnap = await getDoc(userProfileRef);
-
-    if (docSnap.exists()) {
-      // User exists, just update last login
-      await setDoc(userProfileRef, { lastLogin: serverTimestamp() }, { merge: true });
-    } else {
-      // New user, create the profile
-      await setDoc(userProfileRef, { 
-        id: user.uid,
-        username: user.displayName || user.email?.split('@')[0],
-        email: user.email,
-        creationDate: serverTimestamp(),
-        lastLogin: serverTimestamp() 
-      });
-    }
-
-  } catch (e: any) {
-    return { message: getFirebaseErrorMessage(e.code) };
-  }
 }

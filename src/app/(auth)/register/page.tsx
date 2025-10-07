@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useActionState, useEffect } from 'react';
-import { register, signInWithGoogle } from '@/app/actions';
+import { register } from '@/app/actions';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SubmitButton } from '@/components/submit-button';
@@ -21,7 +21,6 @@ export default function RegisterPage() {
   const router = useRouter();
   const { user, isUserLoading } = useUser();
   const [state, formAction] = useActionState(register, initialState);
-  const [googleState, googleFormAction] = useActionState(signInWithGoogle, initialState);
 
   useEffect(() => {
     if (!isUserLoading && user) {
@@ -39,16 +38,6 @@ export default function RegisterPage() {
     }
   }, [state, toast]);
 
-  useEffect(() => {
-    if (googleState?.message) {
-      toast({
-        variant: 'destructive',
-        title: 'Error de Google',
-        description: googleState.message,
-      });
-    }
-  }, [googleState, toast]);
-
   return (
     <>
       <CardHeader className="p-0 mb-6 text-center">
@@ -61,8 +50,7 @@ export default function RegisterPage() {
       </CardHeader>
 
       <div className="space-y-4">
-        <form action={googleFormAction}>
-        <Button variant="outline" className="w-full" type="submit">
+        <Button variant="outline" className="w-full" disabled>
           <svg
             className="mr-2 h-4 w-4"
             aria-hidden="true"
@@ -80,7 +68,6 @@ export default function RegisterPage() {
           </svg>
           Registrarse con Google
         </Button>
-        </form>
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
