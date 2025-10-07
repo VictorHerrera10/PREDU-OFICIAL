@@ -79,66 +79,67 @@ export default function LoginForm() {
       </CardHeader>
       
       {showNotRegisteredAlert ? (
-        <Alert className="border-primary/50 bg-card/70 text-center">
-            <Rocket className="h-4 w-4 -translate-y-0.5" />
-            <AlertTitle className="font-bold text-lg text-primary">¡Hola, futuro estudiante! 🚀</AlertTitle>
-            <AlertDescription className="text-muted-foreground mb-4">
-                Parece que aún no estás en nuestra lista. ¡No te preocupes! Regístrate para empezar tu aventura vocacional.
-            </AlertDescription>
-             <Button onClick={() => router.push('/register')}>
-                ¡Quiero Registrarme!
-            </Button>
-        </Alert>
-      ) : (
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">✉️ Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="estudiante@email.com"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">🔒 Contraseña</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                name="password"
-                type={showPassword ? 'text' : 'password'}
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute top-1/2 right-2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-primary-foreground"
-                onClick={togglePasswordVisibility}
-              >
-                {showPassword ? <EyeOff /> : <Eye />}
-                <span className="sr-only">{showPassword ? 'Ocultar' : 'Mostrar'} contraseña</span>
-              </Button>
+        <div className="space-y-4">
+            <Alert className="border-primary/50 bg-card/70 text-center">
+                <Rocket className="h-4 w-4 -translate-y-0.5" />
+                <AlertTitle className="font-bold text-lg text-primary">¡Hola, futuro estudiante! 🚀</AlertTitle>
+                <AlertDescription className="text-muted-foreground mb-4">
+                    Parece que aún no estás en nuestra lista. ¡No te preocupes! Regístrate para empezar tu aventura vocacional.
+                </AlertDescription>
+                <Button onClick={() => router.push('/register')}>
+                    ¡Quiero Registrarme!
+                </Button>
+            </Alert>
+             <div className="mt-4 text-center text-sm">
+                <Button variant="link" onClick={() => setShowNotRegisteredAlert(false)} className="text-primary/80">
+                    O volver a intentar
+                </Button>
             </div>
-          </div>
-          <Button type="submit" className="w-full">Entrar al Aula 🎒</Button>
-        </form>
-      )}
+        </div>
+      ) : (
+        <>
+            <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+                <Label htmlFor="email">✉️ Email</Label>
+                <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="estudiante@email.com"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="password">🔒 Contraseña</Label>
+                <div className="relative">
+                <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
+                />
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-1/2 right-2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-primary-foreground"
+                    onClick={togglePasswordVisibility}
+                >
+                    {showPassword ? <EyeOff /> : <Eye />}
+                    <span className="sr-only">{showPassword ? 'Ocultar' : 'Mostrar'} contraseña</span>
+                </Button>
+                </div>
+            </div>
+            <Button type="submit" className="w-full">Entrar al Aula 🎒</Button>
+            </form>
 
-      <div className="mt-4 text-center text-sm">
-        {showNotRegisteredAlert ? (
-             <Button variant="link" onClick={() => setShowNotRegisteredAlert(false)} className="text-primary/80">
-                Volver a intentar
-            </Button>
-        ) : (
-            <>
+            <div className="mt-4 text-center text-sm">
                 ¿Aún no tienes cuenta?{' '}
                 <Link
                 href="/register"
@@ -146,10 +147,10 @@ export default function LoginForm() {
                 >
                 ¡Inscríbete aquí!
                 </Link>
-            </>
-        )}
-       
-      </div>
+            </div>
+        </>
+      )}
+
        <div className="mt-2 text-center text-sm">
         <Link
             href="/forgot-password"
