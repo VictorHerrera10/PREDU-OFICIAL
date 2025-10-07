@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import Confetti from 'react-confetti';
 import useResizeObserver from 'use-resize-observer';
+import { Eye, EyeOff } from 'lucide-react';
 
 type State = {
   message: string | null;
@@ -30,6 +31,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const [state, formAction] = useActionState(register, initialState);
   const { ref, width = 0, height = 0 } = useResizeObserver<HTMLBodyElement>();
+  const [showPassword, setShowPassword] = useState(false);
 
    useEffect(() => {
     // This is to ensure the body ref is available on the client
@@ -47,6 +49,8 @@ export default function RegisterPage() {
       });
     }
   }, [state, toast, router]);
+  
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
   if (state.success && state.username) {
     return (
@@ -132,7 +136,25 @@ export default function RegisterPage() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">🔒 Contraseña</Label>
-          <Input id="password" name="password" type="password" required placeholder="Una contraseña secreta..." />
+          <div className="relative">
+            <Input 
+              id="password" 
+              name="password" 
+              type={showPassword ? 'text' : 'password'} 
+              required 
+              placeholder="Una contraseña secreta..." 
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute top-1/2 right-2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-primary-foreground"
+              onClick={togglePasswordVisibility}
+            >
+              {showPassword ? <EyeOff /> : <Eye />}
+              <span className="sr-only">{showPassword ? 'Ocultar' : 'Mostrar'} contraseña</span>
+            </Button>
+          </div>
         </div>
 
         <SubmitButton>Crear mi Cuenta 📝</SubmitButton>
