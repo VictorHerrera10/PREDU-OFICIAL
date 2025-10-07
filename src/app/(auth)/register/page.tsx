@@ -12,7 +12,11 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/firebase/provider';
 
-const initialState = {
+type State = {
+  message: string | null;
+};
+
+const initialState: State = {
   message: null,
 };
 

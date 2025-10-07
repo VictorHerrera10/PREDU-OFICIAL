@@ -12,7 +12,11 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase/provider';
 
-const initialState = {
+type State = {
+  message: string | null;
+};
+
+const initialState: State = {
   message: null,
 };
 
@@ -23,13 +27,16 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const [state, formAction] = useActionState(login, initialState);
 
-
   useEffect(() => {
     if (!isUserLoading && user) {
+      toast({
+        title: '¡Bienvenido!',
+        description: `Has iniciado sesión como ${user.displayName || user.email}.`,
+      });
       const redirectUrl = searchParams.get('redirect') || '/dashboard';
       router.push(redirectUrl);
     }
-  }, [user, isUserLoading, router, searchParams]);
+  }, [user, isUserLoading, router, searchParams, toast]);
 
   useEffect(() => {
     if (state?.message) {
@@ -40,7 +47,7 @@ export default function LoginPage() {
       });
     }
   }, [state, toast]);
-  
+
   useEffect(() => {
     const message = searchParams.get('message');
     if (message) {
@@ -50,7 +57,6 @@ export default function LoginPage() {
       });
     }
   }, [searchParams, toast]);
-
 
   return (
     <>
