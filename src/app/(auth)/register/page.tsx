@@ -1,22 +1,43 @@
 'use client';
 
 import Link from 'next/link';
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { register, signInWithGoogle } from '@/app/actions';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SubmitButton } from '@/components/submit-button';
 import { CardTitle, CardDescription, CardHeader } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const initialState = {
   message: null,
 };
 
 export default function RegisterPage() {
+  const { toast } = useToast();
   const [state, formAction] = useActionState(register, initialState);
   const [googleState, googleFormAction] = useActionState(signInWithGoogle, initialState);
+
+  useEffect(() => {
+    if (state?.message) {
+      toast({
+        variant: 'destructive',
+        title: 'Error de registro',
+        description: state.message,
+      });
+    }
+  }, [state, toast]);
+
+  useEffect(() => {
+    if (googleState?.message) {
+      toast({
+        variant: 'destructive',
+        title: 'Error de Google',
+        description: googleState.message,
+      });
+    }
+  }, [googleState, toast]);
 
   return (
     <>
@@ -50,11 +71,6 @@ export default function RegisterPage() {
           Registrarse con Google
         </Button>
         </form>
-        {googleState?.message && (
-          <Alert variant="destructive" className="mt-4">
-            <AlertDescription>{googleState.message}</AlertDescription>
-          </Alert>
-        )}
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
@@ -93,12 +109,6 @@ export default function RegisterPage() {
           <Label htmlFor="password">🔒 Contraseña</Label>
           <Input id="password" name="password" type="password" required />
         </div>
-
-        {state?.message && (
-          <Alert variant="destructive">
-            <AlertDescription>{state.message}</AlertDescription>
-          </Alert>
-        )}
 
         <SubmitButton>Crear Cuenta</SubmitButton>
       </form>

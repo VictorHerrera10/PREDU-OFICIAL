@@ -1,25 +1,45 @@
-// @ts-nocheck
 'use client'
 
 import Link from 'next/link';
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { forgotPassword } from '@/app/actions';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SubmitButton } from '@/components/submit-button';
 import { CardTitle, CardDescription, CardHeader } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const initialState = {
   message: null,
 };
 
 export default function ForgotPasswordPage() {
+  const { toast } = useToast();
   const [state, formAction] = useActionState(forgotPassword, initialState);
   const searchParams = useSearchParams();
-  const message = searchParams.get('message');
+  const formSubmitted = searchParams.get('message');
+
+  useEffect(() => {
+    if (state?.message) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: state.message,
+      });
+    }
+  }, [state, toast]);
+
+  useEffect(() => {
+    if (formSubmitted) {
+      toast({
+        title: 'Petición enviada',
+        description: formSubmitted,
+      });
+    }
+  }, [formSubmitted, toast]);
+
 
   return (
     <>
@@ -28,22 +48,16 @@ export default function ForgotPasswordPage() {
         <CardDescription>No te preocupes, te enviaremos instrucciones para restablecerla.</CardDescription>
       </CardHeader>
       
-      {message ? (
-        <Alert variant="default" className="bg-primary/10 border-primary/30 text-primary-foreground">
-          <AlertDescription>{message}</AlertDescription>
-        </Alert>
+      {formSubmitted ? (
+        <div className="text-center text-primary-foreground">
+            <p>{formSubmitted}</p>
+        </div>
       ) : (
         <form action={formAction} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">✉️ Email</Label>
             <Input id="email" name="email" type="email" placeholder="estudiante@email.com" required />
           </div>
-
-          {state?.message && (
-            <Alert variant="destructive">
-              <AlertDescription>{state.message}</AlertDescription>
-            </Alert>
-          )}
           
           <SubmitButton variant="secondary">Enviar Instrucciones</SubmitButton>
         </form>

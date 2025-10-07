@@ -1,25 +1,56 @@
 'use client';
 
 import Link from 'next/link';
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { login, signInWithGoogle } from '@/app/actions';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SubmitButton } from '@/components/submit-button';
 import { CardTitle, CardDescription, CardHeader } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const initialState = {
   message: null,
 };
 
 export default function LoginPage() {
+  const { toast } = useToast();
   const [state, formAction] = useActionState(login, initialState);
   const searchParams = useSearchParams();
-  const message = searchParams.get('message');
   const [googleState, googleFormAction] = useActionState(signInWithGoogle, initialState);
+
+  useEffect(() => {
+    if (state?.message) {
+      toast({
+        variant: 'destructive',
+        title: 'Error de inicio de sesión',
+        description: state.message,
+      });
+    }
+  }, [state, toast]);
+
+  useEffect(() => {
+    if (googleState?.message) {
+      toast({
+        variant: 'destructive',
+        title: 'Error de Google',
+        description: googleState.message,
+      });
+    }
+  }, [googleState, toast]);
+  
+  useEffect(() => {
+    const message = searchParams.get('message');
+    if (message) {
+      toast({
+        title: 'Información',
+        description: message,
+      });
+    }
+  }, [searchParams, toast]);
+
 
   return (
     <>
@@ -53,11 +84,6 @@ export default function LoginPage() {
             Iniciar sesión con Google
           </Button>
         </form>
-         {googleState?.message && (
-          <Alert variant="destructive" className="mt-4">
-            <AlertDescription>{googleState.message}</AlertDescription>
-          </Alert>
-        )}
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
@@ -95,20 +121,6 @@ export default function LoginPage() {
           </div>
           <Input id="password" name="password" type="password" required />
         </div>
-
-        {state?.message && (
-          <Alert variant="destructive">
-            <AlertDescription>{state.message}</AlertDescription>
-          </Alert>
-        )}
-        {message && (
-          <Alert
-            variant="default"
-            className="bg-primary/10 border-primary/30 text-primary-foreground"
-          >
-            <AlertDescription>{message}</AlertDescription>
-          </Alert>
-        )}
 
         <SubmitButton variant="secondary">Iniciar Sesión</SubmitButton>
       </form>
