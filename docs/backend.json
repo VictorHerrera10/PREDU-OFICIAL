@@ -32,7 +32,6 @@
       },
       "required": [
         "id",
-        "username",
         "email",
         "creationDate"
       ]
@@ -48,7 +47,7 @@
   "firestore": {
     "structure": [
       {
-        "path": "/users/{userId}/profile",
+        "path": "/users/{userId}",
         "definition": {
           "entityName": "UserProfile",
           "schema": {
@@ -64,6 +63,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure secure user authentication and profile management for the Pixel Vault application. The core principle is Authorization Independence, achieved through denormalization where necessary, though in this simplified scenario, it primarily relies on path-based ownership. The structure supports straightforward security rules and efficient data retrieval.\n\n- User Profiles: User profiles are stored in `/users/{userId}/profile` using path-based ownership. This provides simple security rules based on `request.auth.uid == userId`. This approach provides Authorization Independence since access control depends only on the path and the authenticated user's ID.\n\nThis structure supports the required QAPs (Rules are not Filters) because list operations can be securely implemented at the `/users/{userId}/profile` collection group level based on user ID."
+    "reasoning": "The Firestore structure is designed to ensure secure user authentication and profile management for the Pixel Vault application. The core principle is Authorization Independence, achieved through denormalization where necessary, though in this simplified scenario, it primarily relies on path-based ownership. The structure supports straightforward security rules and efficient data retrieval.\n\n- User Profiles: User profiles are stored in `/users/{userId}` using path-based ownership. This provides simple security rules based on `request.auth.uid == userId`. This approach provides Authorization Independence since access control depends only on the path and the authenticated user's ID.\n\nThis structure supports the required QAPs (Rules are not Filters) because list operations can be securely implemented at the `/users` collection group level based on user ID."
   }
 }

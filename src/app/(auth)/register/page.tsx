@@ -96,16 +96,6 @@ export default function RegisterPage() {
 
       <form action={formAction} className="space-y-4 mt-6">
         <div className="space-y-2">
-          <Label htmlFor="username">🧑‍🎓 Nombre de usuario</Label>
-          <Input
-            id="username"
-            name="username"
-            type="text"
-            placeholder="Estudiante1"
-            required
-          />
-        </div>
-        <div className="space-y-2">
           <Label htmlFor="email">✉️ Email</Label>
           <Input
             id="email"

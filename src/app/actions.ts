@@ -9,13 +9,11 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
 } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { redirect } from 'next/navigation';
 import { initializeServerApp } from '@/firebase/server-init';
 import { headers } from 'next/headers';
 
-// This function is now simplified and we don't await for the result here.
-// The client will react to the auth state change.
 async function getAuthenticatedAppForUser() {
   const { auth, firestore } = await initializeServerApp();
   return { auth, firestore };
@@ -51,21 +49,21 @@ export async function login(prevState: any, formData: FormData) {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
-    // Update last login timestamp
-    const userProfileRef = doc(firestore, `users/${user.uid}`);
+    const userProfileRef = doc(firestore, 'users', user.uid);
     await setDoc(userProfileRef, { lastLogin: serverTimestamp() }, { merge: true });
 
   } catch (e: any) {
     return { message: getFirebaseErrorMessage(e.code) };
   }
-  // DO NOT REDIRECT HERE. The client will handle it.
 }
 
 export async function register(prevState: any, formData: FormData) {
   const { auth, firestore } = await getAuthenticatedAppForUser();
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
-  const username = formData.get('username') as string;
+  
+  // Derive username from email
+  const username = email.split('@')[0];
 
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -83,7 +81,6 @@ export async function register(prevState: any, formData: FormData) {
   } catch (e: any) {
     return { message: getFirebaseErrorMessage(e.code) };
   }
-  // DO NOT REDIRECT HERE. The client will handle it.
 }
 
 export async function forgotPassword(prevState: any, formData: FormData) {
@@ -123,23 +120,24 @@ export async function signInWithGoogle(prevState: any, formData: FormData) {
     const userCredential = await signInWithPopup(auth, provider);
     const user = userCredential.user;
     
-    // Create or update user profile on Google sign-in
-    const userProfileRef = doc(firestore, `users/${user.uid}`);
-    await setDoc(userProfileRef, { 
-      id: user.uid,
-      username: user.displayName,
-      email: user.email,
-      lastLogin: serverTimestamp() 
-    }, { merge: true });
-    
-    // If it's a new user, also set the creation date
-    const isNewUser = userCredential.user.metadata.creationTime === userCredential.user.metadata.lastSignInTime;
-    if (isNewUser) {
-      await setDoc(userProfileRef, { creationDate: serverTimestamp() }, { merge: true });
+    const userProfileRef = doc(firestore, 'users', user.uid);
+    const docSnap = await getDoc(userProfileRef);
+
+    if (docSnap.exists()) {
+      // User exists, just update last login
+      await setDoc(userProfileRef, { lastLogin: serverTimestamp() }, { merge: true });
+    } else {
+      // New user, create the profile
+      await setDoc(userProfileRef, { 
+        id: user.uid,
+        username: user.displayName || user.email?.split('@')[0],
+        email: user.email,
+        creationDate: serverTimestamp(),
+        lastLogin: serverTimestamp() 
+      });
     }
 
   } catch (e: any) {
     return { message: getFirebaseErrorMessage(e.code) };
   }
-  // DO NOT REDIRECT HERE. The client will handle it.
 }
