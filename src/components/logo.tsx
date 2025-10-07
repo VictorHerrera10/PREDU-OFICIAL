@@ -11,7 +11,7 @@ export function Logo({ className, iconOnly = false }: LogoProps) {
     <div className={cn("flex items-center gap-2", className)}>
       <Gamepad2 className="h-6 w-6 text-primary" />
       {!iconOnly && (
-        <h1 className="text-xl font-bold font-headline text-glow-primary">
+        <h1 className="text-xl font-bold font-headline">
           Predu
         </h1>
       )}
