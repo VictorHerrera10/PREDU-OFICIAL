@@ -24,6 +24,7 @@ import { SubmitButton } from "./submit-button";
 type Institution = {
   id: string;
   name: string;
+  region: string;
 };
 
 type State = {
@@ -43,12 +44,19 @@ export function TutorRegistrationForm({ children }: { children: React.ReactNode 
   const firestore = useFirestore();
   const [state, formAction] = useActionState(registerTutor, initialState);
 
+  const [selectedRegion, setSelectedRegion] = useState('');
+
   const institutionsCollectionRef = useMemo(() => {
     if (!firestore) return null;
     return collection(firestore, 'institutions');
   }, [firestore]);
 
   const { data: institutions, isLoading } = useCollection<Institution>(institutionsCollectionRef);
+
+  const filteredInstitutions = useMemo(() => {
+    if (!institutions || !selectedRegion) return [];
+    return institutions.filter(inst => inst.region === selectedRegion);
+  }, [institutions, selectedRegion]);
   
   useEffect(() => {
     if (state.message) {
@@ -81,7 +89,7 @@ export function TutorRegistrationForm({ children }: { children: React.ReactNode 
           <DialogHeader>
             <DialogTitle className="text-primary text-2xl">Registro de Tutor 🧑‍🏫</DialogTitle>
             <DialogDescription>
-              Ingresa tu código de acceso, selecciona tu institución y tu rol para acceder a las herramientas de tutor.
+              Completa los datos para acceder a las herramientas de tutor.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -91,15 +99,29 @@ export function TutorRegistrationForm({ children }: { children: React.ReactNode 
               <Label htmlFor="access-code">🔑 Código de Acceso</Label>
               <Input id="access-code" name="accessCode" placeholder="Tu código secreto" required />
             </div>
+
+             <div className="space-y-2">
+                <Label htmlFor="region">📍 Región</Label>
+                <Select name="region" required onValueChange={setSelectedRegion}>
+                    <SelectTrigger id="region">
+                        <SelectValue placeholder="Selecciona una región" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="norte">Norte</SelectItem>
+                        <SelectItem value="centro">Centro</SelectItem>
+                        <SelectItem value="sur">Sur</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
             
             <div className="space-y-2">
               <Label htmlFor="institutionId">🏫 Institución Educativa</Label>
-              <Select name="institutionId" required>
-                <SelectTrigger id="institutionId" disabled={isLoading}>
-                  <SelectValue placeholder={isLoading ? 'Cargando...' : 'Selecciona una institución'} />
+              <Select name="institutionId" required disabled={!selectedRegion || isLoading}>
+                <SelectTrigger id="institutionId">
+                  <SelectValue placeholder={!selectedRegion ? 'Primero selecciona una región' : 'Selecciona una institución'} />
                 </SelectTrigger>
                 <SelectContent>
-                  {institutions?.map(inst => (
+                  {filteredInstitutions?.map(inst => (
                     <SelectItem key={inst.id} value={inst.id}>{inst.name}</SelectItem>
                   ))}
                 </SelectContent>
