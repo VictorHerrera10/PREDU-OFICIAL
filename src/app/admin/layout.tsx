@@ -33,16 +33,19 @@ export default function AdminLayout({
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
-                <Link key={item.href} href={item.href} asChild>
+                <Link key={item.href} href={item.href}>
                   <Button
+                    asChild
                     variant={isActive ? 'secondary' : 'ghost'}
                     className={cn(
                       'justify-start',
                       isActive && 'font-bold text-primary'
                     )}
                   >
-                    <item.icon className="mr-2 h-4 w-4" />
-                    {item.label}
+                    <span>
+                      <item.icon className="mr-2 h-4 w-4" />
+                      {item.label}
+                    </span>
                   </Button>
                 </Link>
               );
