@@ -16,7 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -26,30 +25,27 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const subjects = [
-  { id: "arte_y_cultura", label: "Arte y Cultura" },
-  { id: "castellano_como_segunda_lengua", label: "Castellano como Segunda Lengua" },
-  { id: "ciencia_y_tecnologia", label: "Ciencia y Tecnología" },
-  { id: "ciencias_sociales", label: "Ciencias Sociales" },
-  { id: "comunicacion", label: "Comunicación" },
-  { id: "desarrollo_personal", label: "Desarrollo Personal" },
-  { id: "educacion_fisica", label: "Educación Física" },
-  { id: "educacion_para_el_trabajo", label: "Educación para el Trabajo" },
-  { id: "educacion_religiosa", label: "Educación Religiosa" },
-  { id: "ingles", label: "Inglés" },
-  { id: "matematica", label: "Matemática" },
+  { id: "arte_y_cultura", label: "Arte y Cultura", emoji: "🎨" },
+  { id: "castellano_como_segunda_lengua", label: "Castellano (2da Lengua)", emoji: "🗣️" },
+  { id: "ciencia_y_tecnologia", label: "Ciencia y Tecnología", emoji: "🔬" },
+  { id: "ciencias_sociales", label: "Ciencias Sociales", emoji: "🌍" },
+  { id: "comunicacion", label: "Comunicación", emoji: "✍️" },
+  { id: "desarrollo_personal", label: "Desarrollo Personal", emoji: "🧘" },
+  { id: "educacion_fisica", label: "Educación Física", emoji: "🏃‍♂️" },
+  { id: "educacion_para_el_trabajo", label: "Educación para el Trabajo", emoji: "💼" },
+  { id: "educacion_religiosa", label: "Educación Religiosa", emoji: "🙏" },
+  { id: "ingles", label: "Inglés", emoji: "🇬🇧" },
+  { id: "matematica", label: "Matemática", emoji: "➗" },
 ];
+
+const gradeOptions: ("AD" | "A" | "B" | "C")[] = ["AD", "A", "B", "C"];
 
 const gradeSchema = z.enum(["AD", "A", "B", "C"], {
   required_error: "Debes seleccionar una calificación.",
@@ -123,17 +119,17 @@ export function AcademicPredictionForm({ setPredictionResult }: Props) {
       <DialogTrigger asChild>
         <Button>Iniciar Predicción Vocacional</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Formulario de Predicción Vocacional</DialogTitle>
-          <DialogDescription>
-            Ingresa tus calificaciones en las siguientes materias para obtener una recomendación.
+          <DialogTitle className="text-center text-2xl">🚀 ¡Descubramos tu Vocación!</DialogTitle>
+          <DialogDescription className="text-center">
+            Ingresa tus últimas calificaciones. ¡Cada nota es una pista hacia tu futuro profesional! 🎓
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <ScrollArea className="h-96">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pr-6 py-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 pr-6 py-4">
                     {subjects.map((subject) => (
                     <FormField
                         key={subject.id}
@@ -141,20 +137,31 @@ export function AcademicPredictionForm({ setPredictionResult }: Props) {
                         name={subject.id as keyof PredictionFormValues}
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>{subject.label}</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormLabel className="flex items-center gap-2 text-base">{subject.emoji} {subject.label}</FormLabel>
                             <FormControl>
-                                <SelectTrigger>
-                                <SelectValue placeholder="Calificación" />
-                                </SelectTrigger>
+                                <RadioGroup
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                    className="grid grid-cols-4 gap-2 pt-2"
+                                >
+                                    {gradeOptions.map((grade) => (
+                                        <FormItem key={grade}>
+                                            <FormControl>
+                                                 <RadioGroupItem value={grade} id={`${subject.id}-${grade}`} className="sr-only" />
+                                            </FormControl>
+                                            <FormLabel 
+                                                htmlFor={`${subject.id}-${grade}`}
+                                                className={cn(
+                                                    "flex items-center justify-center rounded-md border-2 border-muted bg-popover p-2 font-bold hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all",
+                                                    field.value === grade && "border-primary ring-2 ring-primary/50 text-primary"
+                                                )}
+                                            >
+                                                {grade}
+                                            </FormLabel>
+                                        </FormItem>
+                                    ))}
+                                </RadioGroup>
                             </FormControl>
-                            <SelectContent>
-                                <SelectItem value="AD">AD (Logro Destacado)</SelectItem>
-                                <SelectItem value="A">A (Logro Esperado)</SelectItem>
-                                <SelectItem value="B">B (En Proceso)</SelectItem>
-                                <SelectItem value="C">C (En Inicio)</SelectItem>
-                            </SelectContent>
-                            </Select>
                             <FormMessage />
                         </FormItem>
                         )}
@@ -162,13 +169,8 @@ export function AcademicPredictionForm({ setPredictionResult }: Props) {
                     ))}
                 </div>
             </ScrollArea>
-            <DialogFooter className="pt-6">
-              <DialogClose asChild>
-                <Button type="button" variant="outline">
-                  Cancelar
-                </Button>
-              </DialogClose>
-              <Button type="submit" disabled={isSubmitting}>
+            <DialogFooter className="pt-6 justify-center">
+              <Button type="submit" disabled={isSubmitting} size="lg">
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isSubmitting ? 'Analizando...' : 'Obtener Predicción'}
               </Button>
