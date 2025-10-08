@@ -20,6 +20,7 @@ import Link from 'next/link';
 type UserProfile = {
     firstName?: string;
     lastName?: string;
+    dni?: string;
     age?: number;
     grade?: string;
     city?: string;
@@ -100,6 +101,10 @@ export function StudentProfileForm({ user, profileData }: Props) {
                         <div className="space-y-2">
                             <Label htmlFor="lastName">Apellidos</Label>
                             <Input id="lastName" name="lastName" placeholder="Tus apellidos" defaultValue={profileData?.lastName} required />
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="dni">DNI</Label>
+                            <Input id="dni" name="dni" type="text" placeholder="Tu número de DNI" defaultValue={profileData?.dni} required />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="age">Edad</Label>

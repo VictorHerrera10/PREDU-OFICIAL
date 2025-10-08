@@ -324,13 +324,14 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
   const userId = formData.get('userId') as string;
   const firstName = formData.get('firstName') as string;
   const lastName = formData.get('lastName') as string;
+  const dni = formData.get('dni') as string;
   const age = formData.get('age') as string;
   const grade = formData.get('grade') as string;
   const city = formData.get('city') as string;
   const phone = formData.get('phone') as string;
   const institutionId = formData.get('institutionId') as string;
 
-  if (!userId || !firstName || !lastName || !age || !grade || !city || !phone) {
+  if (!userId || !firstName || !lastName || !dni || !age || !grade || !city || !phone) {
       return { success: false, message: 'Todos los campos son obligatorios, excepto el colegio.' };
   }
 
@@ -340,6 +341,7 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
       const dataToUpdate: any = {
           firstName,
           lastName,
+          dni,
           age: Number(age),
           grade,
           city,

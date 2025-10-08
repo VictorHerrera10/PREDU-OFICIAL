@@ -15,10 +15,11 @@ type UserProfile = {
     // Add all other fields from the student profile form
     firstName?: string;
     lastName?: string;
+    dni?: string;
     age?: number;
     grade?: string;
     city?: string;
-    phone?: string;
+phone?: string;
     institutionId?: string;
 };
 

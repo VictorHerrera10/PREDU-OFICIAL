@@ -22,6 +22,10 @@
           "type": "string",
           "description": "The user's last name."
         },
+        "dni": {
+          "type": "string",
+          "description": "The user's national identity document number."
+        },
         "age": {
           "type": "number",
           "description": "The user's age."
