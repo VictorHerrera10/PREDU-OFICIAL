@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
+import { motion } from 'framer-motion';
 import {
   Table,
   TableHeader,
@@ -45,7 +46,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MoreHorizontal, PlusCircle } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, User, UserX, UserCheck } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 
@@ -86,15 +87,15 @@ export function UsersTable() {
 
   const renderRoleBadge = (role: string | null) => {
     if (!role) {
-      return <Badge variant="outline">PENDIENTE</Badge>;
+      return <Badge variant="outline" className="border-dashed">PENDIENTE</Badge>;
     }
     switch (role) {
       case 'admin':
-        return <Badge variant="destructive">Admin</Badge>;
+        return <Badge variant="destructive">👑 Admin</Badge>;
       case 'tutor':
-        return <Badge variant="secondary">Tutor</Badge>;
+        return <Badge variant="secondary">🧑‍🏫 Tutor</Badge>;
       case 'student':
-        return <Badge>Estudiante</Badge>;
+        return <Badge>🧑‍🎓 Estudiante</Badge>;
       default:
         return <Badge variant="outline">{role}</Badge>;
     }
@@ -112,9 +113,9 @@ export function UsersTable() {
         </DialogTrigger>
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Agregar Nuevo Usuario</DialogTitle>
+                <DialogTitle className="flex items-center gap-2"><User className="text-primary"/> Agregar Nuevo Usuario</DialogTitle>
                 <DialogDescription>
-                    Completa los detalles para crear una nueva cuenta de usuario. Se enviará una contraseña temporal al email proporcionado.
+                    Completa los detalles para crear una nueva cuenta. Se enviará una contraseña temporal al email proporcionado.
                 </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
@@ -141,16 +142,21 @@ export function UsersTable() {
   if (isLoading) {
     return (
       <div className="border rounded-lg p-4">
-        <div className="flex items-center justify-between mb-4">
-            <Skeleton className="h-8 w-36" />
+         <div className="flex justify-end mb-4">
+             <Skeleton className="h-8 w-36" />
         </div>
         <div className="space-y-3">
           {[...Array(5)].map((_, i) => (
-             <div key={i} className="grid grid-cols-4 gap-4">
-                <Skeleton className="h-6" />
-                <Skeleton className="h-6" />
-                <Skeleton className="h-6" />
-                <Skeleton className="h-6" />
+             <div key={i} className="grid grid-cols-4 items-center gap-4 p-2">
+                <div className="flex items-center gap-3">
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <Skeleton className="h-5 w-32" />
+                </div>
+                <Skeleton className="h-5 w-48" />
+                <Skeleton className="h-6 w-24 rounded-full" />
+                <div className="flex justify-end">
+                    <Skeleton className="h-6 w-6" />
+                </div>
             </div>
           ))}
         </div>
@@ -163,7 +169,12 @@ export function UsersTable() {
      <div className="flex justify-end mb-4">
         <AddUserDialog />
       </div>
-      <div className="border rounded-lg">
+      <motion.div 
+        className="border rounded-lg"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
         <Table>
           <TableHeader>
             <TableRow>
@@ -177,8 +188,14 @@ export function UsersTable() {
           </TableHeader>
           <TableBody>
             {users && users.length > 0 ? (
-              users.map((user) => (
-                <TableRow key={user.id}>
+              users.map((user, index) => (
+                <motion.tr 
+                  key={user.id}
+                  className="hover:bg-muted/50"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                >
                   <TableCell className="font-medium">{user.username}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{renderRoleBadge(user.role)}</TableCell>
@@ -197,6 +214,7 @@ export function UsersTable() {
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10" disabled={user.role === 'admin'}>
+                                    <UserX className="mr-2 h-4 w-4" />
                                     Eliminar
                                 </DropdownMenuItem>
                             </AlertDialogTrigger>
@@ -204,13 +222,13 @@ export function UsersTable() {
                                 <AlertDialogHeader>
                                 <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    Esta acción no se puede deshacer. Esto eliminará permanentemente la cuenta del usuario y sus datos de nuestros servidores.
+                                    Esta acción no se puede deshacer. Esto eliminará permanentemente la cuenta del usuario y sus datos de nuestros servidores. 💀
                                 </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
                                 <AlertDialogAction onClick={() => handleDeleteUser(user.id)} disabled={isDeleting}>
-                                    {isDeleting ? 'Eliminando...' : 'Sí, eliminar usuario'}
+                                    {isDeleting ? 'Eliminando...' : (<><UserCheck className="mr-2 h-4 w-4" /> Sí, eliminar</>)}
                                 </AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
@@ -218,18 +236,18 @@ export function UsersTable() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
-                </TableRow>
+                </motion.tr>
               ))
             ) : (
               <TableRow>
                 <TableCell colSpan={4} className="h-24 text-center">
-                  No hay usuarios registrados.
+                  No hay usuarios registrados. ¡Agrega el primero! 🚀
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
-      </div>
+      </motion.div>
     </>
   );
 }
