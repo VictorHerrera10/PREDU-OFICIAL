@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { SubmitButton } from '@/components/ui/submit-button';
+import { SubmitButton } from '@/components/submit-button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { GraduationCap, VenetianMask, X, User as UserIcon, CaseSensitive, Hash, Building, Phone, Calendar, Map, BookOpen, KeySquare } from 'lucide-react';
@@ -169,7 +169,7 @@ export function StudentProfileForm({ user, profileData }: Props) {
                             </div>
                         </div>
 
-                         <div className="grid grid-cols-1 md:grid-cols-[1fr,auto,1fr] gap-x-6 gap-y-4 items-end">
+                         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 items-end">
                              <div className="space-y-2">
                                 <Label htmlFor="city" className="flex items-center gap-2"><Map className="w-4 h-4"/> Ciudad</Label>
                                 <Input id="city" name="city" placeholder="Donde vives" defaultValue={profileData?.city} required />
