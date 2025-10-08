@@ -138,6 +138,7 @@ export function TutorRegistrationForm({ children }: { children: React.ReactNode 
                   <SelectItem value="psicologo">Psicólogo</SelectItem>
                   <SelectItem value="docente">Docente</SelectItem>
                   <SelectItem value="director">Director</SelectItem>
+                  <SelectItem value="autoridades gubernamentales">Autoridades Gubernamentales</SelectItem>
                 </SelectContent>
               </Select>
             </div>
