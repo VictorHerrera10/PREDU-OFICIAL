@@ -31,7 +31,7 @@ export default function AdminLayout({
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen w-full">
         <Sidebar>
           <SidebarHeader>
             <Logo />
@@ -62,7 +62,7 @@ export default function AdminLayout({
                 <SidebarTrigger />
                 <h2 className="text-lg font-semibold">Panel de Administración</h2>
             </header>
-            <main className="flex-1">{children}</main>
+            <main>{children}</main>
         </SidebarInset>
       </div>
     </SidebarProvider>
