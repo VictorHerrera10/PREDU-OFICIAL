@@ -141,7 +141,7 @@ export function UsersTable() {
 
   if (isLoading) {
     return (
-      <div className="border rounded-lg p-4">
+      <div className="border rounded-lg p-4 bg-card/80 backdrop-blur-sm border-border/50">
          <div className="flex justify-end mb-4">
              <Skeleton className="h-8 w-36" />
         </div>
@@ -170,7 +170,7 @@ export function UsersTable() {
         <AddUserDialog />
       </div>
       <motion.div 
-        className="border rounded-lg"
+        className="border rounded-lg bg-card/80 backdrop-blur-sm border-border/50"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
