@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User as UserIcon, Star, LogOut, Brain, Briefcase, Crown } from 'lucide-react';
+import { User as UserIcon, Star, LogOut, Brain, Briefcase, Crown, Bell } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
 import Link from 'next/link';
 import { handleLogout } from './logout-button';
@@ -52,7 +52,7 @@ export function UserNav() {
   const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const userProfileRef = useMemo(() => {
     if (!user || !firestore) return null;
@@ -132,64 +132,82 @@ export function UserNav() {
         <span className="font-bold text-foreground">{displayName}!</span>
         <span className="text-xl">{welcomeEmoji}</span>
       </motion.div>
-      <AlertDialog>
-        <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
-              <Avatar
-                className={cn(
-                  'h-10 w-10 border-2 transition-all duration-300',
-                  isOpen ? 'border-destructive' : 'border-primary animate-[pulse-glow_3s_ease-in-out_infinite]'
-                )}
-              >
-                <AvatarImage src={profilePicture as string | undefined} alt={displayName || ''} />
-                <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" forceMount>
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{displayName}</p>
-                <p className="text-xs leading-none text-muted-foreground">
-                  {displayEmail}
-                </p>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem asChild>
-                <Link href={profileLink}>
-                  <UserIcon className="mr-2 h-4 w-4" />
-                  <span>Mi Perfil</span>
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <AlertDialogTrigger asChild>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Salir del Aula</span>
+      <div className="flex items-center gap-2">
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative h-10 w-10 rounded-full p-0">
+                    <Bell className="h-5 w-5" />
+                    <span className="sr-only">Notificaciones</span>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel>Notificaciones</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-center text-muted-foreground">
+                    No tienes notificaciones nuevas.
                 </DropdownMenuItem>
-            </AlertDialogTrigger>
-          </DropdownMenuContent>
+            </DropdownMenuContent>
         </DropdownMenu>
 
-        <AlertDialogContent>
-            <AlertDialogHeader>
-            <AlertDialogTitle>¿Ya te vas, {displayName}? 😢</AlertDialogTitle>
-            <AlertDialogDescription>
-                El aula te extrañará. ¿Estás seguro de que quieres cerrar sesión?
-            </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={() => handleLogout(auth, router, toast)} className={buttonVariants({variant: 'destructive'})}>
-                Sí, salir
-            </AlertDialogAction>
-            </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        <AlertDialog>
+            <DropdownMenu open={isUserMenuOpen} onOpenChange={setIsUserMenuOpen}>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
+                <Avatar
+                    className={cn(
+                    'h-10 w-10 border-2 transition-all duration-300',
+                    isUserMenuOpen ? 'border-destructive' : 'border-primary animate-[pulse-glow_3s_ease-in-out_infinite]'
+                    )}
+                >
+                    <AvatarImage src={profilePicture as string | undefined} alt={displayName || ''} />
+                    <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
+                </Avatar>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{displayName}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                    {displayEmail}
+                    </p>
+                </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                <DropdownMenuItem asChild>
+                    <Link href={profileLink}>
+                    <UserIcon className="mr-2 h-4 w-4" />
+                    <span>Mi Perfil</span>
+                    </Link>
+                </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <AlertDialogTrigger asChild>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Salir del Aula</span>
+                    </DropdownMenuItem>
+                </AlertDialogTrigger>
+            </DropdownMenuContent>
+            </DropdownMenu>
+
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                <AlertDialogTitle>¿Ya te vas, {displayName}? 😢</AlertDialogTitle>
+                <AlertDialogDescription>
+                    El aula te extrañará. ¿Estás seguro de que quieres cerrar sesión?
+                </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={() => handleLogout(auth, router, toast)} className={buttonVariants({variant: 'destructive'})}>
+                    Sí, salir
+                </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+      </div>
     </div>
   );
 }
