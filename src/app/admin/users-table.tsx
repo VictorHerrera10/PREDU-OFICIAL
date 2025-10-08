@@ -179,7 +179,7 @@ export function UsersTable() {
         <AddUserDialog />
       </div>
       <motion.div 
-        className="rounded-lg"
+        className="rounded-lg bg-card/80 backdrop-blur-sm border border-border/50"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -229,7 +229,7 @@ export function UsersTable() {
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
-                                <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+                                <AlertDialogTitle>¿Estás absolutely seguro?</AlertDialogTitle>
                                 <AlertDialogDescription>
                                     Esta acción no se puede deshacer. Esto eliminará permanentemente la cuenta del usuario y sus datos de nuestros servidores. 💀
                                 </AlertDialogDescription>
