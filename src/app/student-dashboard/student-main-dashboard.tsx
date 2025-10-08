@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Logo } from '@/components/logo';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { LogoutButton } from '@/components/logout-button';
 import { BrainCircuit, Compass, Home } from 'lucide-react';
 import { User } from 'firebase/auth';
@@ -31,7 +31,7 @@ type Props = {
 };
 
 export function StudentMainDashboard({ user }: Props) {
-  const [selectedView, setSelectedView] = useState<View | null>(null);
+  const [selectedView, setSelectedView] = useState<View | null>('inicio');
 
   const renderContent = () => {
     switch (selectedView) {
@@ -64,7 +64,7 @@ export function StudentMainDashboard({ user }: Props) {
                 className="w-full max-w-4xl mx-auto text-center px-4"
               >
                 <CardHeader>
-                  <CardTitle className="text-3xl md:text-4xl font-bold text-primary">
+                  <CardTitle className="text-3xl md:text-4xl font-bold text-foreground">
                     ¡Hola de nuevo, {user?.displayName || 'Estudiante'}! 🚀
                   </CardTitle>
                   <CardDescription className="text-lg text-muted-foreground mt-2">
@@ -90,7 +90,7 @@ export function StudentMainDashboard({ user }: Props) {
                 layout
                 key={option.id}
                 onClick={() => setSelectedView(option.id)}
-                className={`cursor-pointer overflow-hidden ${selectedView ? '' : 'bg-card/80 backdrop-blur-sm border text-left hover:border-primary/50 transition-all transform hover:-translate-y-1 rounded-lg'}`}
+                className={`cursor-pointer overflow-hidden ${selectedView ? '' : 'bg-card/80 backdrop-blur-sm border hover:border-primary/50 transition-all transform hover:-translate-y-1 rounded-lg flex flex-col items-center text-center'}`}
                 initial={{ borderRadius: '0.5rem' }}
                 animate={{ borderRadius: selectedView ? '0.5rem' : '0.5rem' }}
               >
@@ -99,7 +99,7 @@ export function StudentMainDashboard({ user }: Props) {
                     className={
                       selectedView
                         ? `flex items-center gap-2 px-4 py-2 rounded-lg ${selectedView === option.id ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted/80'}`
-                        : 'h-full'
+                        : 'h-full flex flex-col items-center text-center'
                     }
                   >
                     <AnimatePresence>
