@@ -10,7 +10,7 @@ function TutorDashboardPage() {
 
   return (
     <>
-      <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center">
+      <header className="fixed top-0 left-0 right-0 p-4 flex justify-between items-center z-20 bg-background/80 backdrop-blur-sm border-b">
         <Logo />
         <UserNav />
       </header>

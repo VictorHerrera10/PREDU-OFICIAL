@@ -55,13 +55,16 @@ export default function AdminLayout({
             </SidebarMenu>
           </SidebarContent>
           <SidebarFooter>
-             <UserNav />
+             {/* The UserNav is designed for main headers, not sidebars. We can place a simple one here if needed. */}
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-            <header className="flex items-center gap-2 border-b p-2">
-                <SidebarTrigger />
-                <h2 className="text-lg font-semibold">Panel de Administración</h2>
+            <header className="flex items-center justify-between gap-2 border-b p-2">
+                 <div className='flex items-center gap-2'>
+                    <SidebarTrigger />
+                    <h2 className="text-lg font-semibold">Panel de Administración</h2>
+                </div>
+                <UserNav />
             </header>
             <main>{children}</main>
         </SidebarInset>
