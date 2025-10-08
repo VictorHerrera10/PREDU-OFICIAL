@@ -31,6 +31,14 @@ exports.deleteUser = functions.https.onCall(async (data, context) => {
     return {message: `Successfully deleted user ${uid}`};
   } catch (error) {
     console.error("Error deleting user:", error);
+    // Provide a more specific error message back to the client.
+    if (error.code === 'permission-denied' || error.code === 7) { // 7 is the gRPC code for PERMISSION_DENIED
+        throw new functions.https.HttpsError(
+            "permission-denied",
+            "The function does not have permission to delete users. Please check IAM roles for the service account."
+        );
+    }
+    
     throw new functions.https.HttpsError("internal", error.message);
   }
 });
