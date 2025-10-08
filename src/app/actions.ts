@@ -155,26 +155,49 @@ export async function updateUser(userId: string, formData: FormData) {
 }
 
 // --- Institution Actions ---
+function generateUniqueCode() {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
 
 export async function createInstitution(formData: FormData) {
   const { firestore } = await getAuthenticatedAppForUser();
-  const name = formData.get('name') as string;
-  const address = formData.get('address') as string;
-  const contactEmail = formData.get('contactEmail') as string;
+  
+  const data = {
+    name: formData.get('name') as string,
+    address: formData.get('address') as string,
+    contactEmail: formData.get('contactEmail') as string,
+    region: formData.get('region') as string,
+    level: formData.get('level') as string,
+    studentLimit: Number(formData.get('studentLimit')),
+    directorName: formData.get('directorName') as string,
+    directorEmail: formData.get('directorEmail') as string,
+    directorPhone: formData.get('directorPhone') as string,
+    teachingModality: formData.get('teachingModality') as string,
+    logoUrl: formData.get('logoUrl') as string,
+    uniqueCode: generateUniqueCode(),
+  };
 
-  if (!name || !address || !contactEmail) {
-    return { success: false, message: 'Todos los campos son obligatorios.' };
+  if (Object.values(data).some(val => val === null || val === '')) {
+      if (!data.directorPhone && !data.logoUrl) { // Optional fields
+          // check other fields
+          const requiredFields: (keyof typeof data)[] = ['name', 'address', 'contactEmail', 'region', 'level', 'studentLimit', 'directorName', 'directorEmail', 'teachingModality'];
+          const missingFields = requiredFields.filter(field => !data[field]);
+          if(missingFields.length > 0){
+            return { success: false, message: `Todos los campos son obligatorios. Faltan: ${missingFields.join(', ')}` };
+          }
+      } else {
+        return { success: false, message: 'Todos los campos excepto Teléfono del Director y Logo son obligatorios.' };
+      }
   }
 
   try {
     await addDoc(collection(firestore, 'institutions'), {
-      name,
-      address,
-      contactEmail,
+      ...data,
       createdAt: serverTimestamp(),
     });
     revalidatePath('/admin/institutions');
-    return { success: true, name };
+    return { success: true, name: data.name };
   } catch (error: any) {
     return { success: false, message: 'No se pudo crear la institución. ' + error.message };
   }
@@ -182,24 +205,33 @@ export async function createInstitution(formData: FormData) {
 
 export async function updateInstitution(institutionId: string, formData: FormData) {
   const { firestore } = await getAuthenticatedAppForUser();
-  const name = formData.get('name') as string;
-  const address = formData.get('address') as string;
-  const contactEmail = formData.get('contactEmail') as string;
+  
+  const data = {
+    name: formData.get('name') as string,
+    address: formData.get('address') as string,
+    contactEmail: formData.get('contactEmail') as string,
+    region: formData.get('region') as string,
+    level: formData.get('level') as string,
+    studentLimit: Number(formData.get('studentLimit')),
+    directorName: formData.get('directorName') as string,
+    directorEmail: formData.get('directorEmail') as string,
+    directorPhone: formData.get('directorPhone') as string,
+    teachingModality: formData.get('teachingModality') as string,
+    logoUrl: formData.get('logoUrl') as string,
+  };
 
-  if (!name || !address || !contactEmail) {
-    return { success: false, message: 'Todos los campos son obligatorios.' };
+  const requiredFields: (keyof typeof data)[] = ['name', 'address', 'contactEmail', 'region', 'level', 'studentLimit', 'directorName', 'directorEmail', 'teachingModality'];
+  const missingFields = requiredFields.filter(field => !data[field]);
+  if(missingFields.length > 0){
+    return { success: false, message: `Todos los campos son obligatorios. Faltan: ${missingFields.join(', ')}` };
   }
 
   const institutionRef = doc(firestore, 'institutions', institutionId);
 
   try {
-    await updateDoc(institutionRef, {
-      name,
-      address,
-      contactEmail,
-    });
+    await updateDoc(institutionRef, data);
     revalidatePath('/admin/institutions');
-    return { success: true, name };
+    return { success: true, name: data.name };
   } catch (error: any) {
     return { success: false, message: 'No se pudo actualizar la institución. ' + error.message };
   }

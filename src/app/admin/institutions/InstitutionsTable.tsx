@@ -50,13 +50,24 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, PlusCircle, Edit, Trash2, School, Calendar } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Edit, Trash2, School } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type Institution = {
   id: string;
   name: string;
   address: string;
   contactEmail: string;
+  region: string;
+  level: string;
+  studentLimit: number;
+  directorName: string;
+  directorEmail: string;
+  directorPhone?: string;
+  teachingModality: string;
+  logoUrl?: string;
+  uniqueCode: string;
   createdAt?: { seconds: number; nanoseconds: number };
 };
 
@@ -147,6 +158,84 @@ export function InstitutionsTable() {
     setIsProcessing(false);
   };
 
+  const InstitutionFormFields = ({ institution }: { institution?: Institution }) => (
+    <ScrollArea className="h-96">
+      <div className="grid gap-4 py-4 pr-6">
+        <div className="space-y-2">
+          <Label htmlFor="name">🏫 Nombre de la Institución</Label>
+          <Input id="name" name="name" placeholder="Ej: Colegio Nacional..." defaultValue={institution?.name} required />
+        </div>
+         <div className="space-y-2">
+            <Label htmlFor="region">📍 Región</Label>
+            <Select name="region" defaultValue={institution?.region}>
+                <SelectTrigger>
+                    <SelectValue placeholder="Selecciona una región" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="norte">Norte</SelectItem>
+                    <SelectItem value="centro">Centro</SelectItem>
+                    <SelectItem value="sur">Sur</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="address">🗺️ Dirección Completa</Label>
+          <Input id="address" name="address" placeholder="Ej: Av. Siempre Viva 123" defaultValue={institution?.address} required />
+        </div>
+        <div className="space-y-2">
+            <Label htmlFor="level">📚 Nivel</Label>
+             <Select name="level" defaultValue={institution?.level}>
+                <SelectTrigger>
+                    <SelectValue placeholder="Selecciona un nivel" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="primaria">Primaria</SelectItem>
+                    <SelectItem value="secundaria">Secundaria</SelectItem>
+                    <SelectItem value="superior">Superior</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+         <div className="space-y-2">
+            <Label htmlFor="teachingModality">👨‍🏫 Modalidad de Enseñanza</Label>
+             <Select name="teachingModality" defaultValue={institution?.teachingModality}>
+                <SelectTrigger>
+                    <SelectValue placeholder="Selecciona una modalidad" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="presencial">Presencial</SelectItem>
+                    <SelectItem value="virtual">Virtual</SelectItem>
+                    <SelectItem value="hibrida">Híbrida</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="studentLimit">🧑‍🎓 Límite de Estudiantes</Label>
+          <Input id="studentLimit" name="studentLimit" type="number" placeholder="Ej: 150" defaultValue={institution?.studentLimit} required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="directorName">👤 Nombre del Director</Label>
+          <Input id="directorName" name="directorName" placeholder="Nombre completo del director" defaultValue={institution?.directorName} required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="directorEmail">✉️ Email del Director</Label>
+          <Input id="directorEmail" name="directorEmail" type="email" placeholder="director@institucion.com" defaultValue={institution?.directorEmail} required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="directorPhone">📞 Teléfono del Director (Opcional)</Label>
+          <Input id="directorPhone" name="directorPhone" placeholder="+51 987654321" defaultValue={institution?.directorPhone} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="logoUrl">🖼️ URL del Logo (Opcional)</Label>
+          <Input id="logoUrl" name="logoUrl" placeholder="https://dominio.com/logo.png" defaultValue={institution?.logoUrl} />
+        </div>
+         <div className="space-y-2">
+          <Label htmlFor="contactEmail">📧 Email de Contacto General</Label>
+          <Input id="contactEmail" name="contactEmail" type="email" placeholder="contacto@institucion.com" defaultValue={institution?.contactEmail} required />
+        </div>
+      </div>
+    </ScrollArea>
+  );
+
   const AddInstitutionDialog = () => (
     <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
       <DialogTrigger asChild>
@@ -157,28 +246,15 @@ export function InstitutionsTable() {
           </span>
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-2xl">
         <form action={handleCreate}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><School className="text-primary"/> Agregar Nueva Institución</DialogTitle>
             <DialogDescription>
-              Completa los detalles para registrar una nueva institución educativa.
+              Completa los detalles para registrar una nueva institución educativa. Se generará un código único.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">🏫 Nombre de la Institución</Label>
-              <Input id="name" name="name" placeholder="Ej: Colegio Nacional..." required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="address">📍 Dirección</Label>
-              <Input id="address" name="address" placeholder="Ej: Av. Siempre Viva 123" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="contactEmail">✉️ Email de Contacto</Label>
-              <Input id="contactEmail" name="contactEmail" type="email" placeholder="contacto@institucion.com" required />
-            </div>
-          </div>
+          <InstitutionFormFields />
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="outline">Cancelar</Button>
@@ -194,31 +270,18 @@ export function InstitutionsTable() {
     if (!selectedInstitution) return null;
     return (
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-            <DialogContent>
+            <DialogContent className="max-w-2xl">
                 <form action={handleUpdate}>
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             <Edit className="text-primary"/> Editar Institución
                         </DialogTitle>
                         <DialogDescription>
-                           Modifica los datos de la institución.
+                           Modifica los datos de la institución. El código único no se puede cambiar.
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                         <div className="space-y-2">
-                            <Label htmlFor="name">🏫 Nombre de la Institución</Label>
-                            <Input id="name" name="name" defaultValue={selectedInstitution.name} required />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="address">📍 Dirección</Label>
-                            <Input id="address" name="address" defaultValue={selectedInstitution.address} required />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="contactEmail">✉️ Email de Contacto</Label>
-                            <Input id="contactEmail" name="contactEmail" type="email" defaultValue={selectedInstitution.contactEmail} required />
-                        </div>
-                    </div>
-                    <DialogFooter>
+                    <InstitutionFormFields institution={selectedInstitution} />
+                    <DialogFooter className="pt-4">
                         <DialogClose asChild>
                             <Button type="button" variant="outline">Cancelar</Button>
                         </DialogClose>
@@ -238,8 +301,9 @@ export function InstitutionsTable() {
         </div>
         <div className="space-y-3">
           {[...Array(3)].map((_, i) => (
-             <div key={i} className="grid grid-cols-4 items-center gap-4 p-2">
+             <div key={i} className="grid grid-cols-5 items-center gap-4 p-2">
                 <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-5 w-24" />
                 <Skeleton className="h-5 w-48" />
                 <Skeleton className="h-5 w-40" />
                 <div className="flex justify-end">
@@ -261,8 +325,9 @@ export function InstitutionsTable() {
         <TableHeader>
           <TableRow>
             <TableHead>Nombre</TableHead>
-            <TableHead>Dirección</TableHead>
-            <TableHead>Email de Contacto</TableHead>
+            <TableHead>Región</TableHead>
+            <TableHead>Director</TableHead>
+            <TableHead>Código Único</TableHead>
             <TableHead>Fecha Creación</TableHead>
             <TableHead>
               <span className="sr-only">Acciones</span>
@@ -280,8 +345,9 @@ export function InstitutionsTable() {
                 transition={{ duration: 0.3, delay: index * 0.05 }}
               >
                 <TableCell className="font-medium">{institution.name}</TableCell>
-                <TableCell>{institution.address}</TableCell>
-                <TableCell>{institution.contactEmail}</TableCell>
+                <TableCell>{institution.region}</TableCell>
+                <TableCell>{institution.directorName}</TableCell>
+                <TableCell><code className="bg-muted px-2 py-1 rounded text-primary">{institution.uniqueCode}</code></TableCell>
                 <TableCell>{formatDate(institution.createdAt)}</TableCell>
                 <TableCell>
                   <DropdownMenu>
@@ -327,7 +393,7 @@ export function InstitutionsTable() {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={5} className="h-24 text-center">
+              <TableCell colSpan={6} className="h-24 text-center">
                 No hay instituciones registradas. ¡Agrega la primera! 🏫
               </TableCell>
             </TableRow>

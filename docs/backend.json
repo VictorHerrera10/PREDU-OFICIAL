@@ -46,7 +46,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Institution",
       "type": "object",
-      "description": "Represents an educational institution or college.",
+      "description": "Represents an educational institution or college with detailed information.",
       "properties": {
         "id": {
           "type": "string",
@@ -62,20 +62,65 @@
         },
         "contactEmail": {
           "type": "string",
-          "description": "A contact email for the institution.",
+          "description": "A general contact email for the institution.",
           "format": "email"
         },
         "createdAt": {
           "type": "string",
           "description": "The date and time when the institution was added.",
           "format": "date-time"
+        },
+        "region": {
+            "type": "string",
+            "description": "The geographical region of the institution."
+        },
+        "level": {
+            "type": "string",
+            "description": "The educational level of the institution (e.g., Primary, Secondary, Higher Education)."
+        },
+        "studentLimit": {
+            "type": "number",
+            "description": "The maximum number of students that can be registered for this institution."
+        },
+        "directorName": {
+            "type": "string",
+            "description": "The full name of the institution's director."
+        },
+        "directorEmail": {
+            "type": "string",
+            "description": "The contact email for the director.",
+            "format": "email"
+        },
+        "directorPhone": {
+            "type": "string",
+            "description": "The contact phone number for the director."
+        },
+        "teachingModality": {
+            "type": "string",
+            "description": "The teaching modality (e.g., In-person, Virtual, Hybrid)."
+        },
+        "logoUrl": {
+            "type": "string",
+            "description": "URL of the institution's logo.",
+            "format": "uri"
+        },
+        "uniqueCode": {
+            "type": "string",
+            "description": "A unique code generated for the institution."
         }
       },
       "required": [
         "id",
         "name",
         "address",
-        "contactEmail"
+        "contactEmail",
+        "region",
+        "level",
+        "studentLimit",
+        "directorName",
+        "directorEmail",
+        "teachingModality",
+        "uniqueCode"
       ]
     }
   },
