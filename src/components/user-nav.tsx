@@ -47,22 +47,8 @@ const letter = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      type: 'spring',
-      damping: 12,
-      stiffness: 100,
-    },
   },
 };
-
-const wave = {
-  y: {
-    duration: 1.5,
-    repeat: Infinity,
-    repeatType: 'loop',
-    ease: 'easeInOut',
-  }
-}
 
 
 export function UserNav() {
@@ -111,22 +97,35 @@ export function UserNav() {
         initial="hidden"
         animate="visible"
       >
-        {welcomeText.split("").map((char, index) => (
-          <motion.span
-            key={char + "-" + index}
-            variants={letter}
-             animate={{ y: ["0%", "-15%", "0%"] }}
-             transition={{ ...wave.y, delay: index * 0.05 }}
-            className={
-              char === " " ? "whitespace-pre" :
-              displayName?.includes(char) && char !== ' ' 
-              ? "text-foreground font-bold" 
-              : ""
-            }
-          >
-            {char}
-          </motion.span>
-        ))}
+        {welcomeText.split("").map((char, index) => {
+          // Check if char is part of displayName to make it bold
+           const isNameChar = displayName?.includes(char) && char !== ' ';
+           // Create a wave animation for each character
+           const waveAnimation = {
+             y: ["0%", "-20%", "0%"],
+             transition: {
+               duration: 1.5,
+               ease: "easeInOut",
+               repeat: Infinity,
+               delay: index * 0.05,
+             },
+           };
+
+          return (
+            <motion.span
+              key={char + "-" + index}
+              variants={letter}
+              animate={waveAnimation}
+              className={cn({
+                'whitespace-pre': char === ' ',
+                'text-foreground font-bold': isNameChar,
+                'inline-block': char !== ' ', // Prevents weird spacing with emoji
+              })}
+            >
+              {char}
+            </motion.span>
+          )
+        })}
       </motion.div>
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
