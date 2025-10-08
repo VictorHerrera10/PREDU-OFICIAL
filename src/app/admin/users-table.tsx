@@ -46,15 +46,26 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MoreHorizontal, PlusCircle, User, UserX, UserCheck } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, User, UserX, UserCheck, Edit } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { updateUser } from '@/app/actions';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+type UserProfile = {
+  id: string;
+  username: string;
+  email: string;
+  role: 'admin' | 'student' | 'tutor' | null;
+}
 
 export function UsersTable() {
   const firestore = useFirestore();
   const functions = useFunctions();
   const { toast } = useToast();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const usersCollectionRef = useMemo(() => {
     if (!firestore) return null;
@@ -86,10 +97,36 @@ export function UsersTable() {
       toast({
         variant: 'destructive',
         title: 'Error al Eliminar 😵',
-        description: error.message || 'No se pudo eliminar al usuario. Revisa la consola para más detalles.',
+        description: error.message || 'No se pudo eliminar al usuario.',
       });
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleEditUser = (user: UserProfile) => {
+    setSelectedUser(user);
+    setIsEditDialogOpen(true);
+  };
+  
+  const handleUpdateUser = async (formData: FormData) => {
+    if (!selectedUser) return;
+  
+    const result = await updateUser(selectedUser.id, formData);
+  
+    if (result.success) {
+      toast({
+        title: "Usuario Actualizado ✅",
+        description: `Los datos de ${result.username} han sido actualizados.`,
+      });
+      setIsEditDialogOpen(false);
+      setSelectedUser(null);
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Error al Actualizar 😵",
+        description: result.message,
+      });
     }
   };
 
@@ -146,6 +183,65 @@ export function UsersTable() {
         </DialogContent>
     </Dialog>
   );
+
+  const EditUserDialog = () => {
+    if (!selectedUser) return null;
+    return (
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogContent>
+                <form action={handleUpdateUser}>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Edit className="text-primary"/> Editar Usuario
+                        </DialogTitle>
+                        <DialogDescription>
+                            Modifica los datos del usuario. Los cambios se guardarán al hacer clic en "Guardar Cambios".
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="username">🧑‍🎓 Nombre de Usuario</Label>
+                            <Input
+                                id="username"
+                                name="username"
+                                defaultValue={selectedUser.username}
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="email">✉️ Email (no editable)</Label>
+                            <Input
+                                id="email"
+                                name="email"
+                                value={selectedUser.email}
+                                readOnly
+                                disabled
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="role">🎭 Rol</Label>
+                            <Select name="role" defaultValue={selectedUser.role || ''}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Seleccionar un rol" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="student">🧑‍🎓 Estudiante</SelectItem>
+                                    <SelectItem value="tutor">🧑‍🏫 Tutor</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button type="button" variant="outline">Cancelar</Button>
+                        </DialogClose>
+                        <Button type="submit">Guardar Cambios</Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+  };
 
 
   if (isLoading) {
@@ -212,7 +308,10 @@ export function UsersTable() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                      <DropdownMenuItem>Editar</DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => handleEditUser(user)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Editar
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <AlertDialog>
                           <AlertDialogTrigger asChild>
@@ -250,8 +349,7 @@ export function UsersTable() {
           )}
         </TableBody>
       </Table>
+      <EditUserDialog />
     </>
   );
 }
-
-    

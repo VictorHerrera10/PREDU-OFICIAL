@@ -121,3 +121,27 @@ export async function updateUserRole(userId: string, role: 'student' | 'tutor') 
     return { message: 'No se pudo actualizar el rol del usuario.' };
   }
 }
+
+export async function updateUser(userId: string, formData: FormData) {
+  const { firestore } = await getAuthenticatedAppForUser();
+  const username = formData.get('username') as string;
+  const role = formData.get('role') as string;
+
+  if (!username || !role) {
+    return { success: false, message: 'El nombre de usuario y el rol son obligatorios.' };
+  }
+
+  const userProfileRef = doc(firestore, 'users', userId);
+
+  try {
+    await updateDoc(userProfileRef, {
+      username,
+      role,
+    });
+    revalidatePath('/admin');
+    return { success: true, username: username };
+  } catch (error: any) {
+    console.error('Error updating user:', error);
+    return { success: false, message: 'No se pudo actualizar el usuario. ' + error.message };
+  }
+}
