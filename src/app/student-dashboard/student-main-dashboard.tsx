@@ -4,12 +4,14 @@ import { useState } from 'react';
 import { Logo } from '@/components/logo';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { UserNav } from '@/components/user-nav';
-import { BrainCircuit, Compass, Home } from 'lucide-react';
+import { BrainCircuit, Compass, Home, Bell } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import HomeView from './views/HomeView';
 import AcademicPredictionView from './views/AcademicPredictionView';
 import PsychologicalPredictionView from './views/PsychologicalPredictionView';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type View = 'inicio' | 'prediccionAcademica' | 'prediccionPsicologica';
 
@@ -50,7 +52,22 @@ export function StudentMainDashboard({ user }: Props) {
     <div className="flex flex-col min-h-screen">
       <header className="fixed top-0 left-0 right-0 p-4 flex justify-between items-center z-20 bg-background/80 backdrop-blur-sm border-b">
         <Logo />
-        <UserNav />
+        <div className="flex items-center gap-4">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Bell className="h-5 w-5" />
+                  <span className="sr-only">Notificaciones</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Notificaciones</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <UserNav />
+        </div>
       </header>
 
       <main className="flex-grow pt-20">
