@@ -35,20 +35,35 @@ const sentence = {
   visible: {
     opacity: 1,
     transition: {
-      delay: 0.5,
-      staggerChildren: 0.08,
+      delay: 0.1,
+      staggerChildren: 0.04,
     },
   },
 };
 
-// Animation variants for each letter
+// Animation variants for each letter for a subtle wave effect
 const letter = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 10 },
   visible: {
     opacity: 1,
     y: 0,
+    transition: {
+      type: 'spring',
+      damping: 12,
+      stiffness: 100,
+    },
   },
 };
+
+const wave = {
+  y: {
+    duration: 1.5,
+    repeat: Infinity,
+    repeatType: 'loop',
+    ease: 'easeInOut',
+  }
+}
+
 
 export function UserNav() {
   const { user, isUserLoading } = useUser();
@@ -100,6 +115,8 @@ export function UserNav() {
           <motion.span
             key={char + "-" + index}
             variants={letter}
+             animate={{ y: ["0%", "-15%", "0%"] }}
+             transition={{ ...wave.y, delay: index * 0.05 }}
             className={
               char === " " ? "whitespace-pre" :
               displayName?.includes(char) && char !== ' ' 
