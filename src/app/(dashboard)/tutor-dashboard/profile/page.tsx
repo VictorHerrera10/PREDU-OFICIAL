@@ -16,8 +16,11 @@ type UserProfile = {
     lastName?: string;
     dni?: string;
     phone?: string;
-    workArea?: string;
     institutionId?: string;
+    tutorDetails?: {
+        workArea?: string;
+    };
+    gender?: string;
 };
 
 function TutorProfilePage() {

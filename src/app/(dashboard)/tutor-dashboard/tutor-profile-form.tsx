@@ -24,9 +24,11 @@ type UserProfile = {
     lastName?: string;
     dni?: string;
     phone?: string;
-    workArea?: string;
     gender?: string;
     profilePictureUrl?: string;
+    tutorDetails?: {
+        workArea?: string;
+    };
 };
 
 type Props = {
@@ -110,7 +112,7 @@ export function TutorProfileForm({ user, profileData }: Props) {
                                 <Label htmlFor="dni" className="flex items-center gap-2"><Hash className="w-4 h-4"/> DNI</Label>
                                 <Input id="dni" name="dni" type="text" placeholder="Tu número de DNI" defaultValue={profileData?.dni} required />
                             </div>
-                            <div className="space-y-2">
+                             <div className="space-y-2">
                                 <Label htmlFor="phone" className="flex items-center gap-2"><Phone className="w-4 h-4"/> Teléfono</Label>
                                 <Input id="phone" name="phone" placeholder="987654321" defaultValue={profileData?.phone} required />
                             </div>
@@ -140,7 +142,7 @@ export function TutorProfileForm({ user, profileData }: Props) {
 
                        <div className="space-y-2">
                             <Label htmlFor="workArea" className="flex items-center gap-2"><GraduationCap className="w-4 h-4"/> Área de Trabajo</Label>
-                             <Select name="workArea" defaultValue={profileData?.workArea} required>
+                             <Select name="workArea" defaultValue={profileData?.tutorDetails?.workArea} required>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Selecciona tu área de trabajo" />
                                 </SelectTrigger>
