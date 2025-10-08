@@ -11,15 +11,15 @@ import { Label } from '@/components/ui/label';
 import { CardTitle, CardDescription, CardHeader } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import Link from 'next/link';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 // Moved from actions.ts to avoid server-only export issues
 function getFirebaseErrorMessage(errorCode: string): string {
   switch (errorCode) {
     case 'auth/invalid-credential':
       return 'Las credenciales no son correctas. Revisa tus apuntes y vuelve a intentarlo. 🤔';
-    case 'auth/user-not-found':
-      return 'No encontramos a ningún estudiante con ese correo. ¿Quizás te inscribiste con otro?';
+    case 'auth/user-not-found': // Although invalid-credential is more common now
+      return 'No encontramos a ningún estudiante con ese correo.';
     case 'auth/wrong-password':
       return '¡Contraseña incorrecta! Inténtalo de nuevo. 🤫';
     case 'auth/email-already-in-use':
@@ -43,6 +43,8 @@ export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showRegisterSuggestion, setShowRegisterSuggestion] = useState(false);
 
   useEffect(() => {
     const redirectUrl = searchParams.get('redirect') || '/dashboard';
@@ -55,6 +57,9 @@ export default function LoginForm() {
     e.preventDefault();
     if (!auth) return;
 
+    setError(null);
+    setShowRegisterSuggestion(false);
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({
@@ -62,11 +67,19 @@ export default function LoginForm() {
         description: '¡Listo para empezar la lección!',
       });
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Error al iniciar sesión 😵',
-        description: getFirebaseErrorMessage(error.code),
-      });
+       const errorCode = error.code;
+       const errorMessage = getFirebaseErrorMessage(errorCode);
+
+      if (errorCode === 'auth/invalid-credential' || errorCode === 'auth/user-not-found') {
+        setError(errorMessage);
+        setShowRegisterSuggestion(true);
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Error al iniciar sesión 😵',
+          description: errorMessage,
+        });
+      }
     }
   };
   
@@ -90,6 +103,20 @@ export default function LoginForm() {
           Ingresa tus credenciales para continuar tu aprendizaje. 📚
           </CardDescription>
       </CardHeader>
+      
+      {showRegisterSuggestion && error && (
+          <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Usuario no encontrado</AlertTitle>
+              <AlertDescription>
+                  {error}{' '}
+                  <Link href="/register" className="font-bold underline hover:text-destructive-foreground">
+                      ¿Quieres registrarte?
+                  </Link>
+              </AlertDescription>
+          </Alert>
+      )}
+
       <form onSubmit={handleLogin} className="space-y-4">
       <div className="space-y-2">
           <Label htmlFor="email">✉️ Email</Label>
