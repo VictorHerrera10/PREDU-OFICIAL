@@ -1,10 +1,11 @@
 'use client';
 
-import { useActionState, useEffect } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import { User } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { updateTutorProfile } from '@/app/actions';
 import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -15,6 +16,8 @@ import { Briefcase, VenetianMask, X, User as UserIcon, CaseSensitive, Hash, Phon
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+
 
 type UserProfile = {
     firstName?: string;
@@ -41,6 +44,8 @@ export function TutorProfileForm({ user, profileData }: Props) {
     const router = useRouter();
     const [state, formAction] = useActionState(updateTutorProfile, initialState);
     const isEditing = !!profileData?.firstName;
+    const [selectedGender, setSelectedGender] = useState(profileData?.gender);
+
 
     useEffect(() => {
         if(state.success){
@@ -109,19 +114,22 @@ export function TutorProfileForm({ user, profileData }: Props) {
                                 <Label htmlFor="phone" className="flex items-center gap-2"><Phone className="w-4 h-4"/> Teléfono</Label>
                                 <Input id="phone" name="phone" placeholder="987654321" defaultValue={profileData?.phone} required />
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="gender" className="flex items-center gap-2"><VenetianMask className="w-4 h-4"/> Género</Label>
-                                <Select name="gender" defaultValue={profileData?.gender} required>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecciona tu género" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="masculino">Masculino</SelectItem>
-                                        <SelectItem value="femenino">Femenino</SelectItem>
-                                        <SelectItem value="otro">Otro</SelectItem>
-                                        <SelectItem value="prefiero no decirlo">Prefiero no decirlo</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                            <div className="space-y-2 text-center">
+                                <Label className="flex items-center gap-2 mb-2.5 justify-center"><VenetianMask className="w-4 h-4"/> Género</Label>
+                                <RadioGroup name="gender" defaultValue={profileData?.gender} required className="flex gap-2 justify-center" onValueChange={setSelectedGender}>
+                                     <Label htmlFor="g-male" className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all w-full", selectedGender === 'masculino' && 'border-primary ring-2 ring-primary/50' )}>
+                                        <RadioGroupItem value="masculino" id="g-male" className="sr-only" />
+                                        <span className="text-xl text-[#60a5fa]" aria-hidden="true">♂</span>
+                                    </Label>
+                                    <Label htmlFor="g-female" className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all w-full", selectedGender === 'femenino' && 'border-primary ring-2 ring-primary/50' )}>
+                                        <RadioGroupItem value="femenino" id="g-female" className="sr-only" />
+                                        <span className="text-xl text-[#f472b6]" aria-hidden="true">♀</span>
+                                    </Label>
+                                    <Label htmlFor="g-other" className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all w-full", selectedGender === 'prefiero no decirlo' && 'border-primary ring-2 ring-primary/50' )}>
+                                        <RadioGroupItem value="prefiero no decirlo" id="g-other" className="sr-only" />
+                                        <span className="text-base font-bold py-1 px-0.5 text-muted-foreground" aria-hidden="true">?</span>
+                                    </Label>
+                                </RadioGroup>
                             </div>
                         </div>
                         
