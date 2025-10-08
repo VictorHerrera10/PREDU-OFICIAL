@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Logo } from '@/components/logo';
-import { LogoutButton } from '@/components/logout-button';
+import { UserNav } from '@/components/user-nav';
 import { School, Users } from 'lucide-react';
 import {
   SidebarProvider,
@@ -15,6 +15,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarInset,
+  SidebarFooter,
 } from '@/components/ui/sidebar';
 
 const navItems = [
@@ -53,9 +54,9 @@ export default function AdminLayout({
               })}
             </SidebarMenu>
           </SidebarContent>
-          <SidebarHeader>
-             <LogoutButton />
-          </SidebarHeader>
+          <SidebarFooter>
+             <UserNav />
+          </SidebarFooter>
         </Sidebar>
         <SidebarInset>
             <header className="flex items-center gap-2 border-b p-2">

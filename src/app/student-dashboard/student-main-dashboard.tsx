@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { Logo } from '@/components/logo';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { LogoutButton } from '@/components/logout-button';
+import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { UserNav } from '@/components/user-nav';
 import { BrainCircuit, Compass, Home } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
@@ -50,7 +50,7 @@ export function StudentMainDashboard({ user }: Props) {
     <div className="flex flex-col min-h-screen">
       <header className="fixed top-0 left-0 right-0 p-4 flex justify-between items-center z-20 bg-background/80 backdrop-blur-sm border-b">
         <Logo />
-        <LogoutButton />
+        <UserNav />
       </header>
 
       <main className="flex-grow pt-20">
@@ -95,7 +95,7 @@ export function StudentMainDashboard({ user }: Props) {
                     className={
                         `p-6 ${selectedView === option.id ? 'bg-primary text-primary-foreground rounded-lg' 
                         : selectedView ? 'bg-muted hover:bg-muted/80 rounded-lg' 
-                        : ''} ${selectedView ? 'flex items-center justify-center gap-2' : 'flex flex-col items-center text-center gap-4'}`
+                        : 'flex flex-col items-center text-center gap-4'} ${selectedView ? 'flex items-center justify-center gap-2' : ''}`
                     }
                   >
                     <motion.div layout="position">

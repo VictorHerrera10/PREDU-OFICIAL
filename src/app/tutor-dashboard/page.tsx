@@ -2,8 +2,8 @@
 
 import { Logo } from '@/components/logo';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { UserNav } from '@/components/user-nav';
 import { useUser } from '@/firebase';
-import { LogoutButton } from '@/components/logout-button';
 
 function TutorDashboardPage() {
   const { user } = useUser();
@@ -12,7 +12,7 @@ function TutorDashboardPage() {
     <>
       <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center">
         <Logo />
-        <LogoutButton />
+        <UserNav />
       </header>
       <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
         <Card className="w-full max-w-2xl text-center bg-card/80 backdrop-blur-sm border-border">
