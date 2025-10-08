@@ -37,6 +37,8 @@ export function InstitutionHeader() {
 
     const isLoading = isProfileLoading || isInstitutionLoading;
 
+    if (!userProfile?.institutionId && !isLoading) return null;
+
     return (
         <div className="w-full bg-background/80 backdrop-blur-sm border-b py-2 mb-4">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
@@ -53,7 +55,10 @@ export function InstitutionHeader() {
                                 <Building className="h-4 w-4 text-muted-foreground" />
                             </AvatarFallback>
                         </Avatar>
-                        <h2 className="font-semibold text-foreground text-lg">{institution.name}</h2>
+                        <h2 className="font-semibold text-foreground text-lg">
+                            <span className="text-muted-foreground font-normal text-base mr-2">Estás en:</span>
+                            {institution.name}
+                        </h2>
                     </div>
                 ) : null}
             </div>

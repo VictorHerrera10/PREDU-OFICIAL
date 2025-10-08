@@ -50,7 +50,7 @@ export function TutorMainDashboard({ user }: Props) {
         <UserNav />
       </header>
       
-      <main className="flex-grow pt-16">
+      <main className="flex-grow mt-16">
         <InstitutionHeader />
         <LayoutGroup>
           <AnimatePresence>
