@@ -31,7 +31,7 @@ type Props = {
 };
 
 export function StudentMainDashboard({ user }: Props) {
-  const [selectedView, setSelectedView] = useState<View | null>('inicio');
+  const [selectedView, setSelectedView] = useState<View>('inicio');
 
   const renderContent = () => {
     switch (selectedView) {
@@ -55,34 +55,10 @@ export function StudentMainDashboard({ user }: Props) {
 
       <main className="flex-grow pt-20">
         <LayoutGroup>
-          <AnimatePresence>
-            {!selectedView && (
-              <motion.div
-                key="welcome"
-                initial={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}
-                className="w-full max-w-4xl mx-auto text-center px-4"
-              >
-                <CardHeader>
-                  <CardTitle className="text-3xl md:text-4xl font-bold text-foreground">
-                    ¡Hola de nuevo, {user?.displayName || 'Estudiante'}! 🚀
-                  </CardTitle>
-                  <CardDescription className="text-lg text-muted-foreground mt-2">
-                    Este es tu centro de mando para el éxito. ¿Qué quieres hacer hoy?
-                  </CardDescription>
-                </CardHeader>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          
           <motion.div
             layout
             key="options-container"
-            className={
-              selectedView
-                ? 'flex justify-center items-center gap-4 py-4 px-4 border-b'
-                : 'grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mx-auto px-4 mt-8'
-            }
+            className={'flex justify-center items-center gap-4 py-4 px-4 border-b'}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
             {options.map((option) => (
@@ -90,48 +66,22 @@ export function StudentMainDashboard({ user }: Props) {
                 layout
                 key={option.id}
                 onClick={() => setSelectedView(option.id)}
-                className={`cursor-pointer overflow-hidden ${selectedView ? '' : 'bg-card/80 backdrop-blur-sm border hover:border-primary/50 transition-all transform hover:-translate-y-1 rounded-lg flex flex-col items-center text-center'}`}
+                className={`cursor-pointer overflow-hidden rounded-lg`}
                 initial={{ borderRadius: '0.5rem' }}
-                animate={{ borderRadius: selectedView ? '0.5rem' : '0.5rem' }}
               >
-                {selectedView === option.id || !selectedView ? (
-                  <div
+                <div
                     className={
-                      selectedView
-                        ? `flex items-center gap-2 px-4 py-2 rounded-lg ${selectedView === option.id ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted/80'}`
-                        : 'h-full flex flex-col items-center text-center p-6'
+                        `flex items-center gap-2 px-4 py-2 rounded-lg ${selectedView === option.id ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted/80'}`
                     }
                   >
-                    <AnimatePresence>
-                      <motion.div
-                        layout="position"
-                        className={selectedView ? '' : 'flex items-center gap-4'}
-                      >
-                        <option.icon className={selectedView ? "w-5 h-5" : "w-10 h-10 text-primary"} />
-                      </motion.div>
-                    </AnimatePresence>
+                    <motion.div layout="position">
+                        <option.icon className={"w-5 h-5"} />
+                    </motion.div>
                     
                     <motion.div layout="position">
-                      <h2 className={`font-bold ${selectedView ? 'text-sm' : 'text-2xl mt-4'}`}>{option.title}</h2>
-                      {!selectedView && (
-                          <motion.p 
-                            initial={{ opacity: 1 }} 
-                            animate={{ opacity: selectedView ? 0 : 1 }}
-                            className="text-muted-foreground text-sm mt-1"
-                          >
-                              {option.description}
-                          </motion.p>
-                      )}
+                      <h2 className={`font-bold text-sm`}>{option.title}</h2>
                     </motion.div>
                   </div>
-                ) : (
-                   <div
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted hover:bg-muted/80"
-                  >
-                     <option.icon className="w-5 h-5" />
-                     <h2 className="font-bold text-sm">{option.title}</h2>
-                  </div>
-                )}
               </motion.div>
             ))}
           </motion.div>
