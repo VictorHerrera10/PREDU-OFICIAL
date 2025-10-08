@@ -178,17 +178,15 @@ export async function createInstitution(formData: FormData) {
     uniqueCode: generateUniqueCode(),
   };
 
-  if (Object.values(data).some(val => val === null || val === '')) {
-      if (!data.directorPhone && !data.logoUrl) { // Optional fields
-          // check other fields
-          const requiredFields: (keyof typeof data)[] = ['name', 'address', 'contactEmail', 'region', 'level', 'studentLimit', 'directorName', 'directorEmail', 'teachingModality'];
-          const missingFields = requiredFields.filter(field => !data[field]);
-          if(missingFields.length > 0){
-            return { success: false, message: `Todos los campos son obligatorios. Faltan: ${missingFields.join(', ')}` };
-          }
-      } else {
-        return { success: false, message: 'Todos los campos excepto Teléfono del Director y Logo son obligatorios.' };
-      }
+  const requiredFields: (keyof Omit<typeof data, 'directorPhone' | 'logoUrl' | 'uniqueCode'>)[] = [
+    'name', 'address', 'contactEmail', 'region', 'level', 'studentLimit', 
+    'directorName', 'directorEmail', 'teachingModality'
+  ];
+
+  const missingFields = requiredFields.filter(field => !data[field]);
+
+  if (missingFields.length > 0) {
+    return { success: false, message: `Todos los campos son obligatorios. Faltan: ${missingFields.join(', ')}` };
   }
 
   try {
@@ -220,9 +218,14 @@ export async function updateInstitution(institutionId: string, formData: FormDat
     logoUrl: formData.get('logoUrl') as string,
   };
 
-  const requiredFields: (keyof typeof data)[] = ['name', 'address', 'contactEmail', 'region', 'level', 'studentLimit', 'directorName', 'directorEmail', 'teachingModality'];
+  const requiredFields: (keyof Omit<typeof data, 'directorPhone' | 'logoUrl'>)[] = [
+    'name', 'address', 'contactEmail', 'region', 'level', 'studentLimit', 
+    'directorName', 'directorEmail', 'teachingModality'
+  ];
+
   const missingFields = requiredFields.filter(field => !data[field]);
-  if(missingFields.length > 0){
+
+  if (missingFields.length > 0) {
     return { success: false, message: `Todos los campos son obligatorios. Faltan: ${missingFields.join(', ')}` };
   }
 
