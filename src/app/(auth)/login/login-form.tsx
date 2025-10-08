@@ -11,8 +11,27 @@ import { Label } from '@/components/ui/label';
 import { CardTitle, CardDescription, CardHeader } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import Link from 'next/link';
-import { Eye, EyeOff, Rocket } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Eye, EyeOff } from 'lucide-react';
+
+// Moved from actions.ts to avoid server-only export issues
+function getFirebaseErrorMessage(errorCode: string): string {
+  switch (errorCode) {
+    case 'auth/invalid-credential':
+      return 'Las credenciales no son correctas. Revisa tus apuntes y vuelve a intentarlo. 🤔';
+    case 'auth/user-not-found':
+      return 'No encontramos a ningún estudiante con ese correo. ¿Quizás te inscribiste con otro?';
+    case 'auth/wrong-password':
+      return '¡Contraseña incorrecta! Inténtalo de nuevo. 🤫';
+    case 'auth/email-already-in-use':
+      return '¡Ese email ya está en uso! Parece que ya estás en la lista. Intenta iniciar sesión. 😉';
+    case 'auth/weak-password':
+      return 'Tu contraseña es muy débil. ¡Necesitas al menos 6 caracteres para proteger tu mochila digital! 🎒';
+    case 'auth/operation-not-allowed':
+      return 'Esta operación no está permitida. Habla con el director si crees que es un error.';
+    default:
+      return 'Ocurrió un error inesperado en el servidor de la escuela. Por favor, inténtalo de nuevo más tarde. 🏫';
+  }
+}
 
 export default function LoginForm() {
   const { user, isUserLoading } = useUser();
@@ -24,7 +43,6 @@ export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showNotRegisteredAlert, setShowNotRegisteredAlert] = useState(false);
 
   useEffect(() => {
     const redirectUrl = searchParams.get('redirect') || '/dashboard';
@@ -37,8 +55,6 @@ export default function LoginForm() {
     e.preventDefault();
     if (!auth) return;
 
-    setShowNotRegisteredAlert(false);
-
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({
@@ -46,15 +62,11 @@ export default function LoginForm() {
         description: '¡Listo para empezar la lección!',
       });
     } catch (error: any) {
-      if (error.code === 'auth/invalid-credential') {
-        setShowNotRegisteredAlert(true);
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Error al iniciar sesión 😵',
-          description: 'Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo.',
-        });
-      }
+      toast({
+        variant: 'destructive',
+        title: 'Error al iniciar sesión 😵',
+        description: getFirebaseErrorMessage(error.code),
+      });
     }
   };
   
@@ -70,102 +82,64 @@ export default function LoginForm() {
 
   return (
     <>
-      <AnimatePresence mode="wait">
-        {showNotRegisteredAlert ? (
-          <motion.div
-            key="alert"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
+      <CardHeader className="p-0 mb-6 text-center">
+          <CardTitle className="text-2xl font-bold text-primary">
+          ¡Bienvenido de Nuevo!
+          </CardTitle>
+          <CardDescription>
+          Ingresa tus credenciales para continuar tu aprendizaje. 📚
+          </CardDescription>
+      </CardHeader>
+      <form onSubmit={handleLogin} className="space-y-4">
+      <div className="space-y-2">
+          <Label htmlFor="email">✉️ Email</Label>
+          <Input
+          id="email"
+          name="email"
+          type="email"
+          placeholder="estudiante@email.com"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
+          />
+      </div>
+      <div className="space-y-2">
+          <Label htmlFor="password">🔒 Contraseña</Label>
+          <div className="relative">
+          <Input
+              id="password"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+          />
+          <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute top-1/2 right-2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-primary-foreground"
+              onClick={togglePasswordVisibility}
           >
-            <div className="space-y-4">
-                <Alert className="border-primary/50 bg-card/70 text-center">
-                    <Rocket className="h-4 w-4 -translate-y-0.5" />
-                    <AlertTitle className="font-bold text-lg text-primary">¡Hola, futuro estudiante! 🚀</AlertTitle>
-                    <AlertDescription className="text-muted-foreground mb-4">
-                        Parece que aún no estás en nuestra lista. ¡No te preocupes! Regístrate para empezar tu aventura vocacional.
-                    </AlertDescription>
-                    <Button onClick={() => router.push('/register')}>
-                        ¡Quiero Registrarme!
-                    </Button>
-                </Alert>
-                 <div className="mt-4 text-center text-sm">
-                    <Button variant="link" onClick={() => setShowNotRegisteredAlert(false)} className="text-primary/80">
-                        O volver a intentar
-                    </Button>
-                </div>
-            </div>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="form"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            <CardHeader className="p-0 mb-6 text-center">
-                <CardTitle className="text-2xl font-bold text-primary">
-                ¡Bienvenido de Nuevo!
-                </CardTitle>
-                <CardDescription>
-                Ingresa tus credenciales para continuar tu aprendizaje. 📚
-                </CardDescription>
-            </CardHeader>
-            <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-                <Label htmlFor="email">✉️ Email</Label>
-                <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="estudiante@email.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="password">🔒 Contraseña</Label>
-                <div className="relative">
-                <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    autoComplete="current-password"
-                />
-                <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-1/2 right-2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-primary-foreground"
-                    onClick={togglePasswordVisibility}
-                >
-                    {showPassword ? <EyeOff /> : <Eye />}
-                    <span className="sr-only">{showPassword ? 'Ocultar' : 'Mostrar'} contraseña</span>
-                </Button>
-                </div>
-            </div>
-            <Button type="submit" className="w-full">Entrar al Aula 🎒</Button>
-            </form>
+              {showPassword ? <EyeOff /> : <Eye />}
+              <span className="sr-only">{showPassword ? 'Ocultar' : 'Mostrar'} contraseña</span>
+          </Button>
+          </div>
+      </div>
+      <Button type="submit" className="w-full">Entrar al Aula 🎒</Button>
+      </form>
 
-            <div className="mt-4 text-center text-sm">
-                ¿Aún no tienes cuenta?{' '}
-                <Link
-                href="/register"
-                className="font-semibold text-primary/80 hover:text-primary transition-colors"
-                >
-                ¡Inscríbete aquí!
-                </Link>
-            </div>
-        </motion.div>
-        )}
-      </AnimatePresence>
+      <div className="mt-4 text-center text-sm">
+          ¿Aún no tienes cuenta?{' '}
+          <Link
+          href="/register"
+          className="font-semibold text-primary/80 hover:text-primary transition-colors"
+          >
+          ¡Inscríbete aquí!
+          </Link>
+      </div>
 
        <div className="mt-2 text-center text-sm">
         <Link
