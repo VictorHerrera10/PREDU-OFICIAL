@@ -46,17 +46,19 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MoreHorizontal, PlusCircle, User, UserX, UserCheck, Edit } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, User, UserX, UserCheck, Edit, Calendar } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { updateUser } from '@/app/actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { format } from 'date-fns';
 
 type UserProfile = {
   id: string;
   username: string;
   email: string;
   role: 'admin' | 'student' | 'tutor' | null;
+  creationDate?: { seconds: number, nanoseconds: number };
 }
 
 export function UsersTable() {
@@ -93,11 +95,11 @@ export function UsersTable() {
         description: 'El usuario ha sido eliminado de la plataforma.',
       });
     } catch (error: any) {
-      console.error('Error deleting user:', error);
+      console.error('Error al eliminar el usuario:', error);
       toast({
         variant: 'destructive',
         title: 'Error al Eliminar 😵',
-        description: error.message || 'No se pudo eliminar al usuario.',
+        description: error.message || 'No se pudo eliminar al usuario. Revisa la consola para más detalles.',
       });
     } finally {
       setIsDeleting(false);
@@ -145,6 +147,14 @@ export function UsersTable() {
       default:
         return <Badge variant="outline">{role}</Badge>;
     }
+  };
+
+  const formatDate = (timestamp: any) => {
+    if (!timestamp || typeof timestamp.seconds !== 'number') {
+      return 'N/A';
+    }
+    const date = new Date(timestamp.seconds * 1000);
+    return format(date, 'dd/MM/yyyy');
   };
   
   const AddUserDialog = () => (
@@ -230,6 +240,13 @@ export function UsersTable() {
                                 </SelectContent>
                             </Select>
                         </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="creationDate">📅 Fecha de Creación</Label>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground p-2 border rounded-md bg-muted/50">
+                                <Calendar className="h-4 w-4" />
+                                <span>{formatDate(selectedUser.creationDate)}</span>
+                            </div>
+                        </div>
                     </div>
                     <DialogFooter>
                         <DialogClose asChild>
@@ -252,13 +269,14 @@ export function UsersTable() {
         </div>
         <div className="space-y-3">
           {[...Array(5)].map((_, i) => (
-             <div key={i} className="grid grid-cols-4 items-center gap-4 p-2">
+             <div key={i} className="grid grid-cols-5 items-center gap-4 p-2">
                 <div className="flex items-center gap-3">
                     <Skeleton className="h-8 w-8 rounded-full" />
                     <Skeleton className="h-5 w-32" />
                 </div>
                 <Skeleton className="h-5 w-48" />
                 <Skeleton className="h-6 w-24 rounded-full" />
+                <Skeleton className="h-5 w-24" />
                 <div className="flex justify-end">
                     <Skeleton className="h-6 w-6" />
                 </div>
@@ -280,6 +298,7 @@ export function UsersTable() {
             <TableHead>Nombre de Estudiante</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Rol</TableHead>
+            <TableHead>Fecha Creación</TableHead>
             <TableHead>
               <span className="sr-only">Actions</span>
             </TableHead>
@@ -298,6 +317,7 @@ export function UsersTable() {
                 <TableCell className="font-medium">{user.username}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{renderRoleBadge(user.role)}</TableCell>
+                <TableCell>{formatDate(user.creationDate)}</TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -322,7 +342,7 @@ export function UsersTable() {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                               <AlertDialogHeader>
-                              <AlertDialogTitle>¿Estás absolutely seguro?</AlertDialogTitle>
+                              <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
                               <AlertDialogDescription>
                                   Esta acción no se puede deshacer. Esto eliminará permanentemente la cuenta del usuario y sus datos de nuestros servidores. 💀
                               </AlertDialogDescription>
@@ -342,7 +362,7 @@ export function UsersTable() {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={4} className="h-24 text-center">
+              <TableCell colSpan={5} className="h-24 text-center">
                 No hay usuarios registrados. ¡Agrega el primero! 🚀
               </TableCell>
             </TableRow>
