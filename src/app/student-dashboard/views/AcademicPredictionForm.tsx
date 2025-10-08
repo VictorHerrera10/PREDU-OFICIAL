@@ -98,8 +98,7 @@ export function AcademicPredictionForm({ setPredictionResult }: Props) {
       
       const response = await api.post('/prediccion/academico/', requestData);
       
-      // Suponiendo que la respuesta tiene un campo 'carrera_predecida' o similar
-      const result = response.data?.carrera_predecida || "No se pudo determinar la carrera.";
+      const result = Object.values(response.data)[0] as string || "No se pudo determinar la carrera.";
       setPredictionResult(result);
       
       toast({
