@@ -16,7 +16,6 @@ import { updateUserRole } from '@/app/actions';
 function DashboardPage() {
   const { user } = useUser();
   const firestore = useFirestore();
-  const isAdmin = user?.email === 'admin@predu.com';
 
   const userProfileRef = useMemo(() => {
     if (!user || !firestore) return null;
@@ -31,6 +30,8 @@ function DashboardPage() {
         redirect('/student-dashboard');
       } else if (userProfile.role === 'tutor') {
         redirect('/tutor-dashboard');
+      } else if (userProfile.role === 'admin') {
+        redirect('/admin');
       }
     }
   }, [isLoading, userProfile]);
@@ -41,7 +42,7 @@ function DashboardPage() {
     }
   };
   
-  if (isLoading || (!isAdmin && userProfile?.role)) {
+  if (isLoading || userProfile?.role) {
     return (
        <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -112,15 +113,6 @@ function DashboardPage() {
               </CardContent>
             </Card>
           </div>
-           {isAdmin && (
-            <div className="mt-8">
-               <Link href="/admin" passHref>
-                  <Button variant="outline" className="text-primary hover:text-primary">
-                    Panel de Administrador
-                  </Button>
-                </Link>
-            </div>
-          )}
         </div>
       </main>
     </>

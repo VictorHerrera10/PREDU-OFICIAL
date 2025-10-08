@@ -54,13 +54,20 @@ export async function register(prevState: State, formData: FormData): Promise<St
     await updateProfile(user, { displayName: username });
 
     const userProfileRef = doc(firestore, 'users', user.uid);
+    
+    // Assign role based on email
+    let role: 'admin' | 'student' | 'tutor' | null = null;
+    if (email === 'admin@predu.com') {
+      role = 'admin';
+    }
+
     const userProfileData = {
       id: user.uid,
       username: username,
       email: user.email,
       creationDate: serverTimestamp(),
       lastLogin: serverTimestamp(),
-      role: null, // Initialize role as null
+      role: role, // Assign role
     };
     
     await setDoc(userProfileRef, userProfileData);
