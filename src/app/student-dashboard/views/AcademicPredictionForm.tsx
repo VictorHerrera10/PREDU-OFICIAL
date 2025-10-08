@@ -119,9 +119,9 @@ export function AcademicPredictionForm({ setPredictionResult }: Props) {
       <DialogTrigger asChild>
         <Button>Iniciar Predicción Vocacional</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full overflow-hidden">
             <DialogHeader>
               <DialogTitle className="text-center text-2xl">🚀 ¡Descubramos tu Vocación!</DialogTitle>
               <DialogDescription className="text-center">
@@ -129,49 +129,51 @@ export function AcademicPredictionForm({ setPredictionResult }: Props) {
               </DialogDescription>
             </DialogHeader>
 
-            <ScrollArea className="h-96">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 pr-6 py-4">
-                    {subjects.map((subject) => (
-                    <FormField
-                        key={subject.id}
-                        control={form.control}
-                        name={subject.id as keyof PredictionFormValues}
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="flex items-center gap-2 text-base">{subject.emoji} {subject.label}</FormLabel>
-                            <FormControl>
-                                <RadioGroup
-                                    onValueChange={field.onChange}
-                                    defaultValue={field.value}
-                                    className="grid grid-cols-4 gap-2 pt-2"
-                                >
-                                    {gradeOptions.map((grade) => (
-                                        <FormItem key={grade}>
-                                            <FormControl>
-                                                 <RadioGroupItem value={grade} id={`${subject.id}-${grade}`} className="sr-only" />
-                                            </FormControl>
-                                            <FormLabel 
-                                                htmlFor={`${subject.id}-${grade}`}
-                                                className={cn(
-                                                    "flex items-center justify-center rounded-md border-2 border-muted bg-popover p-2 font-bold hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all",
-                                                    field.value === grade && "border-primary ring-2 ring-primary/50 text-primary"
-                                                )}
-                                            >
-                                                {grade}
-                                            </FormLabel>
-                                        </FormItem>
-                                    ))}
-                                </RadioGroup>
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    ))}
-                </div>
-            </ScrollArea>
-
-            <DialogFooter className="pt-6">
+            <div className="flex-grow overflow-hidden py-4">
+              <ScrollArea className="h-full">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 pr-6">
+                      {subjects.map((subject) => (
+                      <FormField
+                          key={subject.id}
+                          control={form.control}
+                          name={subject.id as keyof PredictionFormValues}
+                          render={({ field }) => (
+                          <FormItem>
+                              <FormLabel className="flex items-center gap-2 text-base">{subject.emoji} {subject.label}</FormLabel>
+                              <FormControl>
+                                  <RadioGroup
+                                      onValueChange={field.onChange}
+                                      defaultValue={field.value}
+                                      className="grid grid-cols-4 gap-2 pt-2"
+                                  >
+                                      {gradeOptions.map((grade) => (
+                                          <FormItem key={grade}>
+                                              <FormControl>
+                                                   <RadioGroupItem value={grade} id={`${subject.id}-${grade}`} className="sr-only" />
+                                              </FormControl>
+                                              <FormLabel 
+                                                  htmlFor={`${subject.id}-${grade}`}
+                                                  className={cn(
+                                                      "flex items-center justify-center rounded-md border-2 border-muted bg-popover p-2 font-bold hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all",
+                                                      field.value === grade && "border-primary ring-2 ring-primary/50 text-primary"
+                                                  )}
+                                              >
+                                                  {grade}
+                                              </FormLabel>
+                                          </FormItem>
+                                      ))}
+                                  </RadioGroup>
+                              </FormControl>
+                              <FormMessage />
+                          </FormItem>
+                          )}
+                      />
+                      ))}
+                  </div>
+              </ScrollArea>
+            </div>
+            
+            <DialogFooter className="pt-4 mt-auto">
                 <div className="w-full flex justify-center">
                     <Button type="submit" disabled={isSubmitting} size="lg">
                         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
