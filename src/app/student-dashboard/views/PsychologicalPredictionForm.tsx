@@ -38,18 +38,18 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
 const questions = [
-  { id: "realistic_q1", label: "Disfruto trabajar con herramientas y máquinas." },
-  { id: "investigative_q1", label: "Me gusta resolver problemas complejos y abstractos." },
-  { id: "artistic_q1", label: "Me considero una persona creativa e imaginativa." },
-  { id: "social_q1", label: "Disfruto ayudar y enseñar a otras personas." },
-  { id: "enterprising_q1", label: "Me siento cómodo liderando equipos y tomando decisiones." },
-  { id: "conventional_q1", label: "Prefiero tener rutinas claras y un trabajo organizado." },
-  { id: "realistic_q2", label: "Prefiero actividades al aire libre que trabajo de oficina." },
-  { id: "investigative_q2", label: "Siento curiosidad por cómo funcionan las cosas." },
-  { id: "artistic_q2", label: "Me expreso mejor a través de formas artísticas (música, escritura, etc.)." },
-  { id: "social_q2", label: "Soy bueno escuchando y entendiendo los problemas de los demás." },
-  { id: "enterprising_q2", label: "Me motivan los desafíos y me gusta persuadir a la gente." },
-  { id: "conventional_q2", label: "Disfruto trabajar con datos y prestar atención a los detalles." },
+  { id: "realistic_q1", label: "Disfruto trabajar con herramientas y máquinas.", category: "realista" },
+  { id: "investigative_q1", label: "Me gusta resolver problemas complejos y abstractos.", category: "investigador" },
+  { id: "artistic_q1", label: "Me considero una persona creativa e imaginativa.", category: "artistico" },
+  { id: "social_q1", label: "Disfruto ayudar y enseñar a otras personas.", category: "social" },
+  { id: "enterprising_q1", label: "Me siento cómodo liderando equipos y tomando decisiones.", category: "emprendedor" },
+  { id: "conventional_q1", label: "Prefiero tener rutinas claras y un trabajo organizado.", category: "convencional" },
+  { id: "realistic_q2", label: "Prefiero actividades al aire libre que trabajo de oficina.", category: "realista" },
+  { id: "investigative_q2", label: "Siento curiosidad por cómo funcionan las cosas.", category: "investigador" },
+  { id: "artistic_q2", label: "Me expreso mejor a través de formas artísticas (música, escritura, etc.).", category: "artistico" },
+  { id: "social_q2", label: "Soy bueno escuchando y entendiendo los problemas de los demás.", category: "social" },
+  { id: "enterprising_q2", label: "Me motivan los desafíos y me gusta persuadir a la gente.", category: "emprendedor" },
+  { id: "conventional_q2", label: "Disfruto trabajar con datos y prestar atención a los detalles.", category: "convencional" },
 ];
 
 const scoreSchema = z.string().refine(val => ["1", "2", "3", "4", "5"].includes(val), {
@@ -92,9 +92,25 @@ export function PsychologicalPredictionForm({ setPredictionResult }: Props) {
 
     setIsSubmitting(true);
     try {
+      const categoryScores = {
+          realista: 0,
+          investigador: 0,
+          artistico: 0,
+          social: 0,
+          emprendedor: 0,
+          convencional: 0
+      };
+
+      for (const question of questions) {
+          const score = parseInt(data[question.id as keyof PredictionFormValues]);
+          if (!isNaN(score)) {
+              categoryScores[question.category as keyof typeof categoryScores] += score;
+          }
+      }
+
       const requestData = {
         user_id: user.uid,
-        ...Object.entries(data).reduce((acc, [key, value]) => ({...acc, [key]: parseInt(value) }), {})
+        ...categoryScores
       };
       
       const response = await api.post('/prediccion/psicologica/', requestData);
