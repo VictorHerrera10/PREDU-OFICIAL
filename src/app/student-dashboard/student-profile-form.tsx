@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { SubmitButton } from '@/components/submit-button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { GraduationCap, ArrowLeft } from 'lucide-react';
+import { GraduationCap, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -66,19 +66,17 @@ export function StudentProfileForm({ user, profileData }: Props) {
 
     return (
         <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-             {isEditing && (
-                <div className="absolute top-4 left-4">
-                    <Button variant="ghost" asChild>
+            <Card className="relative w-full max-w-3xl bg-card/80 backdrop-blur-sm border-border">
+                {isEditing && (
+                    <Button variant="ghost" size="icon" asChild className="absolute top-4 right-4">
                         <Link href="/student-dashboard">
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Volver al Dashboard
+                            <X className="h-5 w-5" />
+                            <span className="sr-only">Cerrar</span>
                         </Link>
                     </Button>
-                </div>
-            )}
-            <Card className="w-full max-w-3xl bg-card/80 backdrop-blur-sm border-border">
+                )}
                 <CardHeader className="text-center">
-                    <div className="flex justify-center mb-4">
+                    <div className="flex justify-center mb-4 pt-8">
                          <Avatar className="w-24 h-24 border-4 border-primary">
                             <AvatarImage src={profileData?.profilePictureUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user?.displayName}`} alt={user?.displayName || 'Avatar'} />
                             <AvatarFallback><GraduationCap className="w-12 h-12" /></AvatarFallback>
@@ -132,7 +130,7 @@ export function StudentProfileForm({ user, profileData }: Props) {
                             <Input id="phone" name="phone" placeholder="987654321" defaultValue={profileData?.phone} required />
                         </div>
                         <div className="space-y-2 md:col-span-1">
-                            <Label htmlFor="institutionId">ID de Institución (Opcional)</Label>
+                            <Label htmlFor="institutionId">Código de Colegio (Opcional)</Label>
                             <Input id="institutionId" name="institutionId" placeholder="Si tienes un código, ingrésalo aquí" defaultValue={profileData?.institutionId}/>
                         </div>
 
