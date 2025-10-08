@@ -1,9 +1,9 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useFunctions } from '@/firebase';
 import { collection } from 'firebase/firestore';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
 import { motion } from 'framer-motion';
 import {
   Table,
@@ -52,6 +52,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export function UsersTable() {
   const firestore = useFirestore();
+  const functions = useFunctions();
   const { toast } = useToast();
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -64,8 +65,16 @@ export function UsersTable() {
 
   const handleDeleteUser = async (uid: string) => {
     setIsDeleting(true);
+    if (!functions) {
+        toast({
+            variant: 'destructive',
+            title: 'Error de Configuración',
+            description: 'El servicio de funciones no está disponible.',
+        });
+        setIsDeleting(false);
+        return;
+    }
     try {
-      const functions = getFunctions();
       const deleteUser = httpsCallable(functions, 'deleteUser');
       await deleteUser({ uid });
       toast({
@@ -141,7 +150,7 @@ export function UsersTable() {
 
   if (isLoading) {
     return (
-      <div className="border rounded-lg p-4">
+      <div className="p-4">
          <div className="flex justify-end mb-4">
              <Skeleton className="h-8 w-36" />
         </div>
@@ -170,7 +179,7 @@ export function UsersTable() {
         <AddUserDialog />
       </div>
       <motion.div 
-        className="border rounded-lg"
+        className="rounded-lg"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}

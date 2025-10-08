@@ -4,10 +4,10 @@ import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
 import { getFirestore, Firestore, initializeFirestore } from 'firebase/firestore';
-import { getFunctions } from 'firebase/functions';
+import { getFunctions, Functions } from 'firebase/functions';
 
 // This function now robustly handles initialization for both dev and prod.
-export function initializeFirebase(): { firebaseApp: FirebaseApp; auth: Auth; firestore: Firestore } {
+export function initializeFirebase(): { firebaseApp: FirebaseApp; auth: Auth; firestore: Firestore, functions: Functions } {
   if (getApps().length) {
     const app = getApp();
     return getSdks(app);
