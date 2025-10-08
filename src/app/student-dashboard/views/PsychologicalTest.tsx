@@ -111,7 +111,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                 </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {(Object.keys(SECTION_DETAILS) as TestSection[]).map(sec => {
                     const SectionIcon = SECTION_DETAILS[sec].icon;
                     const isComplete = progress[sec] === 100;
@@ -131,7 +131,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                                         initial={{ opacity: 0, height: 0 }}
                                         animate={{ opacity: 1, height: 'auto' }}
                                         exit={{ opacity: 0, height: 0 }}
-                                        className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-2"
+                                        className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 gap-2"
                                     >
                                         {currentSectionQuestions.map((q, index) => {
                                             const CategoryIcon = CATEGORY_DETAILS[q.category].icon;
