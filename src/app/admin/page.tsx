@@ -4,6 +4,7 @@ import { Logo } from '@/components/logo';
 import { LogoutButton } from '@/components/logout-button';
 import { UsersTable } from '@/app/admin/users-table';
 import { Users } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 function AdminDashboardPage() {
   return (
@@ -14,18 +15,22 @@ function AdminDashboardPage() {
         <LogoutButton />
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-        <div className="flex items-center gap-4">
-          <div className="bg-primary/10 p-3 rounded-lg border border-primary/20">
-             <Users className="h-6 w-6 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-primary">Gestión de Usuarios</h1>
-            <p className="text-muted-foreground">
-              Aquí puedes ver, agregar, editar y eliminar usuarios de la plataforma.
-            </p>
-          </div>
-        </div>
-        <UsersTable />
+        <Card className="bg-card/80 backdrop-blur-sm border-border/50">
+            <CardHeader className="flex flex-row items-center gap-4 pb-4">
+                 <div className="bg-primary/10 p-3 rounded-lg border border-primary/20">
+                    <Users className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                    <h1 className="text-2xl font-bold text-primary">Gestión de Usuarios</h1>
+                    <p className="text-muted-foreground">
+                    Aquí puedes ver, agregar, editar y eliminar usuarios de la plataforma.
+                    </p>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <UsersTable />
+            </CardContent>
+        </Card>
       </main>
     </div>
   );
