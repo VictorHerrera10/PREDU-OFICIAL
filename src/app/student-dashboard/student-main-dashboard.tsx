@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Logo } from '@/components/logo';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { LogoutButton } from '@/components/logout-button';
 import { BrainCircuit, Compass, Home } from 'lucide-react';
 import { User } from 'firebase/auth';
@@ -31,7 +31,7 @@ type Props = {
 };
 
 export function StudentMainDashboard({ user }: Props) {
-  const [selectedView, setSelectedView] = useState<View>('inicio');
+  const [selectedView, setSelectedView] = useState<View | null>(null);
 
   const renderContent = () => {
     switch (selectedView) {
@@ -55,10 +55,32 @@ export function StudentMainDashboard({ user }: Props) {
 
       <main className="flex-grow pt-20">
         <LayoutGroup>
+          <AnimatePresence>
+            {!selectedView && (
+              <motion.div
+                key="welcome-header"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5 }}
+                className="text-center px-4 mb-8"
+              >
+                <CardHeader>
+                  <CardTitle className="text-3xl md:text-4xl font-bold text-foreground">
+                    ¡Hola de nuevo, {user?.displayName}! 🚀
+                  </CardTitle>
+                  <CardDescription className="text-lg text-muted-foreground mt-2">
+                    Este es tu centro de mando para el éxito. ¿Qué quieres hacer hoy?
+                  </CardDescription>
+                </CardHeader>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          
           <motion.div
             layout
             key="options-container"
-            className={'flex justify-center items-center gap-4 py-4 px-4 border-b'}
+            className={`grid gap-8 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 ${selectedView ? 'grid-cols-3' : 'grid-cols-1 md:grid-cols-3'}`}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
             {options.map((option) => (
@@ -66,21 +88,36 @@ export function StudentMainDashboard({ user }: Props) {
                 layout
                 key={option.id}
                 onClick={() => setSelectedView(option.id)}
-                className={`cursor-pointer overflow-hidden rounded-lg`}
-                initial={{ borderRadius: '0.5rem' }}
+                className={`cursor-pointer overflow-hidden rounded-lg ${selectedView ? '' : 'bg-card/80 backdrop-blur-sm border text-left hover:border-primary/50 transition-all transform hover:-translate-y-1'}`}
+                initial={{ borderRadius: '0.75rem' }}
               >
                 <div
                     className={
-                        `flex items-center gap-2 px-4 py-2 rounded-lg ${selectedView === option.id ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted/80'}`
+                        `p-6 ${selectedView === option.id ? 'bg-primary text-primary-foreground rounded-lg' 
+                        : selectedView ? 'bg-muted hover:bg-muted/80 rounded-lg' 
+                        : ''} ${selectedView ? 'flex items-center justify-center gap-2' : 'flex flex-col items-center text-center gap-4'}`
                     }
                   >
                     <motion.div layout="position">
-                        <option.icon className={"w-5 h-5"} />
+                        <option.icon className={selectedView ? "w-5 h-5" : "w-10 h-10 text-primary"} />
                     </motion.div>
                     
-                    <motion.div layout="position">
-                      <h2 className={`font-bold text-sm`}>{option.title}</h2>
-                    </motion.div>
+                    <div className="flex flex-col">
+                      <motion.h2 layout="position" className={`font-bold ${selectedView ? 'text-sm' : 'text-2xl'}`}>{option.title}</motion.h2>
+                      <AnimatePresence>
+                        {!selectedView && (
+                          <motion.p 
+                            layout 
+                            className="text-muted-foreground mt-2"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                          >
+                            {option.description}
+                          </motion.p>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
               </motion.div>
             ))}
@@ -96,7 +133,7 @@ export function StudentMainDashboard({ user }: Props) {
                     exit={{ y: -20, opacity: 0 }}
                     transition={{ duration: 0.3 }}
                 >
-                    {renderContent()}
+                    {selectedView && renderContent()}
                 </motion.div>
             </AnimatePresence>
         </div>
