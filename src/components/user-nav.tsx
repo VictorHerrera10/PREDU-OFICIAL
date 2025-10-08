@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User as UserIcon, Star, LogOut } from 'lucide-react';
+import { User as UserIcon, Star, LogOut, Brain, Briefcase, Crown } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
 import Link from 'next/link';
 import { handleLogout } from './logout-button';
@@ -41,6 +41,9 @@ type UserProfile = {
   email?: string;
   profilePictureUrl?: string;
   role?: 'student' | 'tutor' | 'admin';
+  tutorDetails?: {
+    roleInInstitution?: 'psicologo' | 'docente' | 'director';
+  }
 };
 
 export function UserNav() {
@@ -67,10 +70,30 @@ export function UserNav() {
       .join('');
   };
 
+  const getTutorWelcomeDetails = (role?: 'psicologo' | 'docente' | 'director') => {
+    switch (role) {
+      case 'docente':
+        return { title: 'Prof.', emoji: '🧑‍🏫' };
+      case 'psicologo':
+        return { title: 'Psic.', emoji: '🧠' };
+      case 'director':
+        return { title: 'Dir.', emoji: '👑' };
+      default:
+        return { title: 'Bienvenido,', emoji: <Star className="w-4 h-4 text-primary" /> };
+    }
+  };
+
+
   const isLoading = isUserLoading || isProfileLoading;
   const profilePicture = userProfile?.profilePictureUrl || user?.photoURL;
   const displayName = userProfile?.username || user?.displayName;
   const displayEmail = user?.email;
+
+  const { title: welcomeTitle, emoji: welcomeEmoji } = useMemo(
+    () => getTutorWelcomeDetails(userProfile?.tutorDetails?.roleInInstitution),
+    [userProfile]
+  );
+
 
   const profileLink = useMemo(() => {
     switch (userProfile?.role) {
@@ -100,9 +123,9 @@ export function UserNav() {
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <span>Bienvenido,</span>
+        <span>{welcomeTitle}</span>
         <span className="font-bold text-foreground">{displayName}</span>
-        <Star className="w-4 h-4 text-primary" />
+        <span className="text-xl">{welcomeEmoji}</span>
       </motion.div>
       <AlertDialog>
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
