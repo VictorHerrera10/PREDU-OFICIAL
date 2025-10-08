@@ -42,7 +42,7 @@ type UserProfile = {
   profilePictureUrl?: string;
   role?: 'student' | 'tutor' | 'admin';
   tutorDetails?: {
-    roleInInstitution?: 'psicologo' | 'docente' | 'director';
+    roleInInstitution?: 'psicologo' | 'docente' | 'director' | 'autoridades gubernamentales';
   }
 };
 
@@ -79,6 +79,8 @@ export function UserNav() {
                 return { title: '¡Hola, Psic.', emoji: '🧠' };
             case 'director':
                 return { title: '¡Hola, Dir.', emoji: '👑' };
+            case 'autoridades gubernamentales':
+                return { title: '¡Hola, Aut.', emoji: '💼' };
             default:
                 return { title: '¡Hola, Tutor', emoji: '🧑‍🏫' };
         }
