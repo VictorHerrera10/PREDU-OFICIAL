@@ -136,29 +136,9 @@ export function StudentProfileForm({ user, profileData }: Props) {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="age" className="flex items-center gap-2"><Calendar className="w-4 h-4"/> Edad</Label>
-                                <Input id="age" name="age" type="number" placeholder="Ej: 16" defaultValue={profileData?.age} required className="w-24"/>
+                                <Input id="age" name="age" type="number" placeholder="Ej: 16" defaultValue={profileData?.age} required className="w-full" />
                             </div>
                              <div className="space-y-2">
-                                <Label className="flex items-center gap-2 mb-2.5"><VenetianMask className="w-4 h-4"/> Género</Label>
-                                <RadioGroup name="gender" defaultValue={profileData?.gender} required className="flex gap-4" onValueChange={setSelectedGender}>
-                                     <Label htmlFor="g-male" className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all", selectedGender === 'masculino' && 'border-primary ring-2 ring-primary/50' )}>
-                                        <RadioGroupItem value="masculino" id="g-male" className="sr-only" />
-                                        <span className="text-2xl" aria-hidden="true">♂</span>
-                                    </Label>
-                                    <Label htmlFor="g-female" className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all", selectedGender === 'femenino' && 'border-primary ring-2 ring-primary/50' )}>
-                                        <RadioGroupItem value="femenino" id="g-female" className="sr-only" />
-                                        <span className="text-2xl" aria-hidden="true">♀</span>
-                                    </Label>
-                                    <Label htmlFor="g-other" className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all", selectedGender === 'prefiero no decirlo' && 'border-primary ring-2 ring-primary/50' )}>
-                                        <RadioGroupItem value="prefiero no decirlo" id="g-other" className="sr-only" />
-                                        <span className="text-xl font-bold p-1" aria-hidden="true">?</span>
-                                    </Label>
-                                </RadioGroup>
-                            </div>
-                        </div>
-
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                            <div className="space-y-2">
                                 <Label htmlFor="grade" className="flex items-center gap-2"><BookOpen className="w-4 h-4"/> Grado</Label>
                                 <Select name="grade" defaultValue={profileData?.grade} required>
                                     <SelectTrigger><SelectValue placeholder="Selecciona tu grado" /></SelectTrigger>
@@ -172,35 +152,53 @@ export function StudentProfileForm({ user, profileData }: Props) {
                                     </SelectContent>
                                 </Select>
                             </div>
+                        </div>
+
+                         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 items-end">
                              <div className="space-y-2">
                                 <Label htmlFor="city" className="flex items-center gap-2"><Map className="w-4 h-4"/> Ciudad</Label>
                                 <Input id="city" name="city" placeholder="Donde vives actualmente" defaultValue={profileData?.city} required />
                             </div>
-                         </div>
-                        
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                            <div className="space-y-2">
+                             <div className="space-y-2">
                                 <Label htmlFor="phone" className="flex items-center gap-2"><Phone className="w-4 h-4"/> Teléfono</Label>
                                 <Input id="phone" name="phone" placeholder="9 dígitos" defaultValue={profileData?.phone} required maxLength={9} />
                             </div>
                              <div className="space-y-2">
-                                <Label className="flex items-center gap-2"><KeySquare className="w-4 h-4"/> Código de Colegio (Opcional)</Label>
-                                <div className="flex gap-2">
-                                    {institutionCode.map((digit, index) => (
-                                        <Input
-                                            key={index}
-                                            ref={el => inputRefs.current[index] = el}
-                                            type="text"
-                                            maxLength={1}
-                                            value={digit}
-                                            onChange={(e) => handleCodeChange(index, e.target.value)}
-                                            onKeyDown={(e) => handleKeyDown(index, e)}
-                                            className="w-12 h-12 text-center text-lg font-mono uppercase"
-                                        />
-                                    ))}
-                                </div>
+                                <Label className="flex items-center gap-2 mb-2.5"><VenetianMask className="w-4 h-4"/> Género</Label>
+                                <RadioGroup name="gender" defaultValue={profileData?.gender} required className="flex gap-4" onValueChange={setSelectedGender}>
+                                     <Label htmlFor="g-male" className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all w-full", selectedGender === 'masculino' && 'border-primary ring-2 ring-primary/50' )}>
+                                        <RadioGroupItem value="masculino" id="g-male" className="sr-only" />
+                                        <span className="text-2xl text-[#60a5fa]" aria-hidden="true">♂</span>
+                                    </Label>
+                                    <Label htmlFor="g-female" className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all w-full", selectedGender === 'femenino' && 'border-primary ring-2 ring-primary/50' )}>
+                                        <RadioGroupItem value="femenino" id="g-female" className="sr-only" />
+                                        <span className="text-2xl text-[#f472b6]" aria-hidden="true">♀</span>
+                                    </Label>
+                                    <Label htmlFor="g-other" className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all w-full", selectedGender === 'prefiero no decirlo' && 'border-primary ring-2 ring-primary/50' )}>
+                                        <RadioGroupItem value="prefiero no decirlo" id="g-other" className="sr-only" />
+                                        <span className="text-xl font-bold p-1 text-muted-foreground" aria-hidden="true">?</span>
+                                    </Label>
+                                </RadioGroup>
                             </div>
-                         </div>
+                        </div>
+                        
+                        <div className="pt-6 flex flex-col items-center">
+                            <Label className="flex items-center gap-2 mb-2 text-center"><KeySquare className="w-4 h-4"/> Código de Colegio (Opcional)</Label>
+                            <div className="flex gap-2">
+                                {institutionCode.map((digit, index) => (
+                                    <Input
+                                        key={index}
+                                        ref={el => inputRefs.current[index] = el}
+                                        type="text"
+                                        maxLength={1}
+                                        value={digit}
+                                        onChange={(e) => handleCodeChange(index, e.target.value)}
+                                        onKeyDown={(e) => handleKeyDown(index, e)}
+                                        className="w-12 h-12 text-center text-lg font-mono uppercase"
+                                    />
+                                ))}
+                            </div>
+                        </div>
 
                         <div className="text-center mt-6">
                             <SubmitButton className="w-full max-w-xs mx-auto">
