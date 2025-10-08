@@ -68,14 +68,14 @@ export function StudentProfileForm({ user, profileData }: Props) {
         <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
             <Card className="relative w-full max-w-3xl bg-card/80 backdrop-blur-sm border-border">
                 {isEditing && (
-                    <Button variant="ghost" size="icon" asChild className="absolute top-4 right-4">
+                    <Button variant="ghost" size="icon" asChild className="absolute top-4 right-4 z-10">
                         <Link href="/student-dashboard">
                             <X className="h-5 w-5" />
                             <span className="sr-only">Cerrar</span>
                         </Link>
                     </Button>
                 )}
-                <CardHeader className="text-center">
+                <CardHeader className="text-center items-center">
                     <div className="flex justify-center mb-4 pt-8">
                          <Avatar className="w-24 h-24 border-4 border-primary">
                             <AvatarImage src={profileData?.profilePictureUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user?.displayName}`} alt={user?.displayName || 'Avatar'} />
