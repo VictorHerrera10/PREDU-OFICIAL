@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, getFunctions, httpsCallable } from 'firebase/firestore';
+import { collection } from 'firebase/firestore';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import {
   Table,
   TableHeader,
