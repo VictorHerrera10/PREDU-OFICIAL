@@ -40,7 +40,7 @@ export function InstitutionHeader() {
     if (!userProfile?.institutionId && !isLoading) return null;
 
     return (
-        <div className="w-full bg-background/80 backdrop-blur-sm border-b py-2 mb-4">
+        <div className="w-full bg-background/80 backdrop-blur-sm border-b py-2">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
                 {isLoading ? (
                     <div className="flex items-center gap-3">
@@ -56,7 +56,7 @@ export function InstitutionHeader() {
                             </AvatarFallback>
                         </Avatar>
                         <h2 className="font-semibold text-foreground text-lg">
-                            <span className="text-muted-foreground font-normal text-base mr-2">Estás en:</span>
+                            <span className="text-muted-foreground font-normal text-base mr-2">🏫 Estás en:</span>
                             {institution.name}
                         </h2>
                     </div>

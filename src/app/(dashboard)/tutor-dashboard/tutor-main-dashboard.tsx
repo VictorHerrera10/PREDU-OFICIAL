@@ -45,13 +45,15 @@ export function TutorMainDashboard({ user }: Props) {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="fixed top-0 left-0 right-0 p-4 flex justify-between items-center z-20 bg-background/80 backdrop-blur-sm border-b">
-        <Logo />
-        <UserNav />
-      </header>
-      
-      <main className="flex-grow mt-16">
+       <div className="fixed top-0 left-0 right-0 z-20">
+         <header className="p-4 flex justify-between items-center bg-background/80 backdrop-blur-sm border-b">
+            <Logo />
+            <UserNav />
+        </header>
         <InstitutionHeader />
+       </div>
+      
+      <main className="flex-grow pt-32">
         <LayoutGroup>
           <AnimatePresence>
             {!selectedView && (
