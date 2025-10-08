@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import { User } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { updateStudentProfile } from '@/app/actions';
@@ -12,9 +12,11 @@ import { Input } from '@/components/ui/input';
 import { SubmitButton } from '@/components/submit-button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { GraduationCap, VenetianMask, X } from 'lucide-react';
+import { GraduationCap, VenetianMask, X, User as UserIcon, CaseSensitive, Hash, Building, Phone, Calendar, Map, BookOpen, KeySquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { cn } from '@/lib/utils';
 
 
 type UserProfile = {
@@ -68,7 +70,7 @@ export function StudentProfileForm({ user, profileData }: Props) {
 
     return (
         <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-            <Card className="relative w-full max-w-3xl bg-card/80 backdrop-blur-sm border-border">
+            <Card className="relative w-full max-w-4xl bg-card/80 backdrop-blur-sm border-border">
                 {isEditing && (
                     <Button variant="ghost" size="icon" asChild className="absolute top-4 right-4 z-10">
                         <Link href="/student-dashboard">
@@ -92,71 +94,111 @@ export function StudentProfileForm({ user, profileData }: Props) {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form action={formAction} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <form action={formAction} className="space-y-6">
                         <input type="hidden" name="userId" value={user?.uid} />
                         
-                        <div className="space-y-2">
-                            <Label htmlFor="firstName">Nombres</Label>
-                            <Input id="firstName" name="firstName" placeholder="Tus nombres" defaultValue={profileData?.firstName} required />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="lastName">Apellidos</Label>
-                            <Input id="lastName" name="lastName" placeholder="Tus apellidos" defaultValue={profileData?.lastName} required />
-                        </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="dni">DNI</Label>
-                            <Input id="dni" name="dni" type="text" placeholder="Tu número de DNI" defaultValue={profileData?.dni} required />
-                        </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="gender" className="flex items-center gap-2"><VenetianMask className="w-4 h-4"/> Género</Label>
-                            <Select name="gender" defaultValue={profileData?.gender} required>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Selecciona tu género" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="masculino">Masculino</SelectItem>
-                                    <SelectItem value="femenino">Femenino</SelectItem>
-                                    <SelectItem value="otro">Otro</SelectItem>
-                                    <SelectItem value="prefiero no decirlo">Prefiero no decirlo</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="age">Edad</Label>
-                            <Input id="age" name="age" type="number" placeholder="Ej: 16" defaultValue={profileData?.age} required />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="grade">Grado</Label>
-                             <Select name="grade" defaultValue={profileData?.grade} required>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Selecciona tu grado" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="1ro Secundaria">1ro Secundaria</SelectItem>
-                                    <SelectItem value="2do Secundaria">2do Secundaria</SelectItem>
-                                    <SelectItem value="3ro Secundaria">3ro Secundaria</SelectItem>
-                                    <SelectItem value="4to Secundaria">4to Secundaria</SelectItem>
-                                    <SelectItem value="5to Secundaria">5to Secundaria</SelectItem>
-                                    <SelectItem value="Egresado">Egresado</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="city">Ciudad</Label>
-                            <Input id="city" name="city" placeholder="Donde vives" defaultValue={profileData?.city} required />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="phone">Teléfono</Label>
-                            <Input id="phone" name="phone" placeholder="987654321" defaultValue={profileData?.phone} required />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="institutionId">Código de Colegio (Opcional)</Label>
-                            <Input id="institutionId" name="institutionId" placeholder="Si tienes un código, ingrésalo aquí" defaultValue={profileData?.institutionId}/>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                            {/* Nombres y Apellidos */}
+                            <div className="space-y-2">
+                                <Label htmlFor="firstName" className="flex items-center gap-2">
+                                    <UserIcon className="w-4 h-4"/> Nombres
+                                </Label>
+                                <Input id="firstName" name="firstName" placeholder="Tus nombres completos" defaultValue={profileData?.firstName} required />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="lastName" className="flex items-center gap-2">
+                                    <CaseSensitive className="w-4 h-4"/> Apellidos
+                                </Label>
+                                <Input id="lastName" name="lastName" placeholder="Tus apellidos completos" defaultValue={profileData?.lastName} required />
+                            </div>
                         </div>
 
-                        <div className="md:col-span-2 text-center mt-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 items-end">
+                            {/* DNI */}
+                             <div className="space-y-2">
+                                <Label htmlFor="dni" className="flex items-center gap-2">
+                                    <Hash className="w-4 h-4"/> DNI
+                                </Label>
+                                <Input id="dni" name="dni" type="text" placeholder="8 dígitos" defaultValue={profileData?.dni} required maxLength={8} pattern="\d{8}" />
+                            </div>
+                            {/* Edad */}
+                            <div className="space-y-2">
+                                <Label htmlFor="age" className="flex items-center gap-2">
+                                    <Calendar className="w-4 h-4"/> Edad
+                                </Label>
+                                <Input id="age" name="age" type="number" placeholder="Ej: 16" defaultValue={profileData?.age} required className="w-24"/>
+                            </div>
+                             {/* Género */}
+                             <div className="space-y-2">
+                                <Label className="flex items-center gap-2 mb-2.5">
+                                    <VenetianMask className="w-4 h-4"/> Género
+                                </Label>
+                                <RadioGroup name="gender" defaultValue={profileData?.gender} required className="flex gap-4">
+                                     <Label htmlFor="g-male" className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground", profileData?.gender === 'masculino' && 'border-primary' )}>
+                                        <RadioGroupItem value="masculino" id="g-male" className="sr-only" />
+                                        <span className="text-2xl" aria-hidden="true">♂</span>
+                                    </Label>
+                                    <Label htmlFor="g-female" className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground", profileData?.gender === 'femenino' && 'border-primary' )}>
+                                        <RadioGroupItem value="femenino" id="g-female" className="sr-only" />
+                                        <span className="text-2xl" aria-hidden="true">♀</span>
+                                    </Label>
+                                    <Label htmlFor="g-other" className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground", profileData?.gender === 'prefiero no decirlo' && 'border-primary' )}>
+                                        <RadioGroupItem value="prefiero no decirlo" id="g-other" className="sr-only" />
+                                        <span className="text-2xl font-bold" aria-hidden="true">?</span>
+                                    </Label>
+                                </RadioGroup>
+                            </div>
+                        </div>
+
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                            {/* Grado */}
+                            <div className="space-y-2">
+                                <Label htmlFor="grade" className="flex items-center gap-2">
+                                    <BookOpen className="w-4 h-4"/> Grado
+                                </Label>
+                                <Select name="grade" defaultValue={profileData?.grade} required>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecciona tu grado" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="1ro Secundaria">1ro Secundaria</SelectItem>
+                                        <SelectItem value="2do Secundaria">2do Secundaria</SelectItem>
+                                        <SelectItem value="3ro Secundaria">3ro Secundaria</SelectItem>
+                                        <SelectItem value="4to Secundaria">4to Secundaria</SelectItem>
+                                        <SelectItem value="5to Secundaria">5to Secundaria</SelectItem>
+                                        <SelectItem value="Egresado">Egresado</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            {/* Ciudad */}
+                             <div className="space-y-2">
+                                <Label htmlFor="city" className="flex items-center gap-2">
+                                    <Map className="w-4 h-4"/> Ciudad
+                                </Label>
+                                <Input id="city" name="city" placeholder="Donde vives actualmente" defaultValue={profileData?.city} required />
+                            </div>
+                         </div>
+                        
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                            {/* Teléfono */}
+                            <div className="space-y-2">
+                                <Label htmlFor="phone" className="flex items-center gap-2">
+                                    <Phone className="w-4 h-4"/> Teléfono
+                                </Label>
+                                <Input id="phone" name="phone" placeholder="9 dígitos" defaultValue={profileData?.phone} required maxLength={9} />
+                            </div>
+                            {/* Código de Colegio */}
+                             <div className="space-y-2">
+                                <Label htmlFor="institutionId" className="flex items-center gap-2">
+                                    <KeySquare className="w-4 h-4"/> Código de Colegio (Opcional)
+                                </Label>
+                                <Input id="institutionId" name="institutionId" placeholder="5 caracteres" defaultValue={profileData?.institutionId} maxLength={5} className="w-40"/>
+                            </div>
+                         </div>
+
+                        <div className="text-center mt-6">
                             <SubmitButton className="w-full max-w-xs mx-auto">
-                                Guardar Cambios
+                                Guardar Perfil
                             </SubmitButton>
                         </div>
                     </form>
