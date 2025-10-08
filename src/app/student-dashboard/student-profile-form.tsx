@@ -75,11 +75,11 @@ export function StudentProfileForm({ user, profileData }: Props) {
 
     useEffect(() => {
         const baseSeed = user?.displayName || 'default';
-        let newAvatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${baseSeed}`;
+        let newAvatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${baseSeed}`;
         if (selectedGender === 'masculino') {
-            newAvatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${baseSeed}-male`;
+            newAvatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${baseSeed}&top=ShortHairShortFlat&facialHairChance=0`;
         } else if (selectedGender === 'femenino') {
-            newAvatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${baseSeed}-female`;
+            newAvatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${baseSeed}&top=LongHairStraight`;
         }
         setAvatarUrl(newAvatarUrl);
     }, [selectedGender, user?.displayName]);
@@ -168,7 +168,7 @@ export function StudentProfileForm({ user, profileData }: Props) {
                             </div>
                         </div>
 
-                         <div className="grid grid-cols-1 md:grid-cols-[1fr,1fr,2fr] gap-x-6 gap-y-4 items-end">
+                         <div className="grid grid-cols-1 md:grid-cols-[1fr,auto,1fr] gap-x-6 gap-y-4 items-end">
                              <div className="space-y-2">
                                 <Label htmlFor="city" className="flex items-center gap-2"><Map className="w-4 h-4"/> Ciudad</Label>
                                 <Input id="city" name="city" placeholder="Donde vives" defaultValue={profileData?.city} required />
