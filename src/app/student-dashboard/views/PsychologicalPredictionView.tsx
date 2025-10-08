@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { PsychologicalPredictionForm } from './PsychologicalPredictionForm';
+import { PsychologicalTest } from './PsychologicalTest';
 
 export default function PsychologicalPredictionView() {
   const [predictionResult, setPredictionResult] = useState<string | null>(null);
@@ -10,20 +10,19 @@ export default function PsychologicalPredictionView() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Predicción Psicológica</CardTitle>
+        <CardTitle>Test de Intereses Vocacionales (RIASEC)</CardTitle>
         <CardDescription>
            {predictionResult ? (
-            <span className="text-primary font-bold">{predictionResult}</span>
+            <>
+              Tu perfil dominante es: <span className="text-primary font-bold">{predictionResult}</span>
+            </>
           ) : (
-            'Conócete mejor y entiende tus fortalezas personales.'
+            'Descubre tu perfil de intereses y las carreras asociadas a él.'
           )}
         </CardDescription>
       </CardHeader>
-      <CardContent className="text-center">
-        <p className="text-muted-foreground mb-6">
-          Responde a las siguientes preguntas para recibir un análisis de tu perfil de personalidad y su relación con distintas áreas profesionales.
-        </p>
-        <PsychologicalPredictionForm setPredictionResult={setPredictionResult} />
+      <CardContent>
+        <PsychologicalTest setPredictionResult={setPredictionResult} />
       </CardContent>
     </Card>
   );

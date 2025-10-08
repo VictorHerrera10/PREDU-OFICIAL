@@ -7,6 +7,7 @@ import * as z from 'zod';
 import { useUser } from '@/firebase';
 import api from '@/lib/api-client';
 
+// Importaciones de Componentes
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -123,10 +124,11 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>Iniciar Predicción Vocacional</Button>
+        <Button>Obtener Predicción</Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+      {/* **AJUSTE CRÍTICO 1:** Aumentamos la altura máxima y garantizamos h-full */}
+      <DialogContent className="max-w-4xl h-full max-h-[95vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-center text-2xl font-bold">
             🚀 ¡Descubramos tu Vocación!
@@ -139,8 +141,11 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="overflow-hidden flex flex-col flex-grow">
-            <ScrollArea className="flex-grow pr-6 -mr-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 py-4">
+            
+            {/* **AJUSTE CRÍTICO 2:** Simplificamos el ScrollArea para evitar conflictos de padding/margin */}
+            <ScrollArea className="flex-grow">
+              {/* Le aplicamos el padding directamente al grid, no al ScrollArea */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 px-6 py-4">
                 {subjects.map((subject) => (
                   <FormField
                     key={subject.id}
@@ -189,9 +194,10 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
               </div>
             </ScrollArea>
             
-            <DialogFooter className="flex-shrink-0 pt-4">
+            {/* El DialogFooter tiene una altura fija y queda siempre visible */}
+            <DialogFooter className="flex-shrink-0 pt-4 px-6 border-t"> {/* Añadí un borde para separarlo visualmente del scroll */}
               <div className="w-full flex justify-center">
-                <Button type="submit" disabled={isSubmitting} size="lg">
+                <Button type="submit" disabled={isSubmitting} size="lg" className='w-full md:w-auto'>
                   {isSubmitting && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
