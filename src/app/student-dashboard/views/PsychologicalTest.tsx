@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useUser } from '@/firebase';
 import api from '@/lib/api-client';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,7 +22,7 @@ type Props = {
 export function PsychologicalTest({ setPredictionResult }: Props) {
     const { user } = useUser();
     const { toast } = useToast();
-    const [answers, setAnswers] = useState<Answers>(() => 
+    const [answers, setAnswers] = useState<Answers>(
         questions.reduce((acc, q) => ({ ...acc, [q.id]: null }), {})
     );
     const [activeSection, setActiveSection] = useState<TestSection | null>(null);
@@ -46,18 +46,13 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
         };
     }, [answers]);
 
-    useEffect(() => {
-        if (emblaApi) {
-            emblaApi.reInit();
-        }
-    }, [emblaApi, activeSection]);
-
     const handleAnswer = (questionId: string, answer: 'yes' | 'no') => {
         setAnswers(prev => ({ ...prev, [questionId]: answer }));
         if (emblaApi) {
             if (emblaApi.canScrollNext()) {
                 emblaApi.scrollNext();
             } else {
+                // If it's the last question in the section, go back to section selection
                 setActiveSection(null);
             }
         }
@@ -71,6 +66,10 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
 
     const handleStartSection = (section: TestSection) => {
         setActiveSection(section);
+        // Use a timeout to ensure the DOM is updated before re-initializing
+        setTimeout(() => {
+            emblaApi?.reInit();
+        }, 100);
     };
 
     const currentSectionQuestions = useMemo(() => {
