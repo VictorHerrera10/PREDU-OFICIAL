@@ -127,24 +127,20 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
       </DialogTrigger>
 
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col h-full overflow-hidden"
-          >
-            {/* ===== ENCABEZADO FIJO ===== */}
-             <DialogHeader className="flex-shrink-0 border-b pb-4">
-                <DialogTitle className="text-center text-2xl font-bold">
-                    🚀 ¡Descubramos tu Vocación!
-                </DialogTitle>
-                <DialogDescription className="text-center text-sm text-muted-foreground">
-                    Ingresa tus últimas calificaciones. ¡Cada nota es una pista hacia tu futuro profesional! 🎓
-                </DialogDescription>
-            </DialogHeader>
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle className="text-center text-2xl font-bold">
+            🚀 ¡Descubramos tu Vocación!
+          </DialogTitle>
+          <DialogDescription className="text-center text-sm text-muted-foreground">
+            Ingresa tus últimas calificaciones. ¡Cada nota es una pista hacia tu
+            futuro profesional! 🎓
+          </DialogDescription>
+        </DialogHeader>
 
-            {/* ===== CONTENIDO SCROLLABLE ===== */}
-             <ScrollArea className="flex-grow p-4 -mr-6 pr-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="overflow-hidden flex flex-col flex-grow">
+            <ScrollArea className="flex-grow pr-6 -mr-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 py-4">
                 {subjects.map((subject) => (
                   <FormField
                     key={subject.id}
@@ -192,9 +188,8 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
                 ))}
               </div>
             </ScrollArea>
-
-            {/* ===== FOOTER FIJO ===== */}
-            <DialogFooter className="flex-shrink-0 border-t pt-4">
+            
+            <DialogFooter className="flex-shrink-0 pt-4">
               <div className="w-full flex justify-center">
                 <Button type="submit" disabled={isSubmitting} size="lg">
                   {isSubmitting && (
