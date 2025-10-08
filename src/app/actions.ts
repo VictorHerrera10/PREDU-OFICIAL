@@ -329,9 +329,10 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
   const grade = formData.get('grade') as string;
   const city = formData.get('city') as string;
   const phone = formData.get('phone') as string;
+  const gender = formData.get('gender') as string;
   const institutionId = formData.get('institutionId') as string;
 
-  if (!userId || !firstName || !lastName || !dni || !age || !grade || !city || !phone) {
+  if (!userId || !firstName || !lastName || !dni || !age || !grade || !city || !phone || !gender) {
       return { success: false, message: 'Todos los campos son obligatorios, excepto el colegio.' };
   }
 
@@ -346,6 +347,7 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
           grade,
           city,
           phone,
+          gender,
           profilePictureUrl: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${firstName}${lastName}`,
           isProfileComplete: true,
       };
@@ -375,8 +377,9 @@ export async function updateTutorProfile(prevState: any, formData: FormData) {
   const dni = formData.get('dni') as string;
   const phone = formData.get('phone') as string;
   const workArea = formData.get('workArea') as string;
+  const gender = formData.get('gender') as string;
 
-  if (!userId || !firstName || !lastName || !dni || !phone || !workArea) {
+  if (!userId || !firstName || !lastName || !dni || !phone || !workArea || !gender) {
       return { success: false, message: 'Todos los campos son obligatorios.' };
   }
 
@@ -389,6 +392,7 @@ export async function updateTutorProfile(prevState: any, formData: FormData) {
           dni,
           phone,
           workArea,
+          gender,
           profilePictureUrl: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${firstName}${lastName}`,
           isProfileComplete: true,
       };

@@ -3,33 +3,28 @@
 import { useActionState, useEffect } from 'react';
 import { User } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
-import { updateStudentProfile } from '@/app/actions';
+import { updateTutorProfile } from '@/app/actions';
 import { useRouter } from 'next/navigation';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { SubmitButton } from '@/components/submit-button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { GraduationCap, VenetianMask, X } from 'lucide-react';
+import { Briefcase, VenetianMask, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type UserProfile = {
     firstName?: string;
     lastName?: string;
     dni?: string;
-    age?: number;
-    grade?: string;
-    city?: string;
     phone?: string;
+    workArea?: string;
     gender?: string;
-    institutionId?: string;
     profilePictureUrl?: string;
 };
-
 
 type Props = {
     user: User | null;
@@ -41,21 +36,20 @@ const initialState = {
     success: false,
 };
 
-export function StudentProfileForm({ user, profileData }: Props) {
+export function TutorProfileForm({ user, profileData }: Props) {
     const { toast } = useToast();
     const router = useRouter();
-    const [state, formAction] = useActionState(updateStudentProfile, initialState);
+    const [state, formAction] = useActionState(updateTutorProfile, initialState);
     const isEditing = !!profileData?.firstName;
-
 
     useEffect(() => {
         if(state.success){
             toast({
-                title: '¡Perfil Actualizado! ✅',
+                title: '¡Perfil de Tutor Actualizado! ✅',
                 description: 'Tus datos han sido guardados correctamente.',
             });
             if (!isEditing) {
-                router.refresh(); // Or redirect to dashboard
+                router.refresh(); 
             }
         } else if (state.message) {
             toast({
@@ -71,7 +65,7 @@ export function StudentProfileForm({ user, profileData }: Props) {
             <Card className="relative w-full max-w-3xl bg-card/80 backdrop-blur-sm border-border">
                 {isEditing && (
                     <Button variant="ghost" size="icon" asChild className="absolute top-4 right-4 z-10">
-                        <Link href="/student-dashboard">
+                        <Link href="/tutor-dashboard">
                             <X className="h-5 w-5" />
                             <span className="sr-only">Cerrar</span>
                         </Link>
@@ -81,14 +75,14 @@ export function StudentProfileForm({ user, profileData }: Props) {
                     <div className="flex justify-center mb-4 pt-8">
                          <Avatar className="w-24 h-24 border-4 border-primary">
                             <AvatarImage src={profileData?.profilePictureUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user?.displayName}`} alt={user?.displayName || 'Avatar'} />
-                            <AvatarFallback><GraduationCap className="w-12 h-12" /></AvatarFallback>
+                            <AvatarFallback><Briefcase className="w-12 h-12" /></AvatarFallback>
                         </Avatar>
                     </div>
                     <CardTitle className="text-3xl font-bold text-primary">
-                         {isEditing ? 'Edita tu Perfil' : `¡Casi listo, ${user?.displayName || 'Estudiante'}!`}
+                         {isEditing ? 'Edita tu Perfil de Tutor' : `¡Bienvenido, Tutor ${user?.displayName || ''}!`}
                     </CardTitle>
                     <CardDescription className="text-lg text-muted-foreground mt-2">
-                        {isEditing ? 'Actualiza tu información personal.' : 'Completa tu perfil para desbloquear todo tu potencial.'}
+                        {isEditing ? 'Actualiza tu información profesional.' : 'Completa tu perfil para acceder a tus herramientas.'}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -103,11 +97,15 @@ export function StudentProfileForm({ user, profileData }: Props) {
                             <Label htmlFor="lastName">Apellidos</Label>
                             <Input id="lastName" name="lastName" placeholder="Tus apellidos" defaultValue={profileData?.lastName} required />
                         </div>
-                         <div className="space-y-2">
+                        <div className="space-y-2">
                             <Label htmlFor="dni">DNI</Label>
                             <Input id="dni" name="dni" type="text" placeholder="Tu número de DNI" defaultValue={profileData?.dni} required />
                         </div>
-                         <div className="space-y-2">
+                        <div className="space-y-2">
+                            <Label htmlFor="phone">Teléfono</Label>
+                            <Input id="phone" name="phone" placeholder="987654321" defaultValue={profileData?.phone} required />
+                        </div>
+                        <div className="space-y-2">
                             <Label htmlFor="gender" className="flex items-center gap-2"><VenetianMask className="w-4 h-4"/> Género</Label>
                             <Select name="gender" defaultValue={profileData?.gender} required>
                                 <SelectTrigger>
@@ -121,42 +119,18 @@ export function StudentProfileForm({ user, profileData }: Props) {
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="age">Edad</Label>
-                            <Input id="age" name="age" type="number" placeholder="Ej: 16" defaultValue={profileData?.age} required />
+                         <div className="space-y-2">
+                            <Label htmlFor="email">Email (no editable)</Label>
+                            <Input id="email" name="email" type="email" value={user?.email || ''} readOnly disabled />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="grade">Grado</Label>
-                             <Select name="grade" defaultValue={profileData?.grade} required>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Selecciona tu grado" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="1ro Secundaria">1ro Secundaria</SelectItem>
-                                    <SelectItem value="2do Secundaria">2do Secundaria</SelectItem>
-                                    <SelectItem value="3ro Secundaria">3ro Secundaria</SelectItem>
-                                    <SelectItem value="4to Secundaria">4to Secundaria</SelectItem>
-                                    <SelectItem value="5to Secundaria">5to Secundaria</SelectItem>
-                                    <SelectItem value="Egresado">Egresado</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="city">Ciudad</Label>
-                            <Input id="city" name="city" placeholder="Donde vives" defaultValue={profileData?.city} required />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="phone">Teléfono</Label>
-                            <Input id="phone" name="phone" placeholder="987654321" defaultValue={profileData?.phone} required />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="institutionId">Código de Colegio (Opcional)</Label>
-                            <Input id="institutionId" name="institutionId" placeholder="Si tienes un código, ingrésalo aquí" defaultValue={profileData?.institutionId}/>
+                        <div className="space-y-2 md:col-span-2">
+                            <Label htmlFor="workArea">Área de Trabajo</Label>
+                            <Input id="workArea" name="workArea" placeholder="Ej: Psicología Educativa" defaultValue={profileData?.workArea} required />
                         </div>
 
                         <div className="md:col-span-2 text-center mt-4">
                             <SubmitButton className="w-full max-w-xs mx-auto">
-                                Guardar Cambios
+                                Guardar Perfil
                             </SubmitButton>
                         </div>
                     </form>

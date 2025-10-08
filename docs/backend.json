@@ -26,6 +26,11 @@
           "type": "string",
           "description": "The user's national identity document number."
         },
+        "gender": {
+            "type": "string",
+            "description": "The user's gender.",
+            "enum": ["masculino", "femenino", "otro", "prefiero no decirlo"]
+        },
         "age": {
           "type": "number",
           "description": "The user's age."
