@@ -29,6 +29,27 @@ type UserProfile = {
   profilePictureUrl?: string;
 };
 
+// Animation variants for the container
+const sentence = {
+  hidden: { opacity: 1 },
+  visible: {
+    opacity: 1,
+    transition: {
+      delay: 0.5,
+      staggerChildren: 0.08,
+    },
+  },
+};
+
+// Animation variants for each letter
+const letter = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+  },
+};
+
 export function UserNav() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
@@ -54,6 +75,9 @@ export function UserNav() {
   const profilePicture = userProfile?.profilePictureUrl || user?.photoURL;
   const displayName = userProfile?.username || user?.displayName;
   const displayEmail = user?.email;
+  
+  const welcomeText = `Bienvenido, ${displayName} 👋`;
+
 
   if (isLoading) {
     return (
@@ -66,15 +90,27 @@ export function UserNav() {
 
   return (
     <div className="flex items-center gap-4">
-        <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-        >
-            <span className="text-sm font-medium text-muted-foreground hidden md:inline">
-                Bienvenido, <span className="text-foreground font-bold">{displayName}</span> 👋
-            </span>
-        </motion.div>
+      <motion.div
+        className="hidden md:flex text-sm font-medium text-muted-foreground"
+        variants={sentence}
+        initial="hidden"
+        animate="visible"
+      >
+        {welcomeText.split("").map((char, index) => (
+          <motion.span
+            key={char + "-" + index}
+            variants={letter}
+            className={
+              char === " " ? "whitespace-pre" :
+              displayName?.includes(char) && char !== ' ' 
+              ? "text-foreground font-bold" 
+              : ""
+            }
+          >
+            {char}
+          </motion.span>
+        ))}
+      </motion.div>
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
