@@ -56,7 +56,7 @@ export function InstitutionHeader() {
                             </AvatarFallback>
                         </Avatar>
                         <h2 className="font-semibold text-foreground text-lg">
-                            <span className="text-muted-foreground font-normal text-base mr-2">🏫 Estás en:</span>
+                            <span className="text-muted-foreground font-normal text-base mr-2">🏫 Estás en</span>
                             {institution.name}
                         </h2>
                     </div>
