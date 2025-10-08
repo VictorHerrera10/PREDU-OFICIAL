@@ -40,6 +40,7 @@ type UserProfile = {
   username?: string;
   email?: string;
   profilePictureUrl?: string;
+  role?: 'student' | 'tutor' | 'admin';
 };
 
 export function UserNav() {
@@ -70,6 +71,17 @@ export function UserNav() {
   const profilePicture = userProfile?.profilePictureUrl || user?.photoURL;
   const displayName = userProfile?.username || user?.displayName;
   const displayEmail = user?.email;
+
+  const profileLink = useMemo(() => {
+    switch (userProfile?.role) {
+      case 'student':
+        return '/student-dashboard/profile';
+      case 'tutor':
+        return '/tutor-dashboard/profile';
+      default:
+        return '/dashboard'; // Fallback for admin or undefined roles
+    }
+  }, [userProfile?.role]);
 
   if (isLoading) {
     return (
@@ -119,7 +131,7 @@ export function UserNav() {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link href="/student-dashboard/profile">
+                <Link href={profileLink}>
                   <UserIcon className="mr-2 h-4 w-4" />
                   <span>Mi Perfil</span>
                 </Link>

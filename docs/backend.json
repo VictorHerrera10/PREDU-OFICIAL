@@ -81,6 +81,10 @@
             "roleInInstitution": {
               "type": "string",
               "description": "The tutor's specific role within the institution (e.g., Psicólogo, Docente)."
+            },
+            "workArea": {
+              "type": "string",
+              "description": "The tutor's area of professional expertise (e.g., Psicología Educativa)."
             }
           }
         }

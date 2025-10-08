@@ -364,3 +364,41 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
       return { success: false, message: 'No se pudo actualizar tu perfil. ' + error.message };
   }
 }
+
+
+export async function updateTutorProfile(prevState: any, formData: FormData) {
+  const { firestore } = await getAuthenticatedAppForUser();
+  
+  const userId = formData.get('userId') as string;
+  const firstName = formData.get('firstName') as string;
+  const lastName = formData.get('lastName') as string;
+  const dni = formData.get('dni') as string;
+  const phone = formData.get('phone') as string;
+  const workArea = formData.get('workArea') as string;
+
+  if (!userId || !firstName || !lastName || !dni || !phone || !workArea) {
+      return { success: false, message: 'Todos los campos son obligatorios.' };
+  }
+
+  const userProfileRef = doc(firestore, 'users', userId);
+
+  try {
+      const dataToUpdate = {
+          firstName,
+          lastName,
+          dni,
+          phone,
+          workArea,
+          profilePictureUrl: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${firstName}${lastName}`,
+          isProfileComplete: true,
+      };
+      
+      await updateDoc(userProfileRef, dataToUpdate);
+
+      revalidatePath('/tutor-dashboard');
+      return { success: true };
+  } catch (error: any) {
+      console.error('Error updating tutor profile:', error);
+      return { success: false, message: 'No se pudo actualizar tu perfil de tutor. ' + error.message };
+  }
+}
