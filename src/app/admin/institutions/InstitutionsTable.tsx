@@ -6,8 +6,9 @@ import { collection } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
-import { createInstitution, updateInstitution, deleteInstitution } from '@/app/actions';
+import { createInstitution, deleteInstitution } from '@/app/actions';
 
 import {
   Table,
@@ -50,7 +51,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, PlusCircle, Edit, Trash2, School } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Trash2, School, Eye } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -62,6 +63,7 @@ type Institution = {
   region: string;
   level: string;
   studentLimit: number;
+  tutorLimit: number;
   directorName: string;
   directorEmail: string;
   directorPhone?: string;
@@ -76,9 +78,7 @@ export function InstitutionsTable() {
   const { toast } = useToast();
   
   const [isProcessing, setIsProcessing] = useState(false);
-  const [selectedInstitution, setSelectedInstitution] = useState<Institution | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const institutionsCollectionRef = useMemo(() => {
     if (!firestore) return null;
@@ -113,37 +113,11 @@ export function InstitutionsTable() {
     }
     setIsProcessing(false);
   };
-  
-  const handleEdit = (institution: Institution) => {
-    setSelectedInstitution(institution);
-    setIsEditDialogOpen(true);
-  };
-
-  const handleUpdate = async (formData: FormData) => {
-    if (!selectedInstitution) return;
-    setIsProcessing(true);
-    const result = await updateInstitution(selectedInstitution.id, formData);
-    if (result.success) {
-      toast({
-        title: 'Institución Actualizada ✅',
-        description: `Los datos de "${result.name}" han sido actualizados.`,
-      });
-      setIsEditDialogOpen(false);
-      setSelectedInstitution(null);
-    } else {
-      toast({
-        variant: 'destructive',
-        title: 'Error al Actualizar 😵',
-        description: result.message,
-      });
-    }
-    setIsProcessing(false);
-  };
 
   const handleDelete = async (institutionId: string) => {
     setIsProcessing(true);
     const result = await deleteInstitution(institutionId);
-    if (result.success) {
+    if (result.success !== false) { // action redirects, so we only check for failure
       toast({
         title: 'Institución Eliminada 🗑️',
         description: 'La institución ha sido eliminada permanentemente.',
@@ -158,16 +132,16 @@ export function InstitutionsTable() {
     setIsProcessing(false);
   };
 
-  const InstitutionFormFields = ({ institution }: { institution?: Institution }) => (
+  const InstitutionCreationFormFields = () => (
     <ScrollArea className="h-96">
       <div className="grid gap-4 py-4 pr-6">
         <div className="space-y-2">
           <Label htmlFor="name">🏫 Nombre de la Institución</Label>
-          <Input id="name" name="name" placeholder="Ej: Colegio Nacional..." defaultValue={institution?.name} required />
+          <Input id="name" name="name" placeholder="Ej: Colegio Nacional..." required />
         </div>
          <div className="space-y-2">
             <Label htmlFor="region">📍 Región</Label>
-            <Select name="region" defaultValue={institution?.region}>
+            <Select name="region" >
                 <SelectTrigger>
                     <SelectValue placeholder="Selecciona una región" />
                 </SelectTrigger>
@@ -180,11 +154,11 @@ export function InstitutionsTable() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="address">🗺️ Dirección Completa</Label>
-          <Input id="address" name="address" placeholder="Ej: Av. Siempre Viva 123" defaultValue={institution?.address} required />
+          <Input id="address" name="address" placeholder="Ej: Av. Siempre Viva 123" required />
         </div>
         <div className="space-y-2">
             <Label htmlFor="level">📚 Nivel</Label>
-             <Select name="level" defaultValue={institution?.level}>
+             <Select name="level" >
                 <SelectTrigger>
                     <SelectValue placeholder="Selecciona un nivel" />
                 </SelectTrigger>
@@ -197,7 +171,7 @@ export function InstitutionsTable() {
         </div>
          <div className="space-y-2">
             <Label htmlFor="teachingModality">👨‍🏫 Modalidad de Enseñanza</Label>
-             <Select name="teachingModality" defaultValue={institution?.teachingModality}>
+             <Select name="teachingModality" >
                 <SelectTrigger>
                     <SelectValue placeholder="Selecciona una modalidad" />
                 </SelectTrigger>
@@ -209,28 +183,24 @@ export function InstitutionsTable() {
             </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="studentLimit">🧑‍🎓 Límite de Estudiantes</Label>
-          <Input id="studentLimit" name="studentLimit" type="number" placeholder="Ej: 150" defaultValue={institution?.studentLimit} required />
-        </div>
-        <div className="space-y-2">
           <Label htmlFor="directorName">👤 Nombre del Director</Label>
-          <Input id="directorName" name="directorName" placeholder="Nombre completo del director" defaultValue={institution?.directorName} required />
+          <Input id="directorName" name="directorName" placeholder="Nombre completo del director" required />
         </div>
         <div className="space-y-2">
           <Label htmlFor="directorEmail">✉️ Email del Director</Label>
-          <Input id="directorEmail" name="directorEmail" type="email" placeholder="director@institucion.com" defaultValue={institution?.directorEmail} required />
+          <Input id="directorEmail" name="directorEmail" type="email" placeholder="director@institucion.com" required />
         </div>
         <div className="space-y-2">
           <Label htmlFor="directorPhone">📞 Teléfono del Director (Opcional)</Label>
-          <Input id="directorPhone" name="directorPhone" placeholder="+51 987654321" defaultValue={institution?.directorPhone} />
+          <Input id="directorPhone" name="directorPhone" placeholder="+51 987654321" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="logoUrl">🖼️ URL del Logo (Opcional)</Label>
-          <Input id="logoUrl" name="logoUrl" placeholder="https://dominio.com/logo.png" defaultValue={institution?.logoUrl} />
+          <Input id="logoUrl" name="logoUrl" placeholder="https://dominio.com/logo.png" />
         </div>
          <div className="space-y-2">
           <Label htmlFor="contactEmail">📧 Email de Contacto General</Label>
-          <Input id="contactEmail" name="contactEmail" type="email" placeholder="contacto@institucion.com" defaultValue={institution?.contactEmail} required />
+          <Input id="contactEmail" name="contactEmail" type="email" placeholder="contacto@institucion.com" required />
         </div>
       </div>
     </ScrollArea>
@@ -251,10 +221,10 @@ export function InstitutionsTable() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><School className="text-primary"/> Agregar Nueva Institución</DialogTitle>
             <DialogDescription>
-              Completa los detalles para registrar una nueva institución educativa. Se generará un código único.
+              Completa los detalles para registrar una nueva institución educativa. Se generará un código único y los límites se establecerán en 0.
             </DialogDescription>
           </DialogHeader>
-          <InstitutionFormFields />
+          <InstitutionCreationFormFields />
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="outline">Cancelar</Button>
@@ -266,58 +236,19 @@ export function InstitutionsTable() {
     </Dialog>
   );
 
-  const EditInstitutionDialog = () => {
-    if (!selectedInstitution) return null;
-    return (
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-            <DialogContent className="max-w-2xl">
-                <form action={handleUpdate}>
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                            <Edit className="text-primary"/> Editar Institución
-                        </DialogTitle>
-                        <DialogDescription>
-                           Modifica los datos de la institución. El código único no se puede cambiar.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <InstitutionFormFields institution={selectedInstitution} />
-                    <DialogFooter className="pt-4">
-                        <DialogClose asChild>
-                            <Button type="button" variant="outline">Cancelar</Button>
-                        </DialogClose>
-                        <Button type="submit" disabled={isProcessing}>{isProcessing ? 'Guardando...' : 'Guardar Cambios'}</Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
-    );
-  };
-
   if (isLoading) {
     return (
-      <div className="p-4">
-         <div className="flex justify-end mb-4">
+      <div className="space-y-4">
+         <div className="flex justify-end">
              <Skeleton className="h-8 w-40" />
         </div>
-        <div className="space-y-3">
-          {[...Array(3)].map((_, i) => (
-             <div key={i} className="grid grid-cols-5 items-center gap-4 p-2">
-                <Skeleton className="h-5 w-32" />
-                <Skeleton className="h-5 w-24" />
-                <Skeleton className="h-5 w-48" />
-                <Skeleton className="h-5 w-40" />
-                <div className="flex justify-end">
-                    <Skeleton className="h-6 w-6" />
-                </div>
-            </div>
-          ))}
-        </div>
+        <Skeleton className="h-64 w-full" />
       </div>
     );
   }
 
   return (
-    <>
+    <div className="w-full">
       <div className="flex justify-end mb-4">
         <AddInstitutionDialog />
       </div>
@@ -359,9 +290,11 @@ export function InstitutionsTable() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                      <DropdownMenuItem onSelect={() => handleEdit(institution)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Editar
+                      <DropdownMenuItem asChild>
+                        <Link href={`/admin/institutions/${institution.id}`}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          Ver Detalles
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <AlertDialog>
@@ -400,7 +333,6 @@ export function InstitutionsTable() {
           )}
         </TableBody>
       </Table>
-      <EditInstitutionDialog />
-    </>
+    </div>
   );
 }

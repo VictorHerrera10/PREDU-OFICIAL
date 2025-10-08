@@ -82,6 +82,10 @@
             "type": "number",
             "description": "The maximum number of students that can be registered for this institution."
         },
+        "tutorLimit": {
+            "type": "number",
+            "description": "The maximum number of tutors that can be registered for this institution."
+        },
         "directorName": {
             "type": "string",
             "description": "The full name of the institution's director."
@@ -117,6 +121,7 @@
         "region",
         "level",
         "studentLimit",
+        "tutorLimit",
         "directorName",
         "directorEmail",
         "teachingModality",
