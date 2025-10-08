@@ -157,7 +157,7 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <SubmitButton>Crear mi Cuenta 📝</SubmitButton>
+        <SubmitButton className="w-full">Crear mi Cuenta 📝</SubmitButton>
       </form>
 
       <div className="mt-6 text-center text-sm">
