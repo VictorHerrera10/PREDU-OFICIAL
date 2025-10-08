@@ -99,20 +99,20 @@ export function StudentMainDashboard({ user }: Props) {
                     className={
                       selectedView
                         ? `flex items-center gap-2 px-4 py-2 rounded-lg ${selectedView === option.id ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted/80'}`
-                        : 'h-full flex flex-col items-center text-center'
+                        : 'h-full flex flex-col items-center text-center p-6'
                     }
                   >
                     <AnimatePresence>
                       <motion.div
                         layout="position"
-                        className={selectedView ? '' : 'p-6 flex items-center gap-4'}
+                        className={selectedView ? '' : 'flex items-center gap-4'}
                       >
                         <option.icon className={selectedView ? "w-5 h-5" : "w-10 h-10 text-primary"} />
                       </motion.div>
                     </AnimatePresence>
                     
                     <motion.div layout="position">
-                      <h2 className={`font-bold ${selectedView ? 'text-sm' : 'text-2xl'}`}>{option.title}</h2>
+                      <h2 className={`font-bold ${selectedView ? 'text-sm' : 'text-2xl mt-4'}`}>{option.title}</h2>
                       {!selectedView && (
                           <motion.p 
                             initial={{ opacity: 1 }} 
