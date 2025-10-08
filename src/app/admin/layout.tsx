@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Logo } from '@/components/logo';
 import { LogoutButton } from '@/components/logout-button';
-import { cn } from '@/lib/utils';
 import { School, Users } from 'lucide-react';
 import {
   SidebarProvider,
@@ -35,10 +34,7 @@ export default function AdminLayout({
       <div className="flex min-h-screen">
         <Sidebar>
           <SidebarHeader>
-            <div className="flex items-center gap-2">
-               <SidebarTrigger />
-               <Logo />
-            </div>
+            <Logo />
           </SidebarHeader>
           <SidebarContent>
             <SidebarMenu>
@@ -62,7 +58,11 @@ export default function AdminLayout({
           </SidebarHeader>
         </Sidebar>
         <SidebarInset>
-          <main className="flex-1">{children}</main>
+            <header className="flex items-center gap-2 border-b p-2">
+                <SidebarTrigger />
+                <h2 className="text-lg font-semibold">Panel de Administración</h2>
+            </header>
+            <main className="flex-1">{children}</main>
         </SidebarInset>
       </div>
     </SidebarProvider>
