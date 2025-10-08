@@ -135,7 +135,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                                     >
                                         {currentSectionQuestions.map((q, index) => {
                                             const CategoryIcon = CATEGORY_DETAILS[q.category].icon;
-                                            const categoryColor = CATEGory_DETAILS[q.category].color;
+                                            const categoryColor = CATEGORY_DETAILS[q.category].color;
                                             const isAnswered = answers[q.id] !== null;
 
                                             return (
