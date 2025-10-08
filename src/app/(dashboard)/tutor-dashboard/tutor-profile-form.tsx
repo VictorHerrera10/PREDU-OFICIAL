@@ -11,9 +11,10 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { SubmitButton } from '@/components/submit-button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Briefcase, X } from 'lucide-react';
+import { Briefcase, VenetianMask, X, User as UserIcon, CaseSensitive, Hash, Phone, Mail, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type UserProfile = {
     firstName?: string;
@@ -21,6 +22,7 @@ type UserProfile = {
     dni?: string;
     phone?: string;
     workArea?: string;
+    gender?: string;
     profilePictureUrl?: string;
 };
 
@@ -60,7 +62,7 @@ export function TutorProfileForm({ user, profileData }: Props) {
 
     return (
         <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-            <Card className="relative w-full max-w-3xl bg-card/80 backdrop-blur-sm border-border">
+            <Card className="relative w-full max-w-4xl bg-card/80 backdrop-blur-sm border-border">
                 {isEditing && (
                     <Button variant="ghost" size="icon" asChild className="absolute top-4 right-4 z-10">
                         <Link href="/tutor-dashboard">
@@ -84,33 +86,67 @@ export function TutorProfileForm({ user, profileData }: Props) {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form action={formAction} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <form action={formAction} className="space-y-6">
                         <input type="hidden" name="userId" value={user?.uid} />
                         
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="firstName" className="flex items-center gap-2"><UserIcon className="w-4 h-4"/> Nombres</Label>
+                                <Input id="firstName" name="firstName" placeholder="Tus nombres" defaultValue={profileData?.firstName} required />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="lastName" className="flex items-center gap-2"><CaseSensitive className="w-4 h-4"/> Apellidos</Label>
+                                <Input id="lastName" name="lastName" placeholder="Tus apellidos" defaultValue={profileData?.lastName} required />
+                            </div>
+                        </div>
+
+                         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="dni" className="flex items-center gap-2"><Hash className="w-4 h-4"/> DNI</Label>
+                                <Input id="dni" name="dni" type="text" placeholder="Tu número de DNI" defaultValue={profileData?.dni} required />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="phone" className="flex items-center gap-2"><Phone className="w-4 h-4"/> Teléfono</Label>
+                                <Input id="phone" name="phone" placeholder="987654321" defaultValue={profileData?.phone} required />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="gender" className="flex items-center gap-2"><VenetianMask className="w-4 h-4"/> Género</Label>
+                                <Select name="gender" defaultValue={profileData?.gender} required>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecciona tu género" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="masculino">Masculino</SelectItem>
+                                        <SelectItem value="femenino">Femenino</SelectItem>
+                                        <SelectItem value="otro">Otro</SelectItem>
+                                        <SelectItem value="prefiero no decirlo">Prefiero no decirlo</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        
                         <div className="space-y-2">
-                            <Label htmlFor="firstName">Nombres</Label>
-                            <Input id="firstName" name="firstName" placeholder="Tus nombres" defaultValue={profileData?.firstName} required />
+                           <Label htmlFor="email" className="flex items-center gap-2"><Mail className="w-4 h-4"/> Email (no editable)</Label>
+                           <Input id="email" name="email" type="email" value={user?.email || ''} readOnly disabled />
+                       </div>
+
+                       <div className="space-y-2">
+                            <Label htmlFor="workArea" className="flex items-center gap-2"><GraduationCap className="w-4 h-4"/> Área de Trabajo</Label>
+                             <Select name="workArea" defaultValue={profileData?.workArea} required>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecciona tu área de trabajo" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Municipalidad">Municipalidad</SelectItem>
+                                    <SelectItem value="Unidad de Gestion Educativa Local">Unidad de Gestión Educativa Local</SelectItem>
+                                    <SelectItem value="Dirección y Gestión Institucional">Dirección y Gestión Institucional</SelectItem>
+                                    <SelectItem value="Académica o Pedagógica">Académica o Pedagógica</SelectItem>
+                                    <SelectItem value="Psicopedagógica">Psicopedagógica</SelectItem>
+                                    <SelectItem value="Administrativa">Administrativa</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="lastName">Apellidos</Label>
-                            <Input id="lastName" name="lastName" placeholder="Tus apellidos" defaultValue={profileData?.lastName} required />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="dni">DNI</Label>
-                            <Input id="dni" name="dni" type="text" placeholder="Tu número de DNI" defaultValue={profileData?.dni} required />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="phone">Teléfono</Label>
-                            <Input id="phone" name="phone" placeholder="987654321" defaultValue={profileData?.phone} required />
-                        </div>
-                         <div className="space-y-2 md:col-span-2">
-                            <Label htmlFor="email">Email (no editable)</Label>
-                            <Input id="email" name="email" type="email" value={user?.email || ''} readOnly disabled />
-                        </div>
-                        <div className="space-y-2 md:col-span-2">
-                            <Label htmlFor="workArea">Área de Trabajo</Label>
-                            <Input id="workArea" name="workArea" placeholder="Ej: Psicología Educativa" defaultValue={profileData?.workArea} required />
-                        </div>
+
 
                         <div className="md:col-span-2 text-center mt-4">
                             <SubmitButton className="w-full max-w-xs mx-auto">

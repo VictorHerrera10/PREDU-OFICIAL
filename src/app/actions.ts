@@ -348,7 +348,6 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
           city,
           phone,
           gender,
-          profilePictureUrl: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${firstName}${lastName}`,
           isProfileComplete: true,
       };
 
@@ -386,14 +385,13 @@ export async function updateTutorProfile(prevState: any, formData: FormData) {
   const userProfileRef = doc(firestore, 'users', userId);
 
   try {
-      const dataToUpdate = {
+      const dataToUpdate: any = {
           firstName,
           lastName,
           dni,
           phone,
-          workArea,
+          'tutorDetails.workArea': workArea,
           gender,
-          profilePictureUrl: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${firstName}${lastName}`,
           isProfileComplete: true,
       };
       
