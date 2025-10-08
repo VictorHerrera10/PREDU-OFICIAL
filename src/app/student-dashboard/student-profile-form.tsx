@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { SubmitButton } from '@/components/submit-button';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { GraduationCap, VenetianMask, X, User as UserIcon, CaseSensitive, Hash, Building, Phone, Calendar, Map, BookOpen, KeySquare } from 'lucide-react';
@@ -75,12 +75,14 @@ export function StudentProfileForm({ user, profileData }: Props) {
 
     useEffect(() => {
         const baseSeed = user?.displayName || 'default';
-        let newAvatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${baseSeed}`;
+        let newAvatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${baseSeed}`;
+        
         if (selectedGender === 'masculino') {
-            newAvatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${baseSeed}&top=ShortHairShortFlat&facialHairChance=0`;
+            newAvatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${baseSeed}&accessories=mustache&accessoriesProbability=100`;
         } else if (selectedGender === 'femenino') {
-            newAvatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${baseSeed}&top=LongHairStraight`;
+            newAvatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${baseSeed}&accessories=glasses&accessoriesProbability=100`;
         }
+        
         setAvatarUrl(newAvatarUrl);
     }, [selectedGender, user?.displayName]);
 
@@ -130,7 +132,6 @@ export function StudentProfileForm({ user, profileData }: Props) {
                 <CardContent>
                     <form action={formAction} className="space-y-6">
                         <input type="hidden" name="userId" value={user?.uid} />
-                        <input type="hidden" name="institutionId" value={institutionCode.join('')} />
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                             <div className="space-y-2">
@@ -174,10 +175,6 @@ export function StudentProfileForm({ user, profileData }: Props) {
                                 <Input id="city" name="city" placeholder="Donde vives" defaultValue={profileData?.city} required />
                             </div>
                              <div className="space-y-2">
-                                <Label htmlFor="phone" className="flex items-center gap-2"><Phone className="w-4 h-4"/> Teléfono</Label>
-                                <Input id="phone" name="phone" placeholder="9 dígitos" defaultValue={profileData?.phone} required maxLength={9} />
-                            </div>
-                             <div className="space-y-2">
                                 <Label className="flex items-center gap-2 mb-2.5 justify-center md:justify-start"><VenetianMask className="w-4 h-4"/> Género</Label>
                                 <RadioGroup name="gender" defaultValue={profileData?.gender} required className="flex gap-4" onValueChange={setSelectedGender}>
                                      <Label htmlFor="g-male" className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all w-full", selectedGender === 'masculino' && 'border-primary ring-2 ring-primary/50' )}>
@@ -194,10 +191,15 @@ export function StudentProfileForm({ user, profileData }: Props) {
                                     </Label>
                                 </RadioGroup>
                             </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="phone" className="flex items-center gap-2"><Phone className="w-4 h-4"/> Teléfono</Label>
+                                <Input id="phone" name="phone" placeholder="9 dígitos" defaultValue={profileData?.phone} required maxLength={9} />
+                            </div>
                         </div>
                         
                         <div className="pt-6 flex flex-col items-center">
                             <Label className="flex items-center gap-2 mb-2 text-center"><KeySquare className="w-4 h-4"/> Código de Colegio (Opcional)</Label>
+                             <input type="hidden" name="institutionId" value={institutionCode.join('')} />
                             <div className="flex gap-2">
                                 {institutionCode.map((digit, index) => (
                                     <Input
