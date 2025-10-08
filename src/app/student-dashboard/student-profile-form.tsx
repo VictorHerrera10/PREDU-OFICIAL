@@ -52,9 +52,6 @@ export function StudentProfileForm({ user, profileData }: Props) {
     const [institutionCode, setInstitutionCode] = useState(['', '', '', '', '']);
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-    const defaultAvatarUrl = profileData?.profilePictureUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user?.displayName}`;
-    const [avatarUrl, setAvatarUrl] = useState(defaultAvatarUrl);
-
     useEffect(() => {
         if(state.success){
             toast({
@@ -72,19 +69,6 @@ export function StudentProfileForm({ user, profileData }: Props) {
             });
         }
     }, [state, toast, isEditing, router]);
-
-    useEffect(() => {
-        const baseSeed = user?.displayName || 'default';
-        let newAvatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${baseSeed}`;
-        
-        if (selectedGender === 'masculino') {
-            newAvatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${baseSeed}&accessories=mustache&accessoriesProbability=100`;
-        } else if (selectedGender === 'femenino') {
-            newAvatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${baseSeed}&accessories=glasses&accessoriesProbability=100`;
-        }
-        
-        setAvatarUrl(newAvatarUrl);
-    }, [selectedGender, user?.displayName]);
 
     const handleCodeChange = (index: number, value: string) => {
         const newCode = [...institutionCode];
@@ -118,7 +102,7 @@ export function StudentProfileForm({ user, profileData }: Props) {
                 <CardHeader className="text-center items-center">
                     <div className="flex justify-center mb-4 pt-8">
                          <Avatar className="w-24 h-24 border-4 border-primary">
-                            <AvatarImage src={avatarUrl} alt={user?.displayName || 'Avatar'} />
+                            <AvatarImage src={profileData?.profilePictureUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user?.displayName}`} alt={user?.displayName || 'Avatar'} />
                             <AvatarFallback><GraduationCap className="w-12 h-12" /></AvatarFallback>
                         </Avatar>
                     </div>
@@ -174,20 +158,20 @@ export function StudentProfileForm({ user, profileData }: Props) {
                                 <Label htmlFor="city" className="flex items-center gap-2"><Map className="w-4 h-4"/> Ciudad</Label>
                                 <Input id="city" name="city" placeholder="Donde vives" defaultValue={profileData?.city} required />
                             </div>
-                             <div className="space-y-2">
-                                <Label className="flex items-center gap-2 mb-2.5 justify-center md:justify-start"><VenetianMask className="w-4 h-4"/> Género</Label>
-                                <RadioGroup name="gender" defaultValue={profileData?.gender} required className="flex gap-4" onValueChange={setSelectedGender}>
-                                     <Label htmlFor="g-male" className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all w-full", selectedGender === 'masculino' && 'border-primary ring-2 ring-primary/50' )}>
+                             <div className="space-y-2 text-center">
+                                <Label className="flex items-center gap-2 mb-2.5 justify-center"><VenetianMask className="w-4 h-4"/> Género</Label>
+                                <RadioGroup name="gender" defaultValue={profileData?.gender} required className="flex gap-2 justify-center" onValueChange={setSelectedGender}>
+                                     <Label htmlFor="g-male" className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all w-full", selectedGender === 'masculino' && 'border-primary ring-2 ring-primary/50' )}>
                                         <RadioGroupItem value="masculino" id="g-male" className="sr-only" />
-                                        <span className="text-2xl text-[#60a5fa]" aria-hidden="true">♂</span>
+                                        <span className="text-xl text-[#60a5fa]" aria-hidden="true">♂</span>
                                     </Label>
-                                    <Label htmlFor="g-female" className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all w-full", selectedGender === 'femenino' && 'border-primary ring-2 ring-primary/50' )}>
+                                    <Label htmlFor="g-female" className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all w-full", selectedGender === 'femenino' && 'border-primary ring-2 ring-primary/50' )}>
                                         <RadioGroupItem value="femenino" id="g-female" className="sr-only" />
-                                        <span className="text-2xl text-[#f472b6]" aria-hidden="true">♀</span>
+                                        <span className="text-xl text-[#f472b6]" aria-hidden="true">♀</span>
                                     </Label>
-                                    <Label htmlFor="g-other" className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all w-full", selectedGender === 'prefiero no decirlo' && 'border-primary ring-2 ring-primary/50' )}>
+                                    <Label htmlFor="g-other" className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all w-full", selectedGender === 'prefiero no decirlo' && 'border-primary ring-2 ring-primary/50' )}>
                                         <RadioGroupItem value="prefiero no decirlo" id="g-other" className="sr-only" />
-                                        <span className="text-xl font-bold p-1 text-muted-foreground" aria-hidden="true">?</span>
+                                        <span className="text-base font-bold py-1 px-0.5 text-muted-foreground" aria-hidden="true">?</span>
                                     </Label>
                                 </RadioGroup>
                             </div>
