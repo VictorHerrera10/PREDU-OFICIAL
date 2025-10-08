@@ -15,6 +15,7 @@ type Institution = {
   directorName: string;
   studentLimit: number;
   tutorLimit: number;
+  logoUrl?: string;
 };
 
 type UserProfile = {

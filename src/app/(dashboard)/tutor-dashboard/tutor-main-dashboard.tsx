@@ -9,6 +9,7 @@ import { User } from 'firebase/auth';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import HomeView from './views/HomeView';
 import InstitutionView from './views/InstitutionView';
+import { InstitutionHeader } from './institution-header';
 
 type View = 'inicio' | 'colegio';
 
@@ -48,8 +49,9 @@ export function TutorMainDashboard({ user }: Props) {
         <Logo />
         <UserNav />
       </header>
-
-      <main className="flex-grow pt-20">
+      
+      <main className="flex-grow pt-16">
+        <InstitutionHeader />
         <LayoutGroup>
           <AnimatePresence>
             {!selectedView && (
@@ -59,7 +61,7 @@ export function TutorMainDashboard({ user }: Props) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5 }}
-                className="text-center px-4 mb-8"
+                className="text-center px-4 mb-8 pt-8"
               >
                 <CardHeader>
                   <CardTitle className="text-3xl md:text-4xl font-bold text-foreground">
