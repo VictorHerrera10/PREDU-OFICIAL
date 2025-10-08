@@ -5,7 +5,15 @@ import {
   sendPasswordResetEmail,
   updateProfile,
 } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import {
+  doc,
+  setDoc,
+  serverTimestamp,
+  updateDoc,
+  addDoc,
+  collection,
+  deleteDoc,
+} from 'firebase/firestore';
 import { redirect } from 'next/navigation';
 import { initializeServerApp } from '@/firebase/server-init';
 import { headers } from 'next/headers';
@@ -143,5 +151,69 @@ export async function updateUser(userId: string, formData: FormData) {
   } catch (error: any) {
     console.error('Error updating user:', error);
     return { success: false, message: 'No se pudo actualizar el usuario. ' + error.message };
+  }
+}
+
+// --- Institution Actions ---
+
+export async function createInstitution(formData: FormData) {
+  const { firestore } = await getAuthenticatedAppForUser();
+  const name = formData.get('name') as string;
+  const address = formData.get('address') as string;
+  const contactEmail = formData.get('contactEmail') as string;
+
+  if (!name || !address || !contactEmail) {
+    return { success: false, message: 'Todos los campos son obligatorios.' };
+  }
+
+  try {
+    await addDoc(collection(firestore, 'institutions'), {
+      name,
+      address,
+      contactEmail,
+      createdAt: serverTimestamp(),
+    });
+    revalidatePath('/admin/institutions');
+    return { success: true, name };
+  } catch (error: any) {
+    return { success: false, message: 'No se pudo crear la institución. ' + error.message };
+  }
+}
+
+export async function updateInstitution(institutionId: string, formData: FormData) {
+  const { firestore } = await getAuthenticatedAppForUser();
+  const name = formData.get('name') as string;
+  const address = formData.get('address') as string;
+  const contactEmail = formData.get('contactEmail') as string;
+
+  if (!name || !address || !contactEmail) {
+    return { success: false, message: 'Todos los campos son obligatorios.' };
+  }
+
+  const institutionRef = doc(firestore, 'institutions', institutionId);
+
+  try {
+    await updateDoc(institutionRef, {
+      name,
+      address,
+      contactEmail,
+    });
+    revalidatePath('/admin/institutions');
+    return { success: true, name };
+  } catch (error: any) {
+    return { success: false, message: 'No se pudo actualizar la institución. ' + error.message };
+  }
+}
+
+export async function deleteInstitution(institutionId: string) {
+  const { firestore } = await getAuthenticatedAppForUser();
+  const institutionRef = doc(firestore, 'institutions', institutionId);
+
+  try {
+    await deleteDoc(institutionRef);
+    revalidatePath('/admin/institutions');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, message: 'No se pudo eliminar la institución. ' + error.message };
   }
 }

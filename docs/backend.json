@@ -41,6 +41,42 @@
         "email",
         "creationDate"
       ]
+    },
+    "Institution": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Institution",
+      "type": "object",
+      "description": "Represents an educational institution or college.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Institution entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The official name of the institution."
+        },
+        "address": {
+          "type": "string",
+          "description": "The physical address of the institution."
+        },
+        "contactEmail": {
+          "type": "string",
+          "description": "A contact email for the institution.",
+          "format": "email"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The date and time when the institution was added.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "address",
+        "contactEmail"
+      ]
     }
   },
   "auth": {
@@ -66,8 +102,24 @@
             }
           ]
         }
+      },
+      {
+        "path": "/institutions/{institutionId}",
+        "definition": {
+          "entityName": "Institution",
+          "schema": {
+            "$ref": "#/backend/entities/Institution"
+          },
+          "description": "Stores information about educational institutions. Should only be writable by administrators.",
+          "params": [
+            {
+              "name": "institutionId",
+              "description": "The unique identifier for the institution."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure secure user authentication and profile management for the Pixel Vault application. The core principle is Authorization Independence, achieved through denormalization where necessary, though in this simplified scenario, it primarily relies on path-based ownership. The structure supports straightforward security rules and efficient data retrieval.\n\n- User Profiles: User profiles are stored in `/users/{userId}` using path-based ownership. This provides simple security rules based on `request.auth.uid == userId`. This approach provides Authorization Independence since access control depends only on the path and the authenticated user's ID.\n\nThis structure supports the required QAPs (Rules are not Filters) because list operations can be securely implemented at the `/users` collection group level based on user ID."
+    "reasoning": "The Firestore structure is designed to ensure secure user authentication and profile management for the Pixel Vault application. The core principle is Authorization Independence, achieved through denormalization where necessary, though in this simplified scenario, it primarily relies on path-based ownership. The structure supports straightforward security rules and efficient data retrieval.\n\n- User Profiles: User profiles are stored in `/users/{userId}` using path-based ownership. This provides simple security rules based on `request.auth.uid == userId`. This approach provides Authorization Independence since access control depends only on the path and the authenticated user's ID.\n- Institutions: A collection to manage educational institutions. Access control should be strict, likely limited to admin users for write operations.\n\nThis structure supports the required QAPs (Rules are not Filters) because list operations can be securely implemented at the `/users` collection group level based on user ID."
   }
 }
