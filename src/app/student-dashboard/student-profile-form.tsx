@@ -52,6 +52,9 @@ export function StudentProfileForm({ user, profileData }: Props) {
     const [institutionCode, setInstitutionCode] = useState(['', '', '', '', '']);
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+    const defaultAvatarUrl = profileData?.profilePictureUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user?.displayName}`;
+    const [avatarUrl, setAvatarUrl] = useState(defaultAvatarUrl);
+
     useEffect(() => {
         if(state.success){
             toast({
@@ -69,6 +72,17 @@ export function StudentProfileForm({ user, profileData }: Props) {
             });
         }
     }, [state, toast, isEditing, router]);
+
+    useEffect(() => {
+        const baseSeed = user?.displayName || 'default';
+        let newAvatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${baseSeed}`;
+        if (selectedGender === 'masculino') {
+            newAvatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${baseSeed}-male`;
+        } else if (selectedGender === 'femenino') {
+            newAvatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${baseSeed}-female`;
+        }
+        setAvatarUrl(newAvatarUrl);
+    }, [selectedGender, user?.displayName]);
 
     const handleCodeChange = (index: number, value: string) => {
         const newCode = [...institutionCode];
@@ -102,7 +116,7 @@ export function StudentProfileForm({ user, profileData }: Props) {
                 <CardHeader className="text-center items-center">
                     <div className="flex justify-center mb-4 pt-8">
                          <Avatar className="w-24 h-24 border-4 border-primary">
-                            <AvatarImage src={profileData?.profilePictureUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user?.displayName}`} alt={user?.displayName || 'Avatar'} />
+                            <AvatarImage src={avatarUrl} alt={user?.displayName || 'Avatar'} />
                             <AvatarFallback><GraduationCap className="w-12 h-12" /></AvatarFallback>
                         </Avatar>
                     </div>
@@ -154,17 +168,17 @@ export function StudentProfileForm({ user, profileData }: Props) {
                             </div>
                         </div>
 
-                         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 items-end">
+                         <div className="grid grid-cols-1 md:grid-cols-[1fr,1fr,2fr] gap-x-6 gap-y-4 items-end">
                              <div className="space-y-2">
                                 <Label htmlFor="city" className="flex items-center gap-2"><Map className="w-4 h-4"/> Ciudad</Label>
-                                <Input id="city" name="city" placeholder="Donde vives actualmente" defaultValue={profileData?.city} required />
+                                <Input id="city" name="city" placeholder="Donde vives" defaultValue={profileData?.city} required />
                             </div>
                              <div className="space-y-2">
                                 <Label htmlFor="phone" className="flex items-center gap-2"><Phone className="w-4 h-4"/> Teléfono</Label>
                                 <Input id="phone" name="phone" placeholder="9 dígitos" defaultValue={profileData?.phone} required maxLength={9} />
                             </div>
                              <div className="space-y-2">
-                                <Label className="flex items-center gap-2 mb-2.5"><VenetianMask className="w-4 h-4"/> Género</Label>
+                                <Label className="flex items-center gap-2 mb-2.5 justify-center md:justify-start"><VenetianMask className="w-4 h-4"/> Género</Label>
                                 <RadioGroup name="gender" defaultValue={profileData?.gender} required className="flex gap-4" onValueChange={setSelectedGender}>
                                      <Label htmlFor="g-male" className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all w-full", selectedGender === 'masculino' && 'border-primary ring-2 ring-primary/50' )}>
                                         <RadioGroupItem value="masculino" id="g-male" className="sr-only" />
