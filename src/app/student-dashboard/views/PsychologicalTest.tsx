@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useUser } from '@/firebase';
 import api from '@/lib/api-client';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -46,13 +46,18 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
         };
     }, [answers]);
 
+    useEffect(() => {
+        if (emblaApi) {
+            emblaApi.reInit();
+        }
+    }, [emblaApi, activeSection]);
+
     const handleAnswer = (questionId: string, answer: 'yes' | 'no') => {
         setAnswers(prev => ({ ...prev, [questionId]: answer }));
         if (emblaApi) {
             if (emblaApi.canScrollNext()) {
                 emblaApi.scrollNext();
             } else {
-                // If it's the last question, close the section view
                 setActiveSection(null);
             }
         }
@@ -66,12 +71,6 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
 
     const handleStartSection = (section: TestSection) => {
         setActiveSection(section);
-        // We need a slight delay for the carousel to initialize with the new questions
-        setTimeout(() => {
-            if (emblaApi) {
-                emblaApi.reInit();
-            }
-        }, 100);
     };
 
     const currentSectionQuestions = useMemo(() => {
