@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, getFunctions, httpsCallable } from 'firebase/firestore';
 import {
   Table,
   TableHeader,
@@ -40,21 +40,47 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MoreHorizontal, PlusCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 export function UsersTable() {
   const firestore = useFirestore();
+  const { toast } = useToast();
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const usersCollectionRef = useMemo(() => {
     if (!firestore) return null;
     return collection(firestore, 'users');
   }, [firestore]);
 
   const { data: users, isLoading } = useCollection(usersCollectionRef);
+
+  const handleDeleteUser = async (uid: string) => {
+    setIsDeleting(true);
+    try {
+      const functions = getFunctions();
+      const deleteUser = httpsCallable(functions, 'deleteUser');
+      await deleteUser({ uid });
+      toast({
+        title: 'Usuario Eliminado ✅',
+        description: 'El usuario ha sido eliminado de la plataforma.',
+      });
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error al Eliminar 😵',
+        description: error.message || 'No se pudo eliminar al usuario.',
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
 
   const renderRoleBadge = (role: string | null) => {
     if (!role) {
@@ -168,7 +194,7 @@ export function UsersTable() {
                         <DropdownMenuSeparator />
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10" disabled={user.role === 'admin'}>
                                     Eliminar
                                 </DropdownMenuItem>
                             </AlertDialogTrigger>
@@ -181,7 +207,9 @@ export function UsersTable() {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction>Sí, eliminar usuario</AlertDialogAction>
+                                <AlertDialogAction onClick={() => handleDeleteUser(user.id)} disabled={isDeleting}>
+                                    {isDeleting ? 'Eliminando...' : 'Sí, eliminar usuario'}
+                                </AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
