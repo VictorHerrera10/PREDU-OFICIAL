@@ -33,7 +33,7 @@ export default function AdminLayout({
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
-                <Link key={item.href} href={item.href} legacyBehavior passHref>
+                <Link key={item.href} href={item.href} asChild>
                   <Button
                     variant={isActive ? 'secondary' : 'ghost'}
                     className={cn(
