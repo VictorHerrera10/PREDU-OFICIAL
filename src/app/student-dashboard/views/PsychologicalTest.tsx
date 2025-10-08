@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { useUser } from '@/firebase';
 import api from '@/lib/api-client';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,7 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, CheckCircle, ThumbsUp, ThumbsDown } from 'lucide-react';
 import Image from 'next/image';
-import { questions, CATEGORY_DETAILS, SECTION_DETAILS, TestSection, HollandQuestion } from './psychological-test-data';
+import { questions, CATEGORY_DETAILS, SECTION_DETAILS, TestSection } from './psychological-test-data';
 import { cn } from '@/lib/utils';
 
 type Answers = Record<string, 'yes' | 'no' | null>;
@@ -35,6 +35,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
         const sectionProgress = (section: TestSection) => {
             const sectionQuestions = questions.filter(q => q.section === section);
             const answeredInSection = sectionQuestions.filter(q => answers[q.id] !== null).length;
+            if (sectionQuestions.length === 0) return 0;
             return (answeredInSection / sectionQuestions.length) * 100;
         };
         return {
@@ -51,18 +52,26 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
             if (emblaApi.canScrollNext()) {
                 emblaApi.scrollNext();
             } else {
-                // Last question of the section answered, close the carousel view
+                // If it's the last question, close the section view
                 setActiveSection(null);
             }
         }
     };
     
     const handleSelectQuestion = (index: number) => {
-        emblaApi?.scrollTo(index);
+        if (emblaApi) {
+            emblaApi.scrollTo(index);
+        }
     };
 
     const handleStartSection = (section: TestSection) => {
         setActiveSection(section);
+        // We need a slight delay for the carousel to initialize with the new questions
+        setTimeout(() => {
+            if (emblaApi) {
+                emblaApi.reInit();
+            }
+        }, 100);
     };
 
     const currentSectionQuestions = useMemo(() => {
@@ -201,7 +210,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                                 const SectionIcon = SECTION_DETAILS[sec].icon;
                                 const isComplete = progress[sec] === 100;
                                 return (
-                                    <Button key={sec} variant="outline" className="h-24 text-lg flex-col gap-2" onClick={() => handleStartSection(sec)}>
+                                    <Button key={sec} variant="outline" className="h-24 text-lg flex-col gap-2 relative" onClick={() => handleStartSection(sec)}>
                                         <div className="flex items-center gap-2">
                                             <SectionIcon />
                                             <span>{SECTION_DETAILS[sec].title}</span>
