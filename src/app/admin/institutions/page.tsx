@@ -2,14 +2,12 @@
 
 import { InstitutionsTable } from '@/app/admin/institutions/InstitutionsTable';
 import { School } from 'lucide-react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-
 
 function AdminInstitutionsPage() {
   return (
-    <div className="flex flex-1 items-center justify-center p-4 md:p-8">
-      <Card className="w-full max-w-7xl bg-card/80 backdrop-blur-sm border-border/50">
-        <CardHeader className="flex flex-row items-center gap-4 pb-4">
+    <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 md:p-8">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-row items-center gap-4">
           <div className="bg-primary/10 p-3 rounded-lg border border-primary/20">
             <School className="h-6 w-6 text-primary" />
           </div>
@@ -19,11 +17,9 @@ function AdminInstitutionsPage() {
               Administra las instituciones educativas de la plataforma.
             </p>
           </div>
-        </CardHeader>
-        <CardContent>
-          <InstitutionsTable />
-        </CardContent>
-      </Card>
+        </div>
+        <InstitutionsTable />
+      </div>
     </div>
   );
 }
