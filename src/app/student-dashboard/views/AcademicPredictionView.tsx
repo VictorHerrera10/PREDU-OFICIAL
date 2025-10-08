@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { AcademicPredictionForm } from './AcademicPredictionForm';
+import { VocationalFormModal } from './AcademicPredictionForm';
 
 export default function AcademicPredictionView() {
   const [predictionResult, setPredictionResult] = useState<string | null>(null);
@@ -23,7 +23,7 @@ export default function AcademicPredictionView() {
         <p className="text-muted-foreground mb-6">
           Ingresa tus calificaciones en el formulario para iniciar el análisis vocacional basado en tu perfil.
         </p>
-        <AcademicPredictionForm setPredictionResult={setPredictionResult} />
+        <VocationalFormModal setPredictionResult={setPredictionResult} />
       </CardContent>
     </Card>
   );
