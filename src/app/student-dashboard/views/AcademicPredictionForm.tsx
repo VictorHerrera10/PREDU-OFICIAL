@@ -127,7 +127,7 @@ export function AcademicPredictionForm({ setPredictionResult }: Props) {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
             <ScrollArea className="h-96">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 pr-6 py-4">
                     {subjects.map((subject) => (
@@ -169,14 +169,14 @@ export function AcademicPredictionForm({ setPredictionResult }: Props) {
                     ))}
                 </div>
             </ScrollArea>
+             <DialogFooter className="pt-6 flex justify-center">
+                <Button type="submit" disabled={isSubmitting} size="lg">
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isSubmitting ? 'Analizando...' : 'Obtener Predicción'}
+                </Button>
+            </DialogFooter>
           </form>
         </Form>
-        <DialogFooter className="pt-6 justify-center">
-          <Button type="button" onClick={form.handleSubmit(onSubmit)} disabled={isSubmitting} size="lg">
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isSubmitting ? 'Analizando...' : 'Obtener Predicción'}
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
