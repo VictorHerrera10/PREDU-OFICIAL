@@ -94,7 +94,7 @@ export function StudentProfileForm({ user }: Props) {
                             <Label htmlFor="phone">Teléfono</Label>
                             <Input id="phone" name="phone" placeholder="987654321" required />
                         </div>
-                        <div className="space-y-2 md:col-span-2">
+                        <div className="space-y-2">
                             <Label htmlFor="institutionCode">Código de Colegio (Opcional)</Label>
                             <Input id="institutionCode" name="institutionCode" placeholder="Si tienes un código, ingrésalo aquí" />
                         </div>
