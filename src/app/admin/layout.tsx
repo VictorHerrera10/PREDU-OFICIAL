@@ -39,7 +39,7 @@ export default function AdminLayout({
           <SidebarContent>
             <SidebarMenu>
               {navItems.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive = pathname.startsWith(item.href) && (item.href !== '/admin' || pathname === '/admin');
                 return (
                   <SidebarMenuItem key={item.href}>
                     <Link href={item.href}>
@@ -62,7 +62,7 @@ export default function AdminLayout({
                 <SidebarTrigger />
                 <h2 className="text-lg font-semibold">Panel de Administración</h2>
             </header>
-            <main className="flex-1">{children}</main>
+            <main className="flex-1 md:pl-5">{children}</main>
         </SidebarInset>
       </div>
     </SidebarProvider>
