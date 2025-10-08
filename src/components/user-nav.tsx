@@ -70,18 +70,21 @@ export function UserNav() {
       .join('');
   };
 
-  const getTutorWelcomeDetails = (role?: 'psicologo' | 'docente' | 'director') => {
-    switch (role) {
-      case 'docente':
-        return { title: 'Prof.', emoji: '🧑‍🏫' };
-      case 'psicologo':
-        return { title: 'Psic.', emoji: '🧠' };
-      case 'director':
-        return { title: 'Dir.', emoji: '👑' };
-      default:
-        return { title: 'Bienvenido,', emoji: <Star className="w-4 h-4 text-primary" /> };
+  const getWelcomeDetails = (profile: UserProfile | null) => {
+    if (profile?.role === 'tutor') {
+        switch (profile.tutorDetails?.roleInInstitution) {
+            case 'docente':
+                return { title: '¡Hola, Prof.', emoji: '🧑‍🏫' };
+            case 'psicologo':
+                return { title: '¡Hola, Psic.', emoji: '🧠' };
+            case 'director':
+                return { title: '¡Hola, Dir.', emoji: '👑' };
+            default:
+                return { title: '¡Hola, Tutor', emoji: '🧑‍🏫' };
+        }
     }
-  };
+    return { title: 'Bienvenido,', emoji: <Star className="w-4 h-4 text-primary" /> };
+};
 
 
   const isLoading = isUserLoading || isProfileLoading;
@@ -90,9 +93,9 @@ export function UserNav() {
   const displayEmail = user?.email;
 
   const { title: welcomeTitle, emoji: welcomeEmoji } = useMemo(
-    () => getTutorWelcomeDetails(userProfile?.tutorDetails?.roleInInstitution),
+    () => getWelcomeDetails(userProfile),
     [userProfile]
-  );
+);
 
 
   const profileLink = useMemo(() => {
@@ -124,7 +127,7 @@ export function UserNav() {
         transition={{ duration: 0.5 }}
       >
         <span>{welcomeTitle}</span>
-        <span className="font-bold text-foreground">{displayName}</span>
+        <span className="font-bold text-foreground">{displayName}!</span>
         <span className="text-xl">{welcomeEmoji}</span>
       </motion.div>
       <AlertDialog>
