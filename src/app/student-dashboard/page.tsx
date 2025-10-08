@@ -1,38 +1,53 @@
 'use client';
 
-import { Logo } from '@/components/logo';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useUser } from '@/firebase';
-import { LogoutButton } from '@/components/logout-button';
+import { useMemo } from 'react';
+import { useUser, useFirestore, useDoc } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { Loader2 } from 'lucide-react';
+import { StudentProfileForm } from './student-profile-form';
+import { StudentMainDashboard } from './student-main-dashboard';
+
+type UserProfile = {
+    id: string;
+    username: string;
+    email: string;
+    isProfileComplete?: boolean;
+};
 
 function StudentDashboardPage() {
-  const { user } = useUser();
+    const { user, isUserLoading } = useUser();
+    const firestore = useFirestore();
 
-  return (
-    <>
-      <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center">
-        <Logo />
-        <LogoutButton />
-      </header>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-2xl text-center bg-card/80 backdrop-blur-sm border-border">
-          <CardHeader>
-            <CardTitle className="text-3xl font-bold text-primary">
-              ¡Hola, {user?.displayName || 'Estudiante'}! 🚀
-            </CardTitle>
-             <CardDescription className="text-lg text-muted-foreground mt-2">
-              Este es tu centro de mando para el éxito.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-4">
-            <p className="text-muted-foreground mt-4">
-             Aquí encontrarás tus tests, resultados y todo lo necesario para descubrir tu vocación. ¡A explorar! 🧭
-            </p>
-          </CardContent>
-        </Card>
-      </main>
-    </>
-  );
+    const userProfileRef = useMemo(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, 'users', user.uid);
+    }, [user, firestore]);
+
+    const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
+
+    if (isUserLoading || isProfileLoading) {
+        return (
+            <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                <p className="mt-4 text-muted-foreground">Cargando tu perfil...</p>
+            </div>
+        );
+    }
+
+    if (userProfile && !userProfile.isProfileComplete) {
+        return <StudentProfileForm user={user} />;
+    }
+
+    if (userProfile && userProfile.isProfileComplete) {
+        return <StudentMainDashboard user={user} />;
+    }
+    
+    // Fallback or should not be reached if logic is correct
+    return (
+        <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+             <p className="text-muted-foreground">No se pudo cargar el perfil del estudiante.</p>
+        </div>
+    );
 }
 
 export default StudentDashboardPage;

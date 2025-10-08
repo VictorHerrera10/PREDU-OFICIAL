@@ -79,6 +79,7 @@ export async function register(prevState: State, formData: FormData): Promise<St
       email: user.email,
       creationDate: serverTimestamp(),
       lastLogin: serverTimestamp(),
+      isProfileComplete: false, // New user, profile is not complete
       role: role, // Assign role
     };
     
@@ -315,4 +316,49 @@ export async function deleteInstitution(institutionId: string) {
     return { success: false, message: 'No se pudo eliminar la institución. ' + error.message };
   }
   redirect('/admin/institutions');
+}
+
+export async function updateStudentProfile(prevState: any, formData: FormData) {
+  const { firestore } = await getAuthenticatedAppForUser();
+  
+  const userId = formData.get('userId') as string;
+  const firstName = formData.get('firstName') as string;
+  const lastName = formData.get('lastName') as string;
+  const age = formData.get('age') as string;
+  const grade = formData.get('grade') as string;
+  const city = formData.get('city') as string;
+  const phone = formData.get('phone') as string;
+  const institutionId = formData.get('institutionId') as string;
+
+  if (!userId || !firstName || !lastName || !age || !grade || !city || !phone) {
+      return { success: false, message: 'Todos los campos son obligatorios, excepto el colegio.' };
+  }
+
+  const userProfileRef = doc(firestore, 'users', userId);
+
+  try {
+      const dataToUpdate: any = {
+          firstName,
+          lastName,
+          age: Number(age),
+          grade,
+          city,
+          phone,
+          profilePictureUrl: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${firstName}${lastName}`,
+          isProfileComplete: true,
+      };
+
+      if (institutionId) {
+        // Optional: Validate institution code if provided, for now just save it
+        dataToUpdate.institutionId = institutionId;
+      }
+      
+      await updateDoc(userProfileRef, dataToUpdate);
+
+      revalidatePath('/student-dashboard');
+      return { success: true };
+  } catch (error: any) {
+      console.error('Error updating student profile:', error);
+      return { success: false, message: 'No se pudo actualizar tu perfil. ' + error.message };
+  }
 }

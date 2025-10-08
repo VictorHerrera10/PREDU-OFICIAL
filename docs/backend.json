@@ -14,6 +14,38 @@
           "type": "string",
           "description": "The user's chosen username for the Pixel Vault application."
         },
+        "firstName": {
+          "type": "string",
+          "description": "The user's first name."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The user's last name."
+        },
+        "age": {
+          "type": "number",
+          "description": "The user's age."
+        },
+        "grade": {
+          "type": "string",
+          "description": "The user's current grade or academic level."
+        },
+        "city": {
+          "type": "string",
+          "description": "The city where the user lives."
+        },
+        "phone": {
+          "type": "string",
+          "description": "The user's phone number."
+        },
+        "profilePictureUrl": {
+          "type": "string",
+          "description": "URL for the user's profile picture."
+        },
+        "isProfileComplete": {
+          "type": "boolean",
+          "description": "Flag to indicate if the user has completed their profile setup."
+        },
         "email": {
           "type": "string",
           "description": "The user's email address.",
