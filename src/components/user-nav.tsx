@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useUser, useFirestore, useDoc } from '@/firebase';
+import { useUser, useFirestore, useDoc, useAuth } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import {
   DropdownMenu,
@@ -12,14 +12,27 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User as UserIcon, Star } from 'lucide-react';
+import { User as UserIcon, Star, LogOut } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
 import Link from 'next/link';
-import { LogoutButton } from './logout-button';
+import { handleLogout } from './logout-button';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 
 type UserProfile = {
@@ -32,6 +45,9 @@ type UserProfile = {
 export function UserNav() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const auth = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
 
   const userProfileRef = useMemo(() => {
@@ -76,44 +92,64 @@ export function UserNav() {
         <span className="font-bold text-foreground">{displayName}</span>
         <Star className="w-4 h-4 text-primary" />
       </motion.div>
+      <AlertDialog>
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-        <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
-                <Avatar 
-                    className={cn(
-                        'h-10 w-10 border-2 transition-all duration-300',
-                        isOpen ? 'border-destructive' : 'border-primary animate-[pulse-glow_3s_ease-in-out_infinite]'
-                    )}
-                >
-                    <AvatarImage src={profilePicture as string | undefined} alt={displayName || ''} />
-                    <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
-                </Avatar>
+              <Avatar
+                className={cn(
+                  'h-10 w-10 border-2 transition-all duration-300',
+                  isOpen ? 'border-destructive' : 'border-primary animate-[pulse-glow_3s_ease-in-out_infinite]'
+                )}
+              >
+                <AvatarImage src={profilePicture as string | undefined} alt={displayName || ''} />
+                <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
+              </Avatar>
             </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56" align="end" forceMount>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
-            <div className="flex flex-col space-y-1">
+              <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">{displayName}</p>
                 <p className="text-xs leading-none text-muted-foreground">
-                {displayEmail}
+                  {displayEmail}
                 </p>
-            </div>
+              </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-            <DropdownMenuItem asChild>
+              <DropdownMenuItem asChild>
                 <Link href="/student-dashboard/profile">
-                <UserIcon className="mr-2 h-4 w-4" />
-                <span>Mi Perfil</span>
+                  <UserIcon className="mr-2 h-4 w-4" />
+                  <span>Mi Perfil</span>
                 </Link>
-            </DropdownMenuItem>
+              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-                <LogoutButton className="w-full justify-start"/>
-            </DropdownMenuItem>
-        </DropdownMenuContent>
+            <AlertDialogTrigger asChild>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Salir del Aula</span>
+                </DropdownMenuItem>
+            </AlertDialogTrigger>
+          </DropdownMenuContent>
         </DropdownMenu>
+
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>¿Ya te vas, {displayName}? 😢</AlertDialogTitle>
+            <AlertDialogDescription>
+                El aula te extrañará. ¿Estás seguro de que quieres cerrar sesión?
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => handleLogout(auth, router, toast)} className={buttonVariants({variant: 'destructive'})}>
+                Sí, salir
+            </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
