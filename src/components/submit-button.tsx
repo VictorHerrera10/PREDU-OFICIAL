@@ -13,9 +13,9 @@ export function SubmitButton({ children, ...props }: SubmitButtonProps) {
   const { pending } = useFormStatus()
 
   return (
-    <Button type="submit" disabled={pending} {...props} className={cn('w-full', props.className)}>
+    <Button type="submit" disabled={pending} {...props} className={cn(props.className)}>
       {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-      {children}
+      {pending ? 'Procesando...' : children}
     </Button>
   )
 }

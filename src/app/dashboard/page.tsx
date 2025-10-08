@@ -42,7 +42,7 @@ function DashboardPage() {
     }
   };
   
-  if (isLoading || userProfile?.role) {
+  if (isLoading || (userProfile && userProfile.role)) {
     return (
        <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -84,9 +84,11 @@ function DashboardPage() {
                 <p className="text-muted-foreground mb-4">
                   Accede a herramientas, tests vocacionales y contenido exclusivo para empezar tu viaje profesional.
                 </p>
-                <Button className="w-full" onClick={() => handleSetRole('student')}>
-                  Entrar como Estudiante <ArrowRight className="ml-2" />
-                </Button>
+                <form action={() => handleSetRole('student')}>
+                  <Button className="w-full" type="submit">
+                    Entrar como Estudiante <ArrowRight className="ml-2" />
+                  </Button>
+                </form>
               </CardContent>
             </Card>
 

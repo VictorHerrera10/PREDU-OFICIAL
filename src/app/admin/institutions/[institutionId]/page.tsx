@@ -2,8 +2,8 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useDoc, useFirestore } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useCollection, useDoc, useFirestore } from '@/firebase';
+import { collection, doc, query, where } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { updateInstitution } from '@/app/actions';
 
@@ -21,8 +21,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Building, Save } from 'lucide-react';
+import { ArrowLeft, Building, Save, Users, Mail, Phone, Briefcase } from 'lucide-react';
 import Link from 'next/link';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 
 type Institution = {
   id: string;
@@ -41,6 +43,63 @@ type Institution = {
   uniqueCode: string;
   createdAt?: { seconds: number; nanoseconds: number };
 };
+
+type UserProfile = {
+    id: string;
+    username: string;
+    email: string;
+    tutorDetails?: {
+        roleInInstitution: string;
+    };
+};
+
+
+function TutorsList({ institutionId }: { institutionId: string }) {
+    const firestore = useFirestore();
+
+    const tutorsQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'users'), where('institutionId', '==', institutionId));
+    }, [firestore, institutionId]);
+
+    const { data: tutors, isLoading } = useCollection<UserProfile>(tutorsQuery);
+
+    if (isLoading) {
+        return (
+            <div className="space-y-3">
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
+            </div>
+        );
+    }
+    
+    if (!tutors || tutors.length === 0) {
+        return <p className="text-sm text-muted-foreground text-center py-4">No hay tutores registrados para esta institución.</p>
+    }
+
+    return (
+        <div className="space-y-3">
+            {tutors.map(tutor => (
+                <div key={tutor.id} className="flex items-center gap-4 p-3 border rounded-lg bg-background/50">
+                    <Avatar>
+                        <AvatarImage src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${tutor.username}`} />
+                        <AvatarFallback>{tutor.username.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-grow">
+                        <p className="font-semibold">{tutor.username}</p>
+                        <p className="text-sm text-muted-foreground flex items-center gap-1.5"><Mail className="h-3 w-3" /> {tutor.email}</p>
+                    </div>
+                    {tutor.tutorDetails?.roleInInstitution && (
+                         <Badge variant="secondary" className="flex items-center gap-1.5">
+                            <Briefcase className="h-3 w-3"/>
+                            {tutor.tutorDetails.roleInInstitution}
+                        </Badge>
+                    )}
+                </div>
+            ))}
+        </div>
+    );
+}
 
 export default function InstitutionDetailsPage() {
   const params = useParams();
@@ -101,7 +160,7 @@ export default function InstitutionDetailsPage() {
   }
 
   return (
-    <div className="w-full mx-auto max-w-4xl p-4 sm:p-6 md:p-8">
+    <div className="w-full mx-auto max-w-7xl p-4 sm:p-6 md:p-8">
       <form action={handleUpdate}>
         <Card className="bg-card/80 backdrop-blur-sm border-border/50">
           <CardHeader>
@@ -124,81 +183,93 @@ export default function InstitutionDetailsPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-[60vh]">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-1">
-                {/* General Info */}
-                <div className="space-y-4 p-4 border rounded-lg bg-background/50">
-                    <h3 className="font-semibold text-lg text-primary">Información General</h3>
-                    <div className="space-y-2">
-                        <Label htmlFor="name">🏫 Nombre de la Institución</Label>
-                        <Input id="name" name="name" defaultValue={institution.name} required />
+            <ScrollArea className="h-[65vh]">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-1">
+                
+                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* General Info */}
+                    <div className="space-y-4 p-4 border rounded-lg bg-background/50">
+                        <h3 className="font-semibold text-lg text-primary">Información General</h3>
+                        <div className="space-y-2">
+                            <Label htmlFor="name">🏫 Nombre de la Institución</Label>
+                            <Input id="name" name="name" defaultValue={institution.name} required />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="address">🗺️ Dirección Completa</Label>
+                            <Input id="address" name="address" defaultValue={institution.address} required />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="contactEmail">📧 Email de Contacto General</Label>
+                            <Input id="contactEmail" name="contactEmail" type="email" defaultValue={institution.contactEmail} required />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="logoUrl">🖼️ URL del Logo (Opcional)</Label>
+                            <Input id="logoUrl" name="logoUrl" defaultValue={institution.logoUrl} />
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="address">🗺️ Dirección Completa</Label>
-                        <Input id="address" name="address" defaultValue={institution.address} required />
+
+                    {/* Academic Info */}
+                    <div className="space-y-4 p-4 border rounded-lg bg-background/50">
+                        <h3 className="font-semibold text-lg text-primary">Información Académica</h3>
+                        <div className="space-y-2">
+                            <Label htmlFor="region">📍 Región</Label>
+                            <Select name="region" defaultValue={institution.region}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent><SelectItem value="norte">Norte</SelectItem><SelectItem value="centro">Centro</SelectItem><SelectItem value="sur">Sur</SelectItem></SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="level">📚 Nivel</Label>
+                            <Select name="level" defaultValue={institution.level}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent><SelectItem value="primaria">Primaria</SelectItem><SelectItem value="secundaria">Secundaria</SelectItem><SelectItem value="superior">Superior</SelectItem></SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="teachingModality">👨‍🏫 Modalidad de Enseñanza</Label>
+                            <Select name="teachingModality" defaultValue={institution.teachingModality}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent><SelectItem value="presencial">Presencial</SelectItem><SelectItem value="virtual">Virtual</SelectItem><SelectItem value="hibrida">Híbrida</SelectItem></SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="studentLimit">🧑‍🎓 Límite de Estudiantes</Label>
+                            <Input id="studentLimit" name="studentLimit" type="number" defaultValue={institution.studentLimit} required />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="tutorLimit">🧑‍🏫 Límite de Tutores</Label>
+                            <Input id="tutorLimit" name="tutorLimit" type="number" defaultValue={institution.tutorLimit} required />
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="contactEmail">📧 Email de Contacto General</Label>
-                        <Input id="contactEmail" name="contactEmail" type="email" defaultValue={institution.contactEmail} required />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="logoUrl">🖼️ URL del Logo (Opcional)</Label>
-                        <Input id="logoUrl" name="logoUrl" defaultValue={institution.logoUrl} />
+
+                    {/* Director Info */}
+                    <div className="space-y-4 p-4 border rounded-lg bg-background/50 md:col-span-2">
+                        <h3 className="font-semibold text-lg text-primary">Información del Director</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="directorName">👤 Nombre del Director</Label>
+                                <Input id="directorName" name="directorName" defaultValue={institution.directorName} required />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="directorEmail">✉️ Email del Director</Label>
+                                <Input id="directorEmail" name="directorEmail" type="email" defaultValue={institution.directorEmail} required />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="directorPhone">📞 Teléfono del Director (Opcional)</Label>
+                                <Input id="directorPhone" name="directorPhone" defaultValue={institution.directorPhone} />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* Academic Info */}
+                 {/* Tutors List */}
                 <div className="space-y-4 p-4 border rounded-lg bg-background/50">
-                    <h3 className="font-semibold text-lg text-primary">Información Académica</h3>
-                    <div className="space-y-2">
-                        <Label htmlFor="region">📍 Región</Label>
-                        <Select name="region" defaultValue={institution.region}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent><SelectItem value="norte">Norte</SelectItem><SelectItem value="centro">Centro</SelectItem><SelectItem value="sur">Sur</SelectItem></SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="level">📚 Nivel</Label>
-                        <Select name="level" defaultValue={institution.level}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent><SelectItem value="primaria">Primaria</SelectItem><SelectItem value="secundaria">Secundaria</SelectItem><SelectItem value="superior">Superior</SelectItem></SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="teachingModality">👨‍🏫 Modalidad de Enseñanza</Label>
-                        <Select name="teachingModality" defaultValue={institution.teachingModality}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent><SelectItem value="presencial">Presencial</SelectItem><SelectItem value="virtual">Virtual</SelectItem><SelectItem value="hibrida">Híbrida</SelectItem></SelectContent>
-                        </Select>
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="studentLimit">🧑‍🎓 Límite de Estudiantes</Label>
-                        <Input id="studentLimit" name="studentLimit" type="number" defaultValue={institution.studentLimit} required />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="tutorLimit">🧑‍🏫 Límite de Tutores</Label>
-                        <Input id="tutorLimit" name="tutorLimit" type="number" defaultValue={institution.tutorLimit} required />
-                    </div>
+                    <h3 className="font-semibold text-lg text-primary flex items-center gap-2">
+                        <Users /> Tutores Registrados
+                    </h3>
+                    <TutorsList institutionId={institutionId} />
                 </div>
 
-                {/* Director Info */}
-                <div className="space-y-4 p-4 border rounded-lg bg-background/50 md:col-span-2">
-                    <h3 className="font-semibold text-lg text-primary">Información del Director</h3>
-                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="directorName">👤 Nombre del Director</Label>
-                            <Input id="directorName" name="directorName" defaultValue={institution.directorName} required />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="directorEmail">✉️ Email del Director</Label>
-                            <Input id="directorEmail" name="directorEmail" type="email" defaultValue={institution.directorEmail} required />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="directorPhone">📞 Teléfono del Director (Opcional)</Label>
-                            <Input id="directorPhone" name="directorPhone" defaultValue={institution.directorPhone} />
-                        </div>
-                    </div>
-                </div>
                 </div>
             </ScrollArea>
           </CardContent>
@@ -216,7 +287,7 @@ export default function InstitutionDetailsPage() {
 
 function InstitutionDetailsSkeleton() {
     return (
-        <div className="w-full mx-auto max-w-4xl p-4 sm:p-6 md:p-8">
+        <div className="w-full mx-auto max-w-7xl p-4 sm:p-6 md:p-8">
             <Card className="bg-card/80 backdrop-blur-sm border-border/50">
                 <CardHeader>
                     <div className="flex justify-between items-start">

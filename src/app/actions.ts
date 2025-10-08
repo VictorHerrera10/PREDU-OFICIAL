@@ -13,6 +13,10 @@ import {
   addDoc,
   collection,
   deleteDoc,
+  query,
+  where,
+  getDocs,
+  getDoc,
 } from 'firebase/firestore';
 import { redirect } from 'next/navigation';
 import { initializeServerApp } from '@/firebase/server-init';
@@ -120,7 +124,7 @@ export async function updateUserRole(userId: string, role: 'student' | 'tutor') 
     revalidatePath('/dashboard');
     if (role === 'student') {
       redirect('/student-dashboard');
-    } else {
+    } else if (role === 'tutor'){
       redirect('/tutor-dashboard');
     }
   } catch (error) {
@@ -129,6 +133,62 @@ export async function updateUserRole(userId: string, role: 'student' | 'tutor') 
     return { message: 'No se pudo actualizar el rol del usuario.' };
   }
 }
+
+
+export async function registerTutor(prevState: any, formData: FormData) {
+  const { firestore } = await getAuthenticatedAppForUser();
+  
+  const userId = formData.get('userId') as string;
+  const accessCode = formData.get('accessCode') as string;
+  const institutionId = formData.get('institutionId') as string;
+  const roleInInstitution = formData.get('roleInInstitution') as string;
+
+  if (!userId || !accessCode || !institutionId || !roleInInstitution) {
+    return { success: false, message: 'Faltan datos obligatorios.' };
+  }
+
+  try {
+    // 1. Validate institution and code
+    const institutionRef = doc(firestore, 'institutions', institutionId);
+    const institutionSnap = await getDoc(institutionRef);
+
+    if (!institutionSnap.exists()) {
+      return { success: false, message: 'La institución seleccionada no es válida.' };
+    }
+
+    const institutionData = institutionSnap.data();
+    if (institutionData.uniqueCode !== accessCode) {
+      return { success: false, message: 'El código de acceso no coincide con la institución seleccionada. ❌' };
+    }
+
+    // 2. Check tutor limit
+    const tutorsQuery = query(collection(firestore, 'users'), where('institutionId', '==', institutionId));
+    const tutorsSnap = await getDocs(tutorsQuery);
+    const currentTutorCount = tutorsSnap.size;
+
+    if (currentTutorCount >= institutionData.tutorLimit) {
+      return { success: false, message: 'El límite de tutores para esta institución ha sido alcanzado. Contacta al administrador. 🚫' };
+    }
+
+    // 3. Update user profile
+    const userProfileRef = doc(firestore, 'users', userId);
+    await updateDoc(userProfileRef, {
+      role: 'tutor',
+      institutionId: institutionId,
+      tutorDetails: {
+        roleInInstitution: roleInInstitution,
+      },
+    });
+
+    revalidatePath('/dashboard');
+    return { success: true };
+
+  } catch (error: any) {
+    console.error('Error registering tutor:', error);
+    return { success: false, message: 'No se pudo completar el registro de tutor. ' + error.message };
+  }
+}
+
 
 export async function updateUser(userId: string, formData: FormData) {
   const { firestore } = await getAuthenticatedAppForUser();

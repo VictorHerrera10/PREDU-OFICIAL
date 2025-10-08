@@ -33,6 +33,20 @@
           "type": "string",
           "description": "The role of the user within the application.",
           "enum": ["student", "tutor", "admin"]
+        },
+        "institutionId": {
+          "type": "string",
+          "description": "The ID of the institution the user is associated with (if any)."
+        },
+        "tutorDetails": {
+          "type": "object",
+          "description": "Additional details for users with the 'tutor' role.",
+          "properties": {
+            "roleInInstitution": {
+              "type": "string",
+              "description": "The tutor's specific role within the institution (e.g., Psicólogo, Docente)."
+            }
+          }
         }
       },
       "required": [
