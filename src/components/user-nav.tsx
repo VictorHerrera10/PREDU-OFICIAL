@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User as UserIcon } from 'lucide-react';
+import { User as UserIcon, Star } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
 import Link from 'next/link';
 import { LogoutButton } from './logout-button';
@@ -28,28 +28,6 @@ type UserProfile = {
   email?: string;
   profilePictureUrl?: string;
 };
-
-// Animation variants for the container
-const sentence = {
-  hidden: { opacity: 1 },
-  visible: {
-    opacity: 1,
-    transition: {
-      delay: 0.1,
-      staggerChildren: 0.04,
-    },
-  },
-};
-
-// Animation variants for each letter for a subtle wave effect
-const letter = {
-  hidden: { opacity: 0, y: 10 },
-  visible: {
-    opacity: 1,
-    y: 0,
-  },
-};
-
 
 export function UserNav() {
   const { user, isUserLoading } = useUser();
@@ -76,9 +54,6 @@ export function UserNav() {
   const profilePicture = userProfile?.profilePictureUrl || user?.photoURL;
   const displayName = userProfile?.username || user?.displayName;
   const displayEmail = user?.email;
-  
-  const welcomeText = `Bienvenido, ${displayName} 👋`;
-
 
   if (isLoading) {
     return (
@@ -92,40 +67,14 @@ export function UserNav() {
   return (
     <div className="flex items-center gap-4">
       <motion.div
-        className="hidden md:flex text-sm font-medium text-muted-foreground"
-        variants={sentence}
-        initial="hidden"
-        animate="visible"
+        className="hidden md:flex items-center gap-1.5 text-sm font-medium text-muted-foreground"
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
       >
-        {welcomeText.split("").map((char, index) => {
-          // Check if char is part of displayName to make it bold
-           const isNameChar = displayName?.includes(char) && char !== ' ';
-           // Create a wave animation for each character
-           const waveAnimation = {
-             y: ["0%", "-20%", "0%"],
-             transition: {
-               duration: 1.5,
-               ease: "easeInOut",
-               repeat: Infinity,
-               delay: index * 0.05,
-             },
-           };
-
-          return (
-            <motion.span
-              key={char + "-" + index}
-              variants={letter}
-              animate={waveAnimation}
-              className={cn({
-                'whitespace-pre': char === ' ',
-                'text-foreground font-bold': isNameChar,
-                'inline-block': char !== ' ', // Prevents weird spacing with emoji
-              })}
-            >
-              {char}
-            </motion.span>
-          )
-        })}
+        <span>Bienvenido,</span>
+        <span className="font-bold text-foreground">{displayName}</span>
+        <Star className="w-4 h-4 text-primary" />
       </motion.div>
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
@@ -136,7 +85,7 @@ export function UserNav() {
                         isOpen ? 'border-destructive' : 'border-primary animate-[pulse-glow_3s_ease-in-out_infinite]'
                     )}
                 >
-                    <AvatarImage src={profilePicture} alt={displayName || ''} />
+                    <AvatarImage src={profilePicture as string | undefined} alt={displayName || ''} />
                     <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
                 </Avatar>
             </Button>
