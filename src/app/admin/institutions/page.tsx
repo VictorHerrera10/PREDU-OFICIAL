@@ -5,8 +5,8 @@ import { School } from 'lucide-react';
 
 function AdminInstitutionsPage() {
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-      <div className="flex items-center gap-4">
+    <div className="w-full">
+      <div className="flex items-center gap-4 p-4 md:p-8">
         <div className="bg-primary/10 p-3 rounded-lg border border-primary/20">
           <School className="h-6 w-6 text-primary" />
         </div>
@@ -17,7 +17,9 @@ function AdminInstitutionsPage() {
           </p>
         </div>
       </div>
-      <InstitutionsTable />
+      <div className="p-4 md:p-8 pt-0">
+        <InstitutionsTable />
+      </div>
     </div>
   );
 }
