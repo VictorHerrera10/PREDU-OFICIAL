@@ -10,6 +10,7 @@ import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import HomeView from './views/HomeView';
 import AcademicPredictionView from './views/AcademicPredictionView';
 import PsychologicalPredictionView from './views/PsychologicalPredictionView';
+import { LevelUpView } from './views/LevelUpView';
 
 type View = 'inicio' | 'prediccionAcademica' | 'prediccionPsicologica';
 
@@ -138,6 +139,7 @@ export function StudentMainDashboard({ user }: Props) {
             </AnimatePresence>
         </div>
       </main>
+      <LevelUpView />
     </div>
   );
 }
