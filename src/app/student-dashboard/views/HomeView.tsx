@@ -54,9 +54,10 @@ export default function HomeView() {
 
     const recommendation = useMemo(() => {
         if (academicPrediction?.prediction && psychologicalPrediction?.result) {
-            const academicKey = normalizeString(academicPrediction.prediction);
-            const psychologicalKey = normalizeString(psychologicalPrediction.result);
-            return getRecommendation(academicKey, psychologicalKey);
+            const academic = normalizeString(academicPrediction.prediction);
+            const psychological = normalizeString(psychologicalPrediction.result);
+            const combinationKey = `${academic} — ${psychological}`;
+            return getRecommendation(combinationKey);
         }
         return null;
     }, [academicPrediction, psychologicalPrediction]);
