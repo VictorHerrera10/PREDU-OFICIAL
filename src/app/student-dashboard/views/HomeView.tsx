@@ -29,9 +29,10 @@ const normalizeString = (str: string | null | undefined): string => {
 export default function HomeView() {
     const { user } = useUser();
     const firestore = useFirestore();
-    const { addNotification, notifications } = useNotifications();
+    const { addNotification } = useNotifications();
+    
+    // Ref para controlar que las notificaciones se disparen solo una vez por sesión
     const notificationTriggeredRef = useRef({ reportReady: false, nextLevel: false });
-
 
     const academicDocRef = useMemo(() => {
         if (!user || !firestore) return null;
@@ -65,11 +66,12 @@ export default function HomeView() {
     }, [academicPrediction, psychologicalPrediction]);
 
     useEffect(() => {
-        if (isLoading || !recommendation || userProfile === undefined) return;
+        if (isLoading || recommendation === null || userProfile === undefined) return;
 
-        // Notificación para cuando el reporte está listo por primera vez
-        if (!userProfile?.hasSeenInitialReport && !notificationTriggeredRef.current.reportReady) {
-            notificationTriggeredRef.current.reportReady = true;
+        // Notificación para cuando el reporte está listo por primera vez.
+        // Se dispara solo si el perfil no lo ha visto y el ref.current es false.
+        if (!userProfile.hasSeenInitialReport && !notificationTriggeredRef.current.reportReady) {
+            notificationTriggeredRef.current.reportReady = true; // Marcar como disparado
             setTimeout(() => {
                 addNotification({
                     title: '¡Tu reporte está listo!',
@@ -81,9 +83,10 @@ export default function HomeView() {
                 updateDoc(userProfileRef, { hasSeenInitialReport: true });
             }
         }
-        // Notificación para el siguiente nivel en visitas posteriores
-        else if (userProfile?.hasSeenInitialReport && !notificationTriggeredRef.current.nextLevel) {
-            notificationTriggeredRef.current.nextLevel = true;
+        // Notificación para el siguiente nivel en visitas posteriores.
+        // Se dispara solo si ya vio el reporte inicial y el ref.current es false.
+        else if (userProfile.hasSeenInitialReport && !notificationTriggeredRef.current.nextLevel) {
+            notificationTriggeredRef.current.nextLevel = true; // Marcar como disparado
             setTimeout(() => {
                 addNotification({
                     title: '¿Listo para el siguiente nivel?',
@@ -92,7 +95,6 @@ export default function HomeView() {
                 });
             }, 6000);
         }
-
     }, [isLoading, recommendation, userProfile, addNotification, userProfileRef]);
 
 
