@@ -1,6 +1,6 @@
 'use client';
 
-import { subjects } from './psychological-test-data';
+import { subjects } from './academic-test-data';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 

@@ -32,7 +32,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { subjects } from './psychological-test-data';
+import { subjects } from './academic-test-data';
 
 // ===== Datos base =====
 const gradeOptions: ("AD" | "A" | "B" | "C")[] = ["AD", "A", "B", "C"];
