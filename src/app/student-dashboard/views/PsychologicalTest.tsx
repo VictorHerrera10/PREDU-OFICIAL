@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, CheckCircle } from 'lucide-react';
-import { questions, CATEGORY_DETAILS, SECTION_DETAILS, TestSection } from './psychological-test-data';
+import { questions, CATEGORY_DETAILS, SECTION_DETAILS, TestSection, HollandQuestion } from './psychological-test-data';
 import { cn } from '@/lib/utils';
 import { QuestionModal } from './QuestionModal';
 
@@ -26,6 +26,10 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     );
     const [activeSection, setActiveSection] = useState<TestSection | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    // State for modal
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [currentQuestion, setCurrentQuestion] = useState<HollandQuestion | null>(null);
 
     const progress = useMemo(() => {
         const answeredCount = Object.values(answers).filter(a => a !== null).length;
@@ -46,10 +50,25 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
 
     const handleAnswer = (questionId: string, answer: 'yes' | 'no') => {
         setAnswers(prev => ({ ...prev, [questionId]: answer }));
+
+        // Auto-advance logic
+        const sectionQuestions = questions.filter(q => q.section === activeSection);
+        const currentIndex = sectionQuestions.findIndex(q => q.id === questionId);
+        
+        if (currentIndex !== -1 && currentIndex < sectionQuestions.length - 1) {
+            // If there's a next question in the section, show it
+            setCurrentQuestion(sectionQuestions[currentIndex + 1]);
+        } else {
+            // If it's the last question, close the modal
+            setIsModalOpen(false);
+            setCurrentQuestion(null);
+        }
     };
 
-    const toggleSection = (section: TestSection) => {
-        setActiveSection(prev => (prev === section ? null : section));
+    const handleOpenQuestion = (question: HollandQuestion, section: TestSection) => {
+        setActiveSection(section);
+        setCurrentQuestion(question);
+        setIsModalOpen(true);
     };
 
     const currentSectionQuestions = useMemo(() => {
@@ -110,63 +129,58 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                     ))}
                 </div>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <div className="space-y-6">
                 {(Object.keys(SECTION_DETAILS) as TestSection[]).map(sec => {
                     const SectionIcon = SECTION_DETAILS[sec].icon;
                     const isComplete = progress[sec] === 100;
+                    const sectionQuestions = questions.filter(q => q.section === sec);
+
                     return (
                         <div key={sec}>
-                            <Button variant="outline" className="h-24 text-lg w-full flex-col gap-2 relative" onClick={() => toggleSection(sec)}>
-                                <div className="flex items-center gap-2">
-                                    <SectionIcon /> 
-                                    <span>{SECTION_DETAILS[sec].title}</span>
-                                </div>
-                                {isComplete && <CheckCircle className="w-4 h-4 text-green-500 absolute top-2 right-2" />}
-                            </Button>
+                             <div className="flex items-center gap-3 mb-3">
+                                <SectionIcon className="w-6 h-6 text-primary" />
+                                <h3 className="text-xl font-semibold text-foreground">{SECTION_DETAILS[sec].title}</h3>
+                                {isComplete && <CheckCircle className="w-5 h-5 text-green-500" />}
+                            </div>
+                            <div className="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-9 gap-2">
+                                {sectionQuestions.map((q, index) => {
+                                    const CategoryIcon = CATEGORY_DETAILS[q.category].icon;
+                                    const categoryColor = CATEGORY_DETAILS[q.category].color;
+                                    const isAnswered = answers[q.id] !== null;
 
-                             <AnimatePresence>
-                                {activeSection === sec && (
-                                     <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: 'auto' }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 gap-2"
-                                    >
-                                        {currentSectionQuestions.map((q, index) => {
-                                            const CategoryIcon = CATEGORY_DETAILS[q.category].icon;
-                                            const categoryColor = CATEGORY_DETAILS[q.category].color;
-                                            const isAnswered = answers[q.id] !== null;
-
-                                            return (
-                                                 <QuestionModal
-                                                    key={q.id}
-                                                    question={q}
-                                                    questionNumber={index + 1}
-                                                    totalQuestions={currentSectionQuestions.length}
-                                                    answer={answers[q.id]}
-                                                    onAnswer={handleAnswer}
-                                                >
-                                                    <button
-                                                        className={cn(
-                                                            "h-14 w-full border-2 rounded-md flex flex-col items-center justify-center transition-all",
-                                                            isAnswered ? 'bg-primary/20 border-primary' : 'bg-muted/50 border-muted-foreground/20 hover:bg-muted'
-                                                        )}
-                                                        title={q.text}
-                                                    >
-                                                        <span className={cn("text-lg font-bold", isAnswered ? 'text-primary-foreground' : 'text-muted-foreground')}>{index + 1}</span>
-                                                        <CategoryIcon className={cn("w-5 h-5", categoryColor)} />
-                                                    </button>
-                                                </QuestionModal>
-                                            );
-                                        })}
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                                    return (
+                                        <button
+                                            key={q.id}
+                                            onClick={() => handleOpenQuestion(q, sec)}
+                                            className={cn(
+                                                "h-14 w-full border-2 rounded-md flex flex-col items-center justify-center transition-all",
+                                                isAnswered ? 'bg-primary/20 border-primary' : 'bg-muted/50 border-muted-foreground/20 hover:bg-muted'
+                                            )}
+                                            title={q.text}
+                                        >
+                                            <span className={cn("text-lg font-bold", isAnswered ? 'text-primary-foreground' : 'text-muted-foreground')}>{index + 1}</span>
+                                            <CategoryIcon className={cn("w-5 h-5", categoryColor)} />
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
                     );
                 })}
             </div>
+
+            {isModalOpen && currentQuestion && (
+                 <QuestionModal
+                    key={currentQuestion.id}
+                    question={currentQuestion}
+                    allQuestions={questions.filter(q => q.section === activeSection)}
+                    answer={answers[currentQuestion.id]}
+                    onAnswer={handleAnswer}
+                    isOpen={isModalOpen}
+                    setIsOpen={setIsModalOpen}
+                />
+            )}
 
             {progress.overall === 100 && (
                 <div className="mt-8 text-center">

@@ -1,21 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { ThumbsUp, ThumbsDown } from 'lucide-react';
 import { HollandQuestion } from './psychological-test-data';
 import { Logo } from '@/components/logo';
+import { cn } from '@/lib/utils';
 
 type QuestionModalProps = {
     question: HollandQuestion;
-    questionNumber: number;
-    totalQuestions: number;
+    allQuestions: HollandQuestion[];
     answer: 'yes' | 'no' | null;
     onAnswer: (questionId: string, answer: 'yes' | 'no') => void;
-    children: React.ReactNode;
+    isOpen: boolean;
+    setIsOpen: (isOpen: boolean) => void;
 };
 
 // A special version of WindowControls for the modal
@@ -39,22 +39,23 @@ function QuestionWindowControls({ questionNumber, totalQuestions }: { questionNu
 
 export function QuestionModal({
     question,
-    questionNumber,
-    totalQuestions,
+    allQuestions,
+    answer,
     onAnswer,
-    children,
+    isOpen,
+    setIsOpen,
 }: QuestionModalProps) {
-    const [isOpen, setIsOpen] = useState(false);
 
-    const handleAnswerClick = (answer: 'yes' | 'no') => {
-        onAnswer(question.id, answer);
-        setIsOpen(false);
+    const questionNumber = allQuestions.findIndex(q => q.id === question.id) + 1;
+    const totalQuestions = allQuestions.length;
+    
+    const handleAnswerClick = (selectedAnswer: 'yes' | 'no') => {
+        onAnswer(question.id, selectedAnswer);
     };
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="p-0 border-0 max-w-lg bg-transparent shadow-none">
+            <DialogContent className="p-0 border-0 max-w-lg bg-transparent shadow-none" onInteractOutside={(e) => e.preventDefault()}>
                 <Card className="bg-card/80 backdrop-blur-lg border-border/50 overflow-hidden">
                     <QuestionWindowControls questionNumber={questionNumber} totalQuestions={totalQuestions}/>
                     <CardContent className="p-6">
@@ -68,10 +69,20 @@ export function QuestionModal({
                                 className="rounded-md mx-auto mb-6 aspect-video object-cover" 
                             />
                             <div className="flex justify-center gap-4">
-                                <Button size="lg" variant="outline" className="text-green-500 border-green-500 hover:bg-green-500/10 hover:text-green-400" onClick={() => handleAnswerClick('yes')}>
+                                <Button 
+                                    size="lg" 
+                                    variant={answer === 'yes' ? 'secondary' : 'outline'} 
+                                    className={cn("border-green-500 hover:bg-green-500/10 hover:text-green-400", answer === 'yes' ? "bg-green-500/20 text-green-300" : "text-green-500")} 
+                                    onClick={() => handleAnswerClick('yes')}
+                                >
                                     <ThumbsUp className="mr-2" /> Sí
                                 </Button>
-                                <Button size="lg" variant="outline" className="text-red-500 border-red-500 hover:bg-red-500/10 hover:text-red-400" onClick={() => handleAnswerClick('no')}>
+                                <Button 
+                                    size="lg" 
+                                    variant={answer === 'no' ? 'secondary' : 'outline'} 
+                                    className={cn("border-red-500 hover:bg-red-500/10 hover:text-red-400", answer === 'no' ? "bg-red-500/20 text-red-300" : "text-red-500")} 
+                                    onClick={() => handleAnswerClick('no')}
+                                >
                                     <ThumbsDown className="mr-2" /> No
                                 </Button>
                             </div>
