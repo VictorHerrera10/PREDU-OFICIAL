@@ -76,7 +76,7 @@ export default function LoginForm() {
           description: 'Completa tus tests para descubrir tu ruta profesional.',
           emoji: '🚀'
         });
-      }, 2000);
+      }, 6000);
 
     } catch (error: any) {
        const errorCode = error.code;

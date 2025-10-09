@@ -1,11 +1,12 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import { useUser, useFirestore, useDoc } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Loader2, Lightbulb, Compass, BrainCircuit } from 'lucide-react';
 import { getRecommendation } from './recommendation-data';
+import { useNotifications } from '@/hooks/use-notifications';
 
 type AcademicPrediction = {
     prediction: string;
@@ -15,48 +16,92 @@ type PsychologicalPrediction = {
     result: string;
 };
 
-// Normaliza strings para coincidir con las claves de MATRIX
-const normalizeString = (str: string | null | undefined) => {
+type UserProfile = {
+    hasSeenInitialReport?: boolean;
+};
+
+const normalizeString = (str: string | null | undefined): string => {
     if (!str) return '';
     return str.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 };
 
-// Convierte a formato con mayúscula inicial
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
 export default function HomeView() {
     const { user } = useUser();
     const firestore = useFirestore();
+    const { addNotification, notifications } = useNotifications();
+    const notificationSentRef = useRef({ reportReady: false, planB: false });
 
-    // Referencia al documento académico
     const academicDocRef = useMemo(() => {
         if (!user || !firestore) return null;
         return doc(firestore, 'academic_prediction', user.uid);
     }, [user, firestore]);
 
-    // Referencia al documento psicológico
     const psychologicalDocRef = useMemo(() => {
         if (!user || !firestore) return null;
         return doc(firestore, 'psychological_predictions', user.uid);
     }, [user, firestore]);
 
-    // Obtención de datos
+    const userProfileRef = useMemo(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, 'users', user.uid);
+    }, [user, firestore]);
+
     const { data: academicPrediction, isLoading: isLoadingAcademic } = useDoc<AcademicPrediction>(academicDocRef);
     const { data: psychologicalPrediction, isLoading: isLoadingPsychological } = useDoc<PsychologicalPrediction>(psychologicalDocRef);
+    const { data: userProfile, isLoading: isLoadingProfile } = useDoc<UserProfile>(userProfileRef);
 
-    const isLoading = isLoadingAcademic || isLoadingPsychological;
+    const isLoading = isLoadingAcademic || isLoadingPsychological || isLoadingProfile;
 
-    // Generación de la recomendación
     const recommendation = useMemo(() => {
         if (academicPrediction?.prediction && psychologicalPrediction?.result) {
-            const academic = capitalize(normalizeString(academicPrediction.prediction));
-            const psychological = capitalize(normalizeString(psychologicalPrediction.result));
-
-            const combinationKey = `${academic} — ${psychological}`;
-            return getRecommendation(combinationKey);
+            const academicResult = academicPrediction.prediction;
+            const psychologicalResult = psychologicalPrediction.result;
+            return getRecommendation(academicResult, psychologicalResult);
         }
         return null;
     }, [academicPrediction, psychologicalPrediction]);
+
+    useEffect(() => {
+        if (isLoading) return;
+
+        const handleNotifications = async () => {
+            if (recommendation && !notificationSentRef.current.reportReady) {
+                 const reportReadyNotificationExists = notifications.some(n => n.title === '¡Tu reporte está listo!');
+                if (!reportReadyNotificationExists) {
+                    setTimeout(() => {
+                        addNotification({
+                            title: '¡Tu reporte está listo!',
+                            description: 'Hemos combinado tus resultados. ¡Revisa tu ruta personalizada en la sección de Inicio!',
+                            emoji: '📊'
+                        });
+                        notificationSentRef.current.reportReady = true;
+
+                        if (userProfileRef && userProfile?.hasSeenInitialReport === undefined) {
+                            updateDoc(userProfileRef, { hasSeenInitialReport: true });
+                        }
+                    }, 6000);
+                }
+            } else if (userProfile?.hasSeenInitialReport && !notificationSentRef.current.planB) {
+                const planBNotificationExists = notifications.some(n => n.title === '¿Listo para el siguiente nivel?');
+                if (!planBNotificationExists) {
+                     setTimeout(() => {
+                        addNotification({
+                            title: '¿Listo para el siguiente nivel?',
+                            description: 'Explora nuestro plan de mejora para obtener análisis más profundos y herramientas exclusivas.',
+                            emoji: '🌟'
+                        });
+                        notificationSentRef.current.planB = true;
+                    }, 6000);
+                }
+            }
+        };
+
+        handleNotifications();
+
+    }, [isLoading, recommendation, userProfile, addNotification, notifications, userProfileRef]);
+
 
     if (isLoading) {
         return (
@@ -79,23 +124,23 @@ export default function HomeView() {
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="p-4 border-l-4 border-amber-400 bg-amber-900/20 rounded-r-lg">
-                            <h3 className="font-bold text-foreground text-lg mb-2">Consejo de Compatibilidad (Notas + RIASEC)</h3>
+                            <h3 className="font-bold text-foreground text-lg mb-2">💡 Consejo de Compatibilidad (Notas + RIASEC)</h3>
                             <p className="text-foreground">{recommendation.compatibilityAdvice}</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="p-4 bg-background/50 rounded-lg">
-                                <h3 className="font-bold text-foreground text-lg mb-2">Consejo Académico (Notas)</h3>
+                                <h3 className="font-bold text-foreground text-lg mb-2">📝 Consejo Académico (Notas)</h3>
                                 <p className="text-muted-foreground">{recommendation.academicAdvice}</p>
                             </div>
                             <div className="p-4 bg-background/50 rounded-lg">
-                                <h3 className="font-bold text-foreground text-lg mb-2">Consejo Psicológico (RIASEC)</h3>
+                                <h3 className="font-bold text-foreground text-lg mb-2">🧠 Consejo Psicológico (RIASEC)</h3>
                                 <p className="text-muted-foreground">{recommendation.psychologicalAdvice}</p>
                             </div>
                         </div>
 
                         <div className="p-4 bg-background/50 rounded-lg">
-                            <h3 className="font-bold text-foreground text-lg mb-2">Carreras Relacionadas</h3>
+                            <h3 className="font-bold text-foreground text-lg mb-2">💼 Carreras Relacionadas</h3>
                             <p className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: recommendation.relatedCareers }} />
                         </div>
                     </CardContent>

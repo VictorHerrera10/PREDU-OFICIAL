@@ -180,7 +180,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                         description: '¡Genial! Has terminado el test de intereses.',
                         emoji: '🧠'
                     });
-                }, 1000);
+                }, 6000);
             }
         }
     };

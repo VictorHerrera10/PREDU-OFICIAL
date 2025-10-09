@@ -175,7 +175,7 @@ export function UserNav() {
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: index * 0.1 }}
-                                className={cn("relative rounded-lg", !notif.read && "bg-primary/10")}
+                                className={cn("relative rounded-lg mb-2", !notif.read && "bg-primary/10")}
                              >
                                 <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="flex flex-col items-start gap-1.5 p-3 whitespace-normal">
                                     <div className="flex items-center gap-2">

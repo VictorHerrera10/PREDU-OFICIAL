@@ -112,7 +112,7 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
             description: '¡Felicidades! Sigue así para descubrir tu vocación.',
             emoji: '🎓'
         });
-      }, 1000);
+      }, 6000);
 
       setIsOpen(false);
     } catch (error: any) {
