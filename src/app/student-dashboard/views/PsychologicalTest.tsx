@@ -14,6 +14,7 @@ import { QuestionModal } from './QuestionModal';
 import { Badge } from '@/components/ui/badge';
 import { doc, serverTimestamp } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { ResultsDisplay } from './ResultsDisplay';
 
 
 type Answers = Record<string, 'yes' | 'no' | null>;
@@ -83,13 +84,19 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     }, []);
 
     const progress = useMemo(() => {
-        if (savedPrediction) {
-            return {
+        if (savedPrediction?.progressOverall !== undefined) {
+             const progressData = {
                 overall: savedPrediction.progressOverall ?? 0,
                 actividades: savedPrediction.progressActividades ?? 0,
                 habilidades: savedPrediction.progressHabilidades ?? 0,
                 ocupaciones: savedPrediction.progressOcupaciones ?? 0,
-            }
+            };
+            // Ensure we use the live calculation if the saved data is somehow stale
+             const calculatedProgress = calculateProgress(answers);
+             if (Math.round(progressData.overall) !== Math.round(calculatedProgress.overall)) {
+                 return calculatedProgress;
+             }
+            return progressData;
         }
         return calculateProgress(answers);
     }, [answers, savedPrediction, calculateProgress]);
@@ -101,14 +108,18 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
 
         if (predictionDocRef) {
             const newProgress = calculateProgress(newAnswers);
-            const dataToSave = {
+            const dataToSave: Partial<PsychologicalPrediction> = {
                 answers: newAnswers,
                 progressOverall: newProgress.overall,
                 progressActividades: newProgress.actividades,
                 progressHabilidades: newProgress.habilidades,
                 progressOcupaciones: newProgress.ocupaciones,
-                updatedAt: serverTimestamp(),
+                updatedAt: serverTimestamp() as any,
             };
+            // Create a new document if it does not exist
+            if (!savedPrediction) {
+                dataToSave.createdAt = serverTimestamp() as any;
+            }
             setDocumentNonBlocking(predictionDocRef, dataToSave, { merge: true });
         }
 
@@ -234,6 +245,25 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                                 );
                             })}
                         </div>
+                         {progress.overall === 100 && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: 0.2 }}
+                                className="mt-12"
+                            >
+                                <ResultsDisplay answers={answers} />
+                            </motion.div>
+                        )}
+
+                        {progress.overall === 100 && !savedPrediction?.result && (
+                            <div className="mt-8 text-center">
+                                <Button size="lg" onClick={handleSubmit} disabled={isSubmitting}>
+                                    {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : <CheckCircle className="mr-2" />}
+                                    {isSubmitting ? "Analizando..." : "Finalizar y Obtener Perfil"}
+                                </Button>
+                            </div>
+                        )}
                     </motion.div>
                 ) : (
                     <motion.div
@@ -301,15 +331,6 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                         isOpen={isModalOpen}
                         setIsOpen={setIsModalOpen}
                     />
-            )}
-
-            {progress.overall === 100 && (
-                <div className="mt-8 text-center">
-                    <Button size="lg" onClick={handleSubmit} disabled={isSubmitting}>
-                        {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : <CheckCircle className="mr-2" />}
-                        {isSubmitting ? "Analizando..." : "Finalizar y Obtener Perfil"}
-                    </Button>
-                </div>
             )}
         </div>
     );
