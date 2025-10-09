@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { useUser } from '@/firebase';
+import { useState, useMemo, useEffect } from 'react';
+import { useUser, useFirestore, useDoc } from '@/firebase';
 import api from '@/lib/api-client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -12,9 +12,15 @@ import { questions, CATEGORY_DETAILS, SECTION_DETAILS, TestSection, HollandQuest
 import { cn } from '@/lib/utils';
 import { QuestionModal } from './QuestionModal';
 import { Badge } from '@/components/ui/badge';
+import { doc, serverTimestamp } from 'firebase/firestore';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 
 type Answers = Record<string, 'yes' | 'no' | null>;
+
+type PsychologicalPrediction = {
+    answers: Answers;
+};
 
 type Props = {
     setPredictionResult: (result: string | null) => void;
@@ -22,7 +28,9 @@ type Props = {
 
 export function PsychologicalTest({ setPredictionResult }: Props) {
     const { user } = useUser();
+    const firestore = useFirestore();
     const { toast } = useToast();
+    
     const [answers, setAnswers] = useState<Answers>(() =>
         questions.reduce((acc, q) => ({ ...acc, [q.id]: null }), {})
     );
@@ -31,6 +39,20 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentQuestion, setCurrentQuestion] = useState<HollandQuestion | null>(null);
+
+    const predictionDocRef = useMemo(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, 'psychological_predictions', user.uid);
+    }, [user, firestore]);
+
+    const { data: savedPrediction, isLoading: isLoadingPrediction } = useDoc<PsychologicalPrediction>(predictionDocRef);
+
+    useEffect(() => {
+        if (savedPrediction?.answers) {
+            setAnswers(prev => ({ ...prev, ...savedPrediction.answers }));
+        }
+    }, [savedPrediction]);
+
 
     const progress = useMemo(() => {
         const answeredCount = Object.values(answers).filter(a => a !== null).length;
@@ -52,7 +74,16 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     }, [answers]);
 
     const handleAnswer = (questionId: string, answer: 'yes' | 'no') => {
-        setAnswers(prev => ({ ...prev, [questionId]: answer }));
+        const newAnswers = { ...answers, [questionId]: answer };
+        setAnswers(newAnswers);
+
+        if (predictionDocRef) {
+            setDocumentNonBlocking(predictionDocRef, { 
+                answers: newAnswers, 
+                updatedAt: serverTimestamp() 
+            }, { merge: true });
+        }
+
 
         if (!activeSection) return;
 
@@ -97,6 +128,11 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
             const response = await api.post('/prediccion/psicologica/', requestData);
             const result = Object.values(response.data)[0] as string || "No se pudo determinar el perfil.";
             setPredictionResult(result);
+            
+            if (predictionDocRef) {
+                setDocumentNonBlocking(predictionDocRef, { result, updatedAt: serverTimestamp() }, { merge: true });
+            }
+            
             toast({ title: "¡Análisis Completado! 🧠", description: `Tu perfil sugerido es: ${result}` });
         } catch (error: any) {
             console.error(error);
@@ -118,6 +154,15 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
         amber: { border: 'border-amber-400', bg: 'bg-amber-900/50', hover: 'hover:border-amber-300' },
         teal: { border: 'border-teal-400', bg: 'bg-teal-900/50', hover: 'hover:border-teal-300' },
     };
+
+    if (isLoadingPrediction) {
+        return (
+            <div className="flex items-center justify-center h-40">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="ml-4 text-muted-foreground">Recuperando tu progreso...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="w-full">

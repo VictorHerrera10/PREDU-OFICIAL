@@ -186,6 +186,44 @@
         "teachingModality",
         "uniqueCode"
       ]
+    },
+    "PsychologicalPrediction": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PsychologicalPrediction",
+      "type": "object",
+      "description": "Stores the user's answers to the RIASEC psychological test.",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who took the test."
+        },
+        "answers": {
+          "type": "object",
+          "description": "An object storing the user's answers, where keys are question IDs and values are 'yes' or 'no'.",
+          "additionalProperties": {
+            "type": "string",
+            "enum": ["yes", "no"]
+          }
+        },
+        "result": {
+          "type": "string",
+          "description": "The final RIASEC profile result."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of when the test was first created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of when the test was last updated."
+        }
+      },
+      "required": [
+        "userId",
+        "answers"
+      ]
     }
   },
   "auth": {
@@ -224,6 +262,22 @@
             {
               "name": "institutionId",
               "description": "The unique identifier for the institution."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/psychological_predictions/{userId}",
+        "definition": {
+          "entityName": "PsychologicalPrediction",
+          "schema": {
+            "$ref": "#/backend/entities/PsychologicalPrediction"
+          },
+          "description": "Stores a user's RIASEC test answers and results. Access is restricted to the user with the matching userId.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, corresponding to their Firebase Auth UID."
             }
           ]
         }
