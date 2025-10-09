@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Loader2, CheckCircle, ArrowLeft, Lock } from 'lucide-react';
 import { questions, CATEGORY_DETAILS, SECTION_DETAILS, TestSection, HollandQuestion, QuestionCategory } from './psychological-test-data';
 import { cn } from '@/lib/utils';
 import { QuestionModal } from './QuestionModal';
@@ -118,6 +118,8 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
 
 
     const handleAnswer = (questionId: string, answer: 'yes' | 'no') => {
+        if (savedPrediction?.result) return; // Block answering if result is already saved
+
         const newAnswers = { ...answers, [questionId]: answer };
         setAnswers(newAnswers);
 
@@ -125,7 +127,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
             const newProgress = calculateProgress(newAnswers);
             const isComplete = newProgress.overall === 100;
 
-            const dataToSave: Partial<PsychologicalPrediction> = {
+            const dataToSave: Partial<PsychologicalPrediction> & { updatedAt: any, createdAt?: any } = {
                 answers: newAnswers,
                 progressOverall: newProgress.overall,
                 progressActividades: newProgress.actividades,
@@ -135,7 +137,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
             };
 
             if (isComplete && !savedPrediction?.results) {
-                const calculateSectionResults = (section: TestSection | 'all', currentAnswers: Answers): ResultCounts => {
+                 const calculateSectionResults = (section: TestSection | 'all', currentAnswers: Answers): ResultCounts => {
                     const initialCounts: ResultCounts = { realista: { yes: 0, no: 0 }, investigador: { yes: 0, no: 0 }, artistico: { yes: 0, no: 0 }, social: { yes: 0, no: 0 }, emprendedor: { yes: 0, no: 0 }, convencional: { yes: 0, no: 0 } };
                     const relevantQuestions = section === 'all' ? questions : questions.filter(q => q.section === section);
                     return relevantQuestions.reduce((acc, question) => {
@@ -172,10 +174,12 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     };
     
     const handleStartSection = (section: TestSection) => {
+        if (savedPrediction?.result) return;
         setActiveSection(section);
     };
     
     const handleOpenQuestion = (question: HollandQuestion) => {
+        if (savedPrediction?.result) return;
         setCurrentQuestion(question);
         setIsModalOpen(true);
     };
@@ -222,6 +226,8 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     const activeSectionDetails = activeSection ? SECTION_DETAILS[activeSection as TestSection] : null;
     const ActiveSectionIcon = activeSectionDetails ? activeSectionDetails.icon : null;
     const activeSectionProgress = activeSection ? progress[activeSection] : 0;
+    const isTestLocked = !!savedPrediction?.result;
+
 
     const colorClasses = {
         green: { border: 'border-green-400', bg: 'bg-green-900/50', hover: 'hover:border-green-300' },
@@ -251,6 +257,16 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                     </div>
                     <Progress value={progress.overall} />
                 </div>
+                 {isTestLocked && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex items-center justify-center gap-2 text-sm text-amber-400 bg-amber-900/30 border border-amber-500/50 rounded-lg p-2"
+                    >
+                        <Lock className="w-4 h-4" />
+                        <span>El test está finalizado y bloqueado.</span>
+                    </motion.div>
+                )}
             </div>
             
             <AnimatePresence mode="wait">
@@ -271,7 +287,8 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                                     <button
                                         key={sec}
                                         onClick={() => handleStartSection(sec)}
-                                        className="p-4 border-2 rounded-lg flex flex-col items-center justify-center gap-2 text-center transition-all bg-card/80 backdrop-blur-sm hover:border-primary/50 hover:-translate-y-1"
+                                        disabled={isTestLocked}
+                                        className="p-4 border-2 rounded-lg flex flex-col items-center justify-center gap-2 text-center transition-all bg-card/80 backdrop-blur-sm hover:border-primary/50 hover:-translate-y-1 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:border-current disabled:hover:-translate-y-0"
                                     >
                                         <div className="flex items-center gap-2">
                                             <SectionIcon className="w-8 h-8 text-primary" />
@@ -341,8 +358,9 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                                         <button
                                             key={q.id}
                                             onClick={() => handleOpenQuestion(q)}
+                                            disabled={isTestLocked}
                                             className={cn(
-                                                "h-14 w-full border-2 rounded-md flex flex-col items-center justify-center transition-all",
+                                                "h-14 w-full border-2 rounded-md flex flex-col items-center justify-center transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:border-current",
                                                 isAnswered 
                                                     ? `${colors.bg} ${colors.border}`
                                                     : `bg-muted/50 ${colors.border} ${colors.hover}`
@@ -369,6 +387,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                         onAnswer={handleAnswer}
                         isOpen={isModalOpen}
                         setIsOpen={setIsModalOpen}
+                        isLocked={isTestLocked}
                     />
             )}
         </div>

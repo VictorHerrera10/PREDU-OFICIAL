@@ -16,6 +16,7 @@ type QuestionModalProps = {
     onAnswer: (questionId: string, answer: 'yes' | 'no') => void;
     isOpen: boolean;
     setIsOpen: (isOpen: boolean) => void;
+    isLocked?: boolean;
 };
 
 // A special version of WindowControls for the modal
@@ -54,12 +55,14 @@ export function QuestionModal({
     onAnswer,
     isOpen,
     setIsOpen,
+    isLocked = false,
 }: QuestionModalProps) {
 
     const questionNumber = allQuestions.findIndex(q => q.id === question.id) + 1;
     const totalQuestions = allQuestions.length;
     
     const handleAnswerClick = (selectedAnswer: 'yes' | 'no') => {
+        if (isLocked) return;
         onAnswer(question.id, selectedAnswer);
     };
 
@@ -85,6 +88,7 @@ export function QuestionModal({
                                     variant={answer === 'yes' ? 'secondary' : 'outline'} 
                                     className={cn("border-green-500 hover:bg-green-500/10 hover:text-green-400", answer === 'yes' ? "bg-green-500/20 text-green-300" : "text-green-500")} 
                                     onClick={() => handleAnswerClick('yes')}
+                                    disabled={isLocked}
                                 >
                                     <ThumbsUp className="mr-2" /> Sí
                                 </Button>
@@ -93,6 +97,7 @@ export function QuestionModal({
                                     variant={answer === 'no' ? 'secondary' : 'outline'} 
                                     className={cn("border-red-500 hover:bg-red-500/10 hover:text-red-400", answer === 'no' ? "bg-red-500/20 text-red-300" : "text-red-500")} 
                                     onClick={() => handleAnswerClick('no')}
+                                    disabled={isLocked}
                                 >
                                     <ThumbsDown className="mr-2" /> No
                                 </Button>
