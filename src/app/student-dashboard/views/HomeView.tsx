@@ -35,10 +35,11 @@ export default function HomeView() {
     const isLoading = isLoadingAcademic || isLoadingPsychological;
 
     const recommendation = useMemo(() => {
-        if (!academicPrediction?.prediction || !psychologicalPrediction?.result) {
-            return null;
+        // Asegúrate de que los datos existen y tienen los campos necesarios.
+        if (academicPrediction?.prediction && psychologicalPrediction?.result) {
+            return getRecommendation(academicPrediction.prediction, psychologicalPrediction.result);
         }
-        return getRecommendation(academicPrediction.prediction, psychologicalPrediction.result);
+        return null;
     }, [academicPrediction, psychologicalPrediction]);
 
     if (isLoading) {
@@ -51,39 +52,6 @@ export default function HomeView() {
     }
     
     const renderWelcomeOrGuidance = () => {
-        if (!academicPrediction?.prediction || !psychologicalPrediction?.result) {
-            return (
-                <Card className="bg-card/80 backdrop-blur-sm border-primary/20">
-                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Lightbulb className="text-primary"/> ¡Desbloquea tu Consejo Personalizado!</CardTitle>
-                        <CardDescription>
-                            Completa ambos tests para recibir una recomendación de carrera a tu medida.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {!academicPrediction?.prediction && (
-                             <div className="flex items-start gap-4 p-3 border rounded-lg bg-background/50">
-                                <Compass className="w-8 h-8 text-amber-400 mt-1"/>
-                                <div>
-                                    <h4 className="font-semibold text-foreground">Falta el Test Académico</h4>
-                                    <p className="text-sm text-muted-foreground">Ve a la sección "Predicción Académica" para ingresar tus notas y descubrir tu área de fortaleza.</p>
-                                </div>
-                            </div>
-                        )}
-                         {!psychologicalPrediction?.result && (
-                            <div className="flex items-start gap-4 p-3 border rounded-lg bg-background/50">
-                                <BrainCircuit className="w-8 h-8 text-purple-400 mt-1"/>
-                                 <div>
-                                    <h4 className="font-semibold text-foreground">Falta el Test Psicológico</h4>
-                                    <p className="text-sm text-muted-foreground">Completa el test de intereses en "Predicción Psicológica" para conocer tu perfil RIASEC.</p>
-                                </div>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            );
-        }
-
         if (recommendation) {
             return (
                 <Card className="bg-card/80 backdrop-blur-sm border-primary/30">
@@ -119,16 +87,34 @@ export default function HomeView() {
             );
         }
         
-         return (
-             <Card>
-                <CardHeader>
-                    <CardTitle>Bienvenido a tu Panel</CardTitle>
+        // Mensajes para completar tests si no hay recomendación
+        return (
+            <Card className="bg-card/80 backdrop-blur-sm border-primary/20">
+                 <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Lightbulb className="text-primary"/> ¡Desbloquea tu Consejo Personalizado!</CardTitle>
                     <CardDescription>
-                    Aquí verás tus recomendaciones personalizadas una vez completes ambos tests.
+                        Completa ambos tests para recibir una recomendación de carrera a tu medida.
                     </CardDescription>
                 </CardHeader>
-                 <CardContent>
-                    <p className="text-muted-foreground">¡Sigue explorando las secciones para descubrir tu potencial!</p>
+                <CardContent className="space-y-4">
+                    {!academicPrediction?.prediction && (
+                         <div className="flex items-start gap-4 p-3 border rounded-lg bg-background/50">
+                            <Compass className="w-8 h-8 text-amber-400 mt-1"/>
+                            <div>
+                                <h4 className="font-semibold text-foreground">Falta el Test Académico</h4>
+                                <p className="text-sm text-muted-foreground">Ve a la sección "Predicción Académica" para ingresar tus notas y descubrir tu área de fortaleza.</p>
+                            </div>
+                        </div>
+                    )}
+                     {!psychologicalPrediction?.result && (
+                        <div className="flex items-start gap-4 p-3 border rounded-lg bg-background/50">
+                            <BrainCircuit className="w-8 h-8 text-purple-400 mt-1"/>
+                             <div>
+                                <h4 className="font-semibold text-foreground">Falta el Test Psicológico</h4>
+                                <p className="text-sm text-muted-foreground">Completa el test de intereses en "Predicción Psicológica" para conocer tu perfil RIASEC.</p>
+                            </div>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         );
