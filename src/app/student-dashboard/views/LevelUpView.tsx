@@ -10,6 +10,8 @@ import { Check, Shield, Crown, Gem, Sparkles, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const levels = [
   {
@@ -43,11 +45,12 @@ const levels = [
   {
     name: 'Nivel Maestro Supremo',
     icon: Gem,
-    price: 'S/ 39.99',
-    description: 'El dominio total de tu futuro profesional con mentoría y soporte personalizado.',
+    price: 'Plan Institucional',
+    description: 'Desbloquea el dominio total de tu futuro profesional al vincularte con tu institución educativa.',
     features: ['Todo del Nivel Héroe', 'Sesiones de mentoría con psicólogos', 'Simuladores de entrevistas', 'Soporte prioritario'],
     current: false,
-    buttonText: 'Alcanzar la Maestría',
+    buttonText: 'Vincular',
+    isInstitutional: true,
     borderColor: 'border-blue-500', // Azul
   },
 ];
@@ -71,12 +74,13 @@ export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
     setIsOpen(open);
     if (open) {
       setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 8000); // Let it rain for 8 seconds
     }
   };
 
   return (
     <>
-      {showConfetti && (
+       {showConfetti && (
         <div className="fixed inset-0 z-[101] pointer-events-none">
             <Confetti
                 width={width}
@@ -113,15 +117,15 @@ export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
         </TooltipProvider>
 
         <DialogContent className="max-w-7xl w-full bg-background/95 backdrop-blur-sm border-border/50 shadow-lg p-6">
-          <DialogClose className="absolute right-6 top-6 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary z-50">
+           <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary z-50">
             <X className="h-5 w-5" />
             <span className="sr-only">Cerrar</span>
           </DialogClose>
-          <div className="text-center my-4">
-            <h1 className="text-xl md:text-2xl font-bold text-primary font-headline">
+          <div className="text-center my-2">
+            <h1 className="text-xl font-bold text-primary font-headline">
               ¡Elige tu Destino!
             </h1>
-            <p className="text-xs text-muted-foreground mt-2 max-w-2xl mx-auto">
+            <p className="text-xs text-muted-foreground mt-1 max-w-lg mx-auto">
               Sube de nivel para desbloquear nuevas habilidades y herramientas en tu aventura vocacional.
             </p>
           </div>
@@ -166,14 +170,22 @@ export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
                       ))}
                     </ul>
                   </CardContent>
-                  <CardFooter>
-                    <Button
-                      className="w-full"
-                      variant={level.recommended ? 'destructive' : level.current ? 'outline' : 'secondary'}
-                      disabled={level.current}
-                    >
-                      {level.buttonText}
-                    </Button>
+                  <CardFooter className="flex-col">
+                    {level.isInstitutional ? (
+                       <form className="w-full space-y-2">
+                          <Label htmlFor="institution-code" className="sr-only">Código de Institución</Label>
+                          <Input id="institution-code" placeholder="Ingresa tu código" className="text-center"/>
+                          <Button className="w-full" variant="secondary">{level.buttonText}</Button>
+                       </form>
+                    ) : (
+                      <Button
+                        className="w-full"
+                        variant={level.recommended ? 'destructive' : level.current ? 'outline' : 'secondary'}
+                        disabled={level.current}
+                      >
+                        {level.buttonText}
+                      </Button>
+                    )}
                   </CardFooter>
                 </Card>
               </motion.div>
