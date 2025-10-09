@@ -15,8 +15,11 @@ const CAREER_MAP: Record<string, CareerArea> = {
     'Ingenieria de Sistemas': 'Ingenierías',
     'Ingenieria Electronica': 'Ingenierías',
     'Ingenieria de Software': 'Ingenierías',
+    'Ingenierias': 'Ingenierías', // Match a la prediccion psicologica
+    'Sociales': 'Sociales', // Match a la prediccion psicologica
     'Ciencias Sociales': 'Sociales',
     'Psicologia': 'Sociales',
+    'Biomedicas': 'Biomedicas', // Match a la prediccion psicologica
     'Ciencias de la Salud': 'Biomedicas',
     'Medicina': 'Biomedicas',
 };
@@ -31,59 +34,66 @@ const RIASEC_MAP: Record<string, RiasecProfile> = {
     convencional: 'Convencional',
 };
 
-const MATRIX: Record<CareerArea, Partial<Record<RiasecProfile, Recommendation>>> = {
+const MATRIX: Partial<Record<CareerArea, Partial<Record<CareerArea, Recommendation>>>> = {
     Ingenierías: {
-        Realista: {
-            academicAdvice: "Si tus notas en Matemáticas y Ciencia y Tecnología son fuertes, ¡Ingeniería es para ti! Fortalece áreas como programación y cálculo.",
-            psychologicalAdvice: "Tu perfil 'Realista' es perfecto para trabajar en proyectos técnicos o prácticos.",
-            opportunities: "Ingeniería en sistemas, Electrónica, Civil, Mecánica, Industrial, Telecomunicaciones.",
-            compatibilityAdvice: "Tu perfil 'Realista' y tus buenas notas en Ciencias Exactas hacen que Ingeniería sea la opción ideal."
+        Ingenierías: {
+            academicAdvice: "Si destacas en Matemática ➗ y Física ⚛️, refuerza programación 💻 y cálculo 📊 para una base sólida.",
+            psychologicalAdvice: "Tu perfil \"Realista\" 🔨 refleja habilidades prácticas y técnicas.",
+            opportunities: "Ingeniería de Sistemas, Civil, Electrónica, Industrial, Mecánica, Telecomunicaciones. 🚀",
+            compatibilityAdvice: "Coincidencia total 🎯. Tu perfil y tus notas se alinean perfectamente con Ingeniería. 💪"
         },
-        Investigador: {
-            academicAdvice: "Tus altas notas en Matemáticas y Ciencia y Tecnología son una base excelente. Considera especializarte en áreas de I+D dentro de la ingeniería.",
-            psychologicalAdvice: "Tu perfil 'Investigador' te impulsa a resolver problemas complejos y a innovar. La ingeniería de software o la investigación tecnológica son ideales.",
-            opportunities: "Ingeniería de Software, Investigación y Desarrollo, Ciencia de Datos, Ingeniería Aeroespacial.",
-            compatibilityAdvice: "La combinación de un pensador analítico ('Investigador') con una base sólida en ciencias te convierte en un innovador en potencia en el campo de la ingeniería."
+        Sociales: {
+            academicAdvice: "Tus notas reflejan fuerza en comunicación y análisis social. Podrías explorar gestión o innovación aplicada.",
+            psychologicalAdvice: "El perfil \"Realista\" 🔨 se adapta bien a la aplicación técnica en entornos humanos.",
+            opportunities: "Gestión de Proyectos Sociales, Innovación Tecnológica, Marketing Técnico. 📊",
+            compatibilityAdvice: "Interdisciplinario: puedes conectar tecnología y sociedad, ideal para liderazgo técnico-social. 🌐"
         },
-         Convencional: {
-            academicAdvice: "Tus buenas notas en Matemáticas te dan una base sólida. El orden y la estructura son tus aliados en carreras de gestión de proyectos tecnológicos.",
-            psychologicalAdvice: "El perfil 'Convencional' te permitirá gestionar proyectos, procesos y planificación con eficacia.",
-            opportunities: "Gestión de Proyectos de TI, Ingeniería Industrial con enfoque en procesos, Planificación de producción.",
-            compatibilityAdvice: "Tu afinidad por la estructura y tus habilidades numéricas encajan perfectamente en roles que organizan y optimizan sistemas complejos."
-        },
+        Biomedicas: {
+            academicAdvice: "Notas altas en Biología y Química te dan una base en salud.",
+            psychologicalAdvice: "El perfil \"Realista\" ⚙️ favorece el trabajo en tecnología aplicada a la salud.",
+            opportunities: "Ingeniería Biomédica, Tecnología Médica, Diseño de Dispositivos Médicos. 🧠",
+            compatibilityAdvice: "Gran sinergia entre lo técnico y lo biológico: la salud tecnológica es tu campo ideal. 🏥"
+        }
     },
     Sociales: {
-        Social: {
-            academicAdvice: "Si tus mejores notas están en Comunicación, Desarrollo Personal y Ciencias Sociales, las Ciencias Sociales son perfectas para ti.",
-            psychologicalAdvice: "Tu perfil 'Social' es ideal para trabajos que impliquen ayudar a otros o liderazgo.",
-            opportunities: "Psicología, Sociología, Trabajo Social, Marketing, Gestión de Recursos Humanos.",
-            compatibilityAdvice: "El perfil 'Social' y tus buenas notas en Ciencias Sociales indican que este es tu camino."
+        Sociales: {
+            academicAdvice: "Si sobresales en Ciencias Sociales, Comunicación y Literatura, continúa fortaleciendo la argumentación y empatía.",
+            psychologicalAdvice: "Tu perfil \"Social\" 👥 indica orientación al trabajo en equipo y ayuda a los demás.",
+            opportunities: "Psicología, Educación, Sociología, Trabajo Social, Marketing, RR.HH. 🌟",
+            compatibilityAdvice: "Perfecta compatibilidad. Tu vocación y tu rendimiento se dirigen hacia lo humano y social. 🤝"
         },
-        Emprendedor: {
-            academicAdvice: "Tus fortalezas en Comunicación y Ciencias Sociales son clave. Liderar proyectos sociales o crear tu propia ONG podría ser tu vocación.",
-            psychologicalAdvice: "El perfil 'Emprendedor' te da la visión y la energía para liderar iniciativas de impacto social.",
-            opportunities: "Dirección de ONGs, Consultoría de impacto social, Emprendimiento Social, Marketing Estratégico.",
-            compatibilityAdvice: "Combinas la empatía ('Social') con la acción ('Emprendedor'), una fórmula poderosa para generar cambios positivos."
+        Ingenierías: {
+            academicAdvice: "Tus notas muestran lógica y razonamiento cuantitativo. Refuerza gestión y análisis de datos. 📈",
+            psychologicalAdvice: "El perfil \"Social\" 👥 destaca empatía y comunicación.",
+            opportunities: "Gestión de Proyectos, Ingeniería Industrial, Innovación Social Tecnológica. ⚙️",
+            compatibilityAdvice: "Tu perfil humano combinado con capacidad analítica te hace ideal para la gestión tecnológica. 🤝💡"
+        },
+
+        Biomedicas: {
+            academicAdvice: "Buen desempeño en Ciencias Naturales y Biología.",
+            psychologicalAdvice: "Tu perfil \"Social\" 👥 encaja con profesiones de ayuda y salud mental.",
+            opportunities: "Psicología Social, Trabajo Social en Salud, Terapia Ocupacional. 🌿",
+            compatibilityAdvice: "Orientación clara al bienestar y la comunidad: ideal para áreas sociales en salud. ❤️"
         }
     },
     Biomedicas: {
-        Investigador: {
-            academicAdvice: "Si tienes buenas notas en Ciencia y Tecnología, ¡Biomedicas es tu opción! Revisa ciencias de la salud.",
-            psychologicalAdvice: "Tu perfil 'Investigador' es ideal para trabajos que requieren análisis detallado y trabajo en laboratorio.",
-            opportunities: "Medicina, Bioquímica, Enfermería, Fisioterapia, Biotecnología, Investigación en salud.",
-            compatibilityAdvice: "Las notas en Biología y Química y el perfil 'Investigador' se alinean perfectamente con Biomedicas."
+        Biomedicas: {
+            academicAdvice: "Si tienes buenas notas en Biología 🧬, Química 🧪 y Ciencias Naturales, sigue reforzando tu lado analítico.",
+            psychologicalAdvice: "Tu perfil \"Investigador\" 🔬 te impulsa a la observación y experimentación científica.",
+            opportunities: "Medicina, Bioquímica, Biotecnología, Enfermería, Fisioterapia, Investigación en salud. 🧫",
+            compatibilityAdvice: "Coincidencia ideal. Tu perfil científico y tus notas apuntan a las Ciencias de la Salud. 👨‍⚕️"
         },
-        Social: {
-            academicAdvice: "Tus notas en Ciencia y Tecnología y Desarrollo Personal son una combinación interesante. Carreras que unen la ciencia con el trato humano son para ti.",
-            psychologicalAdvice: "Tu perfil 'Social' es perfecto para roles en salud comunitaria o trabajo directo con pacientes.",
-            opportunities: "Medicina Familiar, Enfermería, Terapia Ocupacional, Salud Comunitaria, Fisioterapia.",
-            compatibilityAdvice: "Tu perfil 'Social' y tus notas en ciencias te llevan hacia una carrera en bienestar y apoyo directo a las personas."
+        Sociales: {
+            academicAdvice: "Fortalece tus habilidades comunicativas y de liderazgo para aplicar el conocimiento científico. 🧬📢",
+            psychologicalAdvice: "El perfil \"Investigador\" 🔬 se enfoca en el análisis profundo y los datos.",
+            opportunities: "Salud Pública, Gestión de la Salud, Educación Científica, Divulgación Científica. 🧑‍🔬",
+            compatibilityAdvice: "Ideal para unir ciencia y comunicación, orientado a la educación o gestión sanitaria. 🌍"
         },
-        Realista: {
-            academicAdvice: "Tus buenas notas en Ciencia y Tecnología y tu habilidad para lo práctico te abren puertas en áreas aplicadas de la salud.",
-            psychologicalAdvice: "Tu perfil 'Realista' se alinea muy bien para trabajar con tecnologías y procedimientos aplicados a la salud.",
-            opportunities: "Tecnología Médica, Ingeniería Biomédica, Radiología, Técnico de laboratorio.",
-            compatibilityAdvice: "Tus habilidades prácticas ('Realista') y tu base científica hacen que las carreras de tecnología en salud sean un camino ideal."
+        Ingenierías: {
+            academicAdvice: "Tienes alta capacidad en Matemáticas y Física: aprovecha para dominar la programación aplicada a biología. 💻",
+            psychologicalAdvice: "El perfil \"Investigador\" 🔬 indica curiosidad y precisión técnica.",
+            opportunities: "Ingeniería Biomédica, Bioinformática, Ciencias de Datos en Salud. 🧠",
+            compatibilityAdvice: "Excelente combinación para desarrollar soluciones tecnológicas en medicina. 🚀"
         }
     },
 };
@@ -97,25 +107,18 @@ const FALLBACK_RECOMMENDATION: Recommendation = {
 
 
 export function getRecommendation(academicResult: string, psychologicalResult: string): Recommendation {
-    const careerArea = CAREER_MAP[academicResult];
-    const riasecProfile = RIASEC_MAP[psychologicalResult.toLowerCase()];
+    // La prediccion academica puede ser "Ingenieria de Sistemas", la psicologica "investigador"
+    // El psicologico puede ser una de las 6 categorias, o una de las 3 carreras
+    const academicArea = CAREER_MAP[academicResult];
+    const psychologicalArea = CAREER_MAP[psychologicalResult]; // Puede ser una carrera como 'Ingenierias'
 
-    if (careerArea && riasecProfile) {
-        const specificRecommendation = MATRIX[careerArea]?.[riasecProfile];
+    if (academicArea && psychologicalArea) {
+        const specificRecommendation = MATRIX[academicArea]?.[psychologicalArea];
         if (specificRecommendation) {
             return specificRecommendation;
         }
-        
-        // Fallback si no hay una combinación exacta pero sí tenemos el área de carrera
-        const genericCareerRecommendation = Object.values(MATRIX[careerArea])[0];
-        if(genericCareerRecommendation){
-            return {
-                ...genericCareerRecommendation,
-                // Add a note that this is a more generic recommendation
-                 compatibilityAdvice: `Aunque tu perfil '${riasecProfile}' no es una pareja clásica para el área de '${careerArea}', tus habilidades académicas son un gran punto de partida. ${genericCareerRecommendation.compatibilityAdvice}`
-            };
-        }
     }
-
+    
+    // Fallback genérico si no se encuentra una coincidencia directa.
     return FALLBACK_RECOMMENDATION;
 }
