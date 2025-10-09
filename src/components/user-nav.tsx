@@ -34,6 +34,7 @@ import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useNotifications } from '@/hooks/use-notifications';
+import { Badge } from '@/components/ui/badge';
 
 
 type UserProfile = {
