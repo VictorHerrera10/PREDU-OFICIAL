@@ -1,6 +1,6 @@
 'use client';
 
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
@@ -25,9 +25,9 @@ function QuestionWindowControls({ questionNumber, totalQuestions, category, onCl
 
     return (
         <div className="relative flex items-center justify-center h-10 px-4 bg-muted/30 border-b border-border/50">
-            <div className="flex items-center gap-2">
+           <DialogTitle className="flex items-center gap-2 text-sm font-bold text-foreground">
                 <Logo iconOnly/>
-                <span className="text-sm font-bold text-foreground">
+                <span>
                     Pregunta {questionNumber}/{totalQuestions}
                 </span>
                  <span className="mx-2 text-muted-foreground/50">|</span>
@@ -35,7 +35,7 @@ function QuestionWindowControls({ questionNumber, totalQuestions, category, onCl
                    <CategoryIcon className="h-4 w-4" />
                    <span className="text-sm font-semibold capitalize">{category}</span>
                 </div>
-            </div>
+            </DialogTitle>
             <div className="absolute right-4 flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-secondary/50" />
                 <div className="w-3 h-3 rounded-full bg-secondary/50" />
@@ -69,6 +69,7 @@ export function QuestionModal({
                 <Card className="bg-card/80 backdrop-blur-lg border-border/50 overflow-hidden">
                     <QuestionWindowControls questionNumber={questionNumber} totalQuestions={totalQuestions} category={question.category} onClose={() => setIsOpen(false)}/>
                     <CardContent className="p-6">
+                        <DialogDescription className="sr-only">{question.text}</DialogDescription>
                         <div className="text-center">
                              <p className="text-lg font-semibold mb-4 h-12 flex items-center justify-center">{question.text}</p>
                              <Image 
