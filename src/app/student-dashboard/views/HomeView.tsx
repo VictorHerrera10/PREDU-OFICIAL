@@ -35,7 +35,6 @@ export default function HomeView() {
     const isLoading = isLoadingAcademic || isLoadingPsychological;
 
     const recommendation = useMemo(() => {
-        // Asegúrate de que los datos existen y tienen los campos necesarios.
         if (academicPrediction?.prediction && psychologicalPrediction?.result) {
             return getRecommendation(academicPrediction.prediction, psychologicalPrediction.result);
         }
@@ -79,15 +78,14 @@ export default function HomeView() {
                         </div>
 
                         <div className="p-4 bg-background/50 rounded-lg">
-                            <h3 className="font-bold text-foreground text-lg mb-2">💼 Oportunidades Profesionales</h3>
-                            <p className="text-muted-foreground">{recommendation.opportunities}</p>
+                            <h3 className="font-bold text-foreground text-lg mb-2">💼 Carreras Relacionadas</h3>
+                            <p className="text-muted-foreground">{recommendation.relatedCareers}</p>
                         </div>
                     </CardContent>
                 </Card>
             );
         }
         
-        // Mensajes para completar tests si no hay recomendación
         return (
             <Card className="bg-card/80 backdrop-blur-sm border-primary/20">
                  <CardHeader>
