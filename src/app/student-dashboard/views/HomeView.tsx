@@ -66,12 +66,13 @@ export default function HomeView() {
     }, [academicPrediction, psychologicalPrediction]);
 
     useEffect(() => {
+        // Se ejecuta solo una vez cuando los datos están listos.
         if (isLoading || recommendation === null || userProfile === undefined) return;
 
-        // Notificación para cuando el reporte está listo por primera vez.
-        // Se dispara solo si el perfil no lo ha visto y el ref.current es false.
+        // Lógica de notificación mutuamente exclusiva
         if (!userProfile.hasSeenInitialReport && !notificationTriggeredRef.current.reportReady) {
-            notificationTriggeredRef.current.reportReady = true; // Marcar como disparado
+            // Notificación para cuando el reporte está listo por primera vez.
+            notificationTriggeredRef.current.reportReady = true;
             setTimeout(() => {
                 addNotification({
                     title: '¡Tu reporte está listo!',
@@ -82,11 +83,9 @@ export default function HomeView() {
             if (userProfileRef) {
                 updateDoc(userProfileRef, { hasSeenInitialReport: true });
             }
-        }
-        // Notificación para el siguiente nivel en visitas posteriores.
-        // Se dispara solo si ya vio el reporte inicial y el ref.current es false.
-        else if (userProfile.hasSeenInitialReport && !notificationTriggeredRef.current.nextLevel) {
-            notificationTriggeredRef.current.nextLevel = true; // Marcar como disparado
+        } else if (userProfile.hasSeenInitialReport && !notificationTriggeredRef.current.nextLevel) {
+            // Notificación para el siguiente nivel en visitas posteriores (solo si la de "reporte listo" no se mostró).
+            notificationTriggeredRef.current.nextLevel = true;
             setTimeout(() => {
                 addNotification({
                     title: '¿Listo para el siguiente nivel?',
@@ -95,7 +94,8 @@ export default function HomeView() {
                 });
             }, 6000);
         }
-    }, [isLoading, recommendation, userProfile, addNotification, userProfileRef]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isLoading, recommendation, userProfile]);
 
 
     if (isLoading) {
