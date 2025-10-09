@@ -1,11 +1,11 @@
 'use client';
 
-import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { ThumbsUp, ThumbsDown, X } from 'lucide-react';
-import { HollandQuestion } from './psychological-test-data';
+import { HollandQuestion, CATEGORY_DETAILS, QuestionCategory } from './psychological-test-data';
 import { Logo } from '@/components/logo';
 import { cn } from '@/lib/utils';
 
@@ -19,7 +19,10 @@ type QuestionModalProps = {
 };
 
 // A special version of WindowControls for the modal
-function QuestionWindowControls({ questionNumber, totalQuestions, onClose }: { questionNumber: number, totalQuestions: number, onClose: () => void }) {
+function QuestionWindowControls({ questionNumber, totalQuestions, category, onClose }: { questionNumber: number, totalQuestions: number, category: QuestionCategory, onClose: () => void }) {
+    const categoryDetails = CATEGORY_DETAILS[category];
+    const CategoryIcon = categoryDetails.icon;
+
     return (
         <div className="relative flex items-center justify-center h-10 px-4 bg-muted/30 border-b border-border/50">
             <div className="flex items-center gap-2">
@@ -27,15 +30,18 @@ function QuestionWindowControls({ questionNumber, totalQuestions, onClose }: { q
                 <span className="text-sm font-bold text-foreground">
                     Pregunta {questionNumber}/{totalQuestions}
                 </span>
+                 <span className="mx-2 text-muted-foreground/50">|</span>
+                <div className={cn("flex items-center gap-1.5", categoryDetails.color)}>
+                   <CategoryIcon className="h-4 w-4" />
+                   <span className="text-sm font-semibold capitalize">{category}</span>
+                </div>
             </div>
             <div className="absolute right-4 flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-secondary/50" />
                 <div className="w-3 h-3 rounded-full bg-secondary/50" />
-                 <DialogClose asChild>
-                    <button onClick={onClose} className="w-3 h-3 rounded-full bg-destructive/50 hover:bg-destructive/80 transition-colors flex items-center justify-center">
-                       <X className="h-2 w-2 text-destructive-foreground/70" />
-                    </button>
-                </DialogClose>
+                 <button onClick={onClose} className="w-3 h-3 rounded-full bg-destructive/50 hover:bg-destructive/80 transition-colors flex items-center justify-center">
+                   <X className="h-2 w-2 text-destructive-foreground/70" />
+                </button>
             </div>
         </div>
     );
@@ -59,9 +65,9 @@ export function QuestionModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent className="p-0 border-0 max-w-lg bg-transparent shadow-none" onInteractOutside={(e) => e.preventDefault()}>
+            <DialogContent className="p-0 border-0 max-w-lg shadow-none bg-transparent" onInteractOutside={(e) => e.preventDefault()}>
                 <Card className="bg-card/80 backdrop-blur-lg border-border/50 overflow-hidden">
-                    <QuestionWindowControls questionNumber={questionNumber} totalQuestions={totalQuestions} onClose={() => setIsOpen(false)}/>
+                    <QuestionWindowControls questionNumber={questionNumber} totalQuestions={totalQuestions} category={question.category} onClose={() => setIsOpen(false)}/>
                     <CardContent className="p-6">
                         <div className="text-center">
                              <p className="text-lg font-semibold mb-4 h-12 flex items-center justify-center">{question.text}</p>
