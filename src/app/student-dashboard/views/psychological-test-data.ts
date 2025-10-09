@@ -1,3 +1,4 @@
+'use client';
 import { HandPlatter, Wrench, Microscope, Palette, Users, Handshake, Landmark, Briefcase, Calculator } from 'lucide-react';
 
 export type QuestionCategory = 'realista' | 'investigador' | 'artistico' | 'social' | 'emprendedor' | 'convencional';
@@ -11,13 +12,13 @@ export interface HollandQuestion {
   gifUrl: string;
 }
 
-export const CATEGORY_DETAILS: Record<QuestionCategory, { icon: React.ElementType, color: string }> = {
-    realista: { icon: Wrench, color: 'text-sky-400' },
-    investigador: { icon: Microscope, color: 'text-blue-400' },
-    artistico: { icon: Palette, color: 'text-purple-400' },
-    social: { icon: Users, color: 'text-pink-400' },
-    emprendedor: { icon: Handshake, color: 'text-amber-400' },
-    convencional: { icon: Calculator, color: 'text-teal-400' },
+export const CATEGORY_DETAILS: Record<QuestionCategory, { icon: React.ElementType, color: string, colorClass: string }> = {
+    realista: { icon: Wrench, color: 'text-green-400', colorClass: 'green' },
+    investigador: { icon: Microscope, color: 'text-blue-400', colorClass: 'blue' },
+    artistico: { icon: Palette, color: 'text-purple-400', colorClass: 'purple' },
+    social: { icon: Users, color: 'text-pink-400', colorClass: 'pink' },
+    emprendedor: { icon: Handshake, color: 'text-amber-400', colorClass: 'amber' },
+    convencional: { icon: Calculator, color: 'text-teal-400', colorClass: 'teal' },
 };
 
 export const SECTION_DETAILS: Record<TestSection, { icon: React.ElementType, title: string, description: string }> = {

@@ -110,6 +110,15 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     const ActiveSectionIcon = activeSectionDetails ? activeSectionDetails.icon : null;
     const activeSectionProgress = activeSection ? progress[activeSection] : 0;
 
+    const colorClasses = {
+        green: { border: 'border-green-400', bg: 'bg-green-900/50', hover: 'hover:border-green-300' },
+        blue: { border: 'border-blue-400', bg: 'bg-blue-900/50', hover: 'hover:border-blue-300' },
+        purple: { border: 'border-purple-400', bg: 'bg-purple-900/50', hover: 'hover:border-purple-300' },
+        pink: { border: 'border-pink-400', bg: 'bg-pink-900/50', hover: 'hover:border-pink-300' },
+        amber: { border: 'border-amber-400', bg: 'bg-amber-900/50', hover: 'hover:border-amber-300' },
+        teal: { border: 'border-teal-400', bg: 'bg-teal-900/50', hover: 'hover:border-teal-300' },
+    };
+
     return (
         <div className="w-full">
             <div className="space-y-4 mb-8">
@@ -181,8 +190,10 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
 
                             <div className="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-9 lg:grid-cols-12 gap-2">
                                 {questions.filter(q => q.section === activeSection).map((q, index) => {
-                                    const CategoryIcon = CATEGORY_DETAILS[q.category].icon;
-                                    const categoryColor = CATEGORY_DETAILS[q.category].color;
+                                    const categoryInfo = CATEGORY_DETAILS[q.category];
+                                    const CategoryIcon = categoryInfo.icon;
+                                    const colorClass = categoryInfo.colorClass as keyof typeof colorClasses;
+                                    const colors = colorClasses[colorClass];
                                     const isAnswered = answers[q.id] !== null;
 
                                     return (
@@ -191,12 +202,14 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                                             onClick={() => handleOpenQuestion(q)}
                                             className={cn(
                                                 "h-14 w-full border-2 rounded-md flex flex-col items-center justify-center transition-all",
-                                                isAnswered ? 'bg-primary/20 border-primary' : 'bg-muted/50 border-muted-foreground/20 hover:bg-muted'
+                                                isAnswered 
+                                                    ? `${colors.bg} ${colors.border}`
+                                                    : `bg-muted/50 ${colors.border} ${colors.hover}`
                                             )}
                                             title={q.text}
                                         >
-                                            <span className={cn("text-lg font-bold", isAnswered ? 'text-primary-foreground' : 'text-muted-foreground')}>{index + 1}</span>
-                                            <CategoryIcon className={cn("w-5 h-5", categoryColor)} />
+                                            <span className={cn("text-lg font-bold", isAnswered ? 'text-foreground/80' : 'text-muted-foreground')}>{index + 1}</span>
+                                            <CategoryIcon className={cn("w-5 h-5", categoryInfo.color)} />
                                         </button>
                                     );
                                 })}
