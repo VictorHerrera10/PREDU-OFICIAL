@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import api from '@/lib/api-client';
 
 // Importaciones de Componentes
@@ -30,39 +32,27 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
+import { subjects } from './psychological-test-data';
 
 // ===== Datos base =====
-const subjects = [
-  { id: "arte_y_cultura", label: "Arte y Cultura", emoji: "🎨" },
-  { id: "castellano_como_segunda_lengua", label: "Castellano (2da Lengua)", emoji: "🗣️" },
-  { id: "ciencia_y_tecnologia", label: "Ciencia y Tecnología", emoji: "🔬" },
-  { id: "ciencias_sociales", label: "Ciencias Sociales", emoji: "🌍" },
-  { id: "comunicacion", label: "Comunicación", emoji: "✍️" },
-  { id: "desarrollo_personal", label: "Desarrollo Personal", emoji: "🧘" },
-  { id: "educacion_fisica", label: "Educación Física", emoji: "🏃‍♂️" },
-  { id: "educacion_para_el_trabajo", label: "Educación para el Trabajo", emoji: "💼" },
-  { id: "educacion_religiosa", label: "Educación Religiosa", emoji: "🙏" },
-  { id: "ingles", label: "Inglés", emoji: "🇬🇧" },
-  { id: "matematica", label: "Matemática", emoji: "➗" },
-];
-
 const gradeOptions: ("AD" | "A" | "B" | "C")[] = ["AD", "A", "B", "C"];
 
 // ===== Validación Zod =====
-const gradeSchema = z.enum(["AD", "A", "B", "C"]);
+const gradeSchema = z.enum(["AD", "A", "B", "C"], {
+  errorMap: () => ({ message: "Debes seleccionar una calificación." }),
+});
 
-const formSchema = z.object(
-  subjects.reduce((acc, subject) => {
+const formSchemaObject = subjects.reduce((acc, subject) => {
     acc[subject.id] = gradeSchema;
     return acc;
-  }, {} as Record<string, typeof gradeSchema>)
-).refine(data => {
-    return Object.values(data).every(value => value !== undefined && value !== null);
+  }, {} as Record<string, typeof gradeSchema>);
+
+const formSchema = z.object(formSchemaObject).refine(data => {
+    const allDefined = Object.values(data).every(value => value !== undefined && value !== null && value !== '');
+    return allDefined;
 }, {
     message: "Debes seleccionar una calificación para todos los cursos.",
-    // This path is not used but required by refine.
-    path: [subjects[0].id],
+    path: [], // General form error
 });
 
 
@@ -75,6 +65,7 @@ type Props = {
 // ===== Componente principal =====
 export function VocationalFormModal({ setPredictionResult }: Props) {
   const { user } = useUser();
+  const firestore = useFirestore();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -89,9 +80,9 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
 
   const { formState: { errors } } = form;
   const hasErrors = Object.keys(errors).length > 0 && form.formState.isSubmitted;
-
+  
   const onSubmit = async (data: PredictionFormValues) => {
-    if (!user) {
+    if (!user || !firestore) {
       toast({
         variant: "destructive",
         title: "Error de Autenticación",
@@ -108,6 +99,14 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
         Object.values(response.data)[0] as string ||
         "No se pudo determinar la carrera.";
       setPredictionResult(result);
+      
+      const predictionDocRef = doc(firestore, 'academic_prediction', user.uid);
+      await setDocumentNonBlocking(predictionDocRef, {
+          userId: user.uid,
+          grades: data,
+          prediction: result,
+      }, { merge: true });
+
 
       toast({
         title: "¡Predicción Exitosa! 🎉",

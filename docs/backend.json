@@ -262,6 +262,36 @@
         "userId",
         "answers"
       ]
+    },
+    "AcademicPrediction": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "AcademicPrediction",
+        "type": "object",
+        "description": "Stores the user's grades and the resulting academic prediction.",
+        "properties": {
+            "userId": {
+                "type": "string",
+                "description": "The ID of the user for whom the prediction was made."
+            },
+            "grades": {
+                "type": "object",
+                "description": "An object storing the user's grades for each subject.",
+                "additionalProperties": {
+                    "type": "string",
+                    "enum": ["A", "B", "C", "AD"]
+                }
+            },
+            "prediction": {
+                "type": "string",
+                "description": "The predicted academic career path."
+            },
+            "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Timestamp of when the prediction was created."
+            }
+        },
+        "required": ["userId", "grades", "prediction"]
     }
   },
   "auth": {
@@ -318,6 +348,20 @@
               "description": "The unique identifier for the user, corresponding to their Firebase Auth UID."
             }
           ]
+        }
+      },
+      {
+        "path": "/academic_prediction/{userId}",
+        "definition": {
+            "entityName": "AcademicPrediction",
+            "schema": {
+                "$ref": "#/backend/entities/AcademicPrediction"
+            },
+            "description": "Stores a user's academic grades and the resulting career prediction. Access is restricted to the user with the matching userId.",
+            "params": [{
+                "name": "userId",
+                "description": "The unique identifier for the user, corresponding to their Firebase Auth UID."
+            }]
         }
       }
     ],
