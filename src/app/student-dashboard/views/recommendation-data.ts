@@ -26,6 +26,7 @@ const RIASEC_MAP: Record<string, RiasecProfile> = {
     realista: 'Realista',
     investigador: 'Investigador',
     artistico: 'Artistico',
+    artístico: 'Artistico',
     social: 'Social',
     emprendedor: 'Emprendedor',
     convencional: 'Convencional',
@@ -47,7 +48,7 @@ const MATRIX: Record<CareerArea, Partial<Record<RiasecProfile, Recommendation>>>
         },
          Convencional: {
             academicAdvice: "Tus buenas notas en Matemáticas te dan una base sólida. El orden y la estructura son tus aliados en carreras de gestión de proyectos tecnológicos.",
-            psychologicalAdvice: "El perfil 'Convencional' y 'Realista' te permitirá gestionar proyectos, procesos y planificación con eficacia.",
+            psychologicalAdvice: "El perfil 'Convencional' te permitirá gestionar proyectos, procesos y planificación con eficacia.",
             opportunities: "Gestión de Proyectos de TI, Ingeniería Industrial con enfoque en procesos, Planificación de producción.",
             compatibilityAdvice: "Tu afinidad por la estructura y tus habilidades numéricas encajan perfectamente en roles que organizan y optimizan sistemas complejos."
         },
@@ -109,7 +110,11 @@ export function getRecommendation(academicResult: string, psychologicalResult: s
         // Fallback si no hay una combinación exacta pero sí tenemos el área de carrera
         const genericCareerRecommendation = Object.values(MATRIX[careerArea])[0];
         if(genericCareerRecommendation){
-            return genericCareerRecommendation;
+            return {
+                ...genericCareerRecommendation,
+                // Add a note that this is a more generic recommendation
+                 compatibilityAdvice: `Aunque tu perfil '${riasecProfile}' no es una pareja clásica para el área de '${careerArea}', tus habilidades académicas son un gran punto de partida. ${genericCareerRecommendation.compatibilityAdvice}`
+            };
         }
     }
 
