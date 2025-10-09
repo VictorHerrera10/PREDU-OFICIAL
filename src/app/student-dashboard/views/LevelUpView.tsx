@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
-import { Check, Shield, Crown, Gem, Sparkles } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Check, Shield, Crown, Gem, Sparkles, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -69,8 +69,12 @@ export function LevelUpView() {
             </Tooltip>
         </TooltipProvider>
         
-        <DialogContent className="max-w-7xl w-full bg-transparent border-none shadow-none p-4">
-          <div className="text-center mb-8">
+        <DialogContent className="max-w-7xl w-full bg-background/95 backdrop-blur-sm border-border/50 shadow-lg p-4">
+           <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary z-50">
+                <X className="h-6 w-6" />
+                <span className="sr-only">Cerrar</span>
+            </DialogClose>
+          <div className="text-center my-8">
             <h1 className="text-3xl md:text-4xl font-bold text-primary font-headline">
               ¡Elige tu Destino!
             </h1>
@@ -95,7 +99,7 @@ export function LevelUpView() {
                       ? 'ring-2 ring-offset-2 ring-offset-background'
                       : '',
                     level.recommended ? `ring-destructive` : '',
-                    level.current ? 'bg-muted/30' : 'bg-background/50'
+                    level.current ? 'bg-muted/30' : 'bg-card'
                   )}
                 >
                   <CardHeader className="items-center text-center">
