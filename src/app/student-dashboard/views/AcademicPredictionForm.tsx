@@ -39,7 +39,7 @@ const gradeOptions: ("AD" | "A" | "B" | "C")[] = ["AD", "A", "B", "C"];
 
 // ===== Validación Zod =====
 const gradeSchema = z.enum(["AD", "A", "B", "C"], {
-  errorMap: () => ({ message: "Debes seleccionar una calificación." }),
+  required_error: "Debes seleccionar una calificación.",
 });
 
 const formSchemaObject = subjects.reduce((acc, subject) => {
@@ -104,6 +104,7 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
           userId: user.uid,
           grades: data,
           prediction: result,
+          createdAt: new Date().toISOString(),
       }, { merge: true });
 
 
@@ -114,13 +115,22 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
       setIsOpen(false);
     } catch (error: any) {
       console.error("Error al contactar la API de predicción:", error);
-      toast({
-        variant: "destructive",
-        title: "Error en la Predicción",
-        description:
-          error.response?.data?.detail ||
-          "No se pudo conectar con el servicio de predicción.",
-      });
+
+      if (error.response) {
+        // El servidor respondió con un código de estado fuera del rango 2xx
+        toast({
+          variant: "destructive",
+          title: "Error en la Predicción",
+          description: error.response.data?.detail || "Hubo un problema al procesar tus calificaciones.",
+        });
+      } else {
+        // La solicitud se hizo pero no se recibió respuesta (problema de red/servidor)
+        toast({
+          variant: "destructive",
+          title: "Servicio no Disponible",
+          description: "El servicio de predicción parece tener dificultades. Por favor, intenta de nuevo más tarde o regresa al inicio. 🛠️",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }

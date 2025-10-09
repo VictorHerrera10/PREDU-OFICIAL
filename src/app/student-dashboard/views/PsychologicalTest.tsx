@@ -204,9 +204,8 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                     }
                 }
             }
-
-            const requestData = { user_id: user.uid, ...scores };
-            const response = await api.post('/prediccion/psicologica/', requestData);
+            
+            const response = await api.post('/prediccion/psicologica/', scores);
             const result = Object.values(response.data)[0] as string || "No se pudo determinar el perfil.";
             setPredictionResult(result);
             
@@ -216,8 +215,23 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
             
             toast({ title: "¡Análisis Completado! 🧠", description: `Tu perfil sugerido es: ${result}` });
         } catch (error: any) {
-            console.error(error);
-            toast({ variant: "destructive", title: "Error en el Análisis", description: error.message || "No se pudo conectar con el servicio de predicción." });
+            console.error("Error al contactar la API de predicción:", error);
+
+            if (error.response) {
+                // El servidor respondió con un código de estado fuera del rango 2xx
+                toast({
+                    variant: "destructive",
+                    title: "Error en el Análisis",
+                    description: error.response.data?.detail || "Hubo un problema al procesar tus respuestas.",
+                });
+            } else {
+                 // La solicitud se hizo pero no se recibió respuesta (problema de red/servidor)
+                toast({
+                    variant: "destructive",
+                    title: "Servicio no Disponible",
+                    description: "El servicio de predicción parece tener dificultades. Por favor, intenta de nuevo más tarde o regresa al inicio. 🛠️",
+                });
+            }
         } finally {
             setIsSubmitting(false);
         }
