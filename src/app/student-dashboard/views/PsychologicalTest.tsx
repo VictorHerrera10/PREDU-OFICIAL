@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, CheckCircle, ArrowLeft } from 'lucide-react';
-import { questions, CATEGORY_DETAILS, SECTION_DETAILS, TestSection, HollandQuestion } from './psychological-test-data';
+import { questions, CATEGORY_DETAILS, SECTION_DETAILS, TestSection, HollandQuestion, QuestionCategory } from './psychological-test-data';
 import { cn } from '@/lib/utils';
 import { QuestionModal } from './QuestionModal';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,20 @@ import { ResultsDisplay } from './ResultsDisplay';
 
 type Answers = Record<string, 'yes' | 'no' | null>;
 
+type ResultCounts = {
+    [key in QuestionCategory]: {
+        yes: number;
+        no: number;
+    };
+};
+
+type AllResults = {
+    general: ResultCounts;
+    actividades: ResultCounts;
+    habilidades: ResultCounts;
+    ocupaciones: ResultCounts;
+}
+
 type PsychologicalPrediction = {
     answers: Answers;
     progressOverall?: number;
@@ -26,6 +40,7 @@ type PsychologicalPrediction = {
     progressHabilidades?: number;
     progressOcupaciones?: number;
     result?: string;
+    results?: AllResults;
 };
 
 type Props = {
@@ -108,6 +123,8 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
 
         if (predictionDocRef) {
             const newProgress = calculateProgress(newAnswers);
+            const isComplete = newProgress.overall === 100;
+
             const dataToSave: Partial<PsychologicalPrediction> = {
                 answers: newAnswers,
                 progressOverall: newProgress.overall,
@@ -116,7 +133,25 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                 progressOcupaciones: newProgress.ocupaciones,
                 updatedAt: serverTimestamp() as any,
             };
-            // Create a new document if it does not exist
+
+            if (isComplete && !savedPrediction?.results) {
+                const calculateSectionResults = (section: TestSection | 'all', currentAnswers: Answers): ResultCounts => {
+                    const initialCounts: ResultCounts = { realista: { yes: 0, no: 0 }, investigador: { yes: 0, no: 0 }, artistico: { yes: 0, no: 0 }, social: { yes: 0, no: 0 }, emprendedor: { yes: 0, no: 0 }, convencional: { yes: 0, no: 0 } };
+                    const relevantQuestions = section === 'all' ? questions : questions.filter(q => q.section === section);
+                    return relevantQuestions.reduce((acc, question) => {
+                        if (currentAnswers[question.id] === 'yes') acc[question.category].yes++;
+                        else if (currentAnswers[question.id] === 'no') acc[question.category].no++;
+                        return acc;
+                    }, initialCounts);
+                };
+                 dataToSave.results = {
+                    general: calculateSectionResults('all', newAnswers),
+                    actividades: calculateSectionResults('actividades', newAnswers),
+                    habilidades: calculateSectionResults('habilidades', newAnswers),
+                    ocupaciones: calculateSectionResults('ocupaciones', newAnswers),
+                };
+            }
+
             if (!savedPrediction) {
                 dataToSave.createdAt = serverTimestamp() as any;
             }
@@ -152,15 +187,19 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
         }
         setIsSubmitting(true);
         try {
-            const scores = Object.entries(answers).reduce((acc, [questionId, answer]) => {
+            const scores = (Object.keys(CATEGORY_DETAILS) as QuestionCategory[]).reduce((acc, category) => {
+                acc[category] = 0;
+                return acc;
+            }, {} as Record<QuestionCategory, number>);
+
+            for (const [questionId, answer] of Object.entries(answers)) {
                 if (answer === 'yes') {
                     const question = questions.find(q => q.id === questionId);
                     if (question) {
-                        acc[question.category] = (acc[question.category] || 0) + 1;
+                        scores[question.category]++;
                     }
                 }
-                return acc;
-            }, {} as Record<string, number>);
+            }
 
             const requestData = { user_id: user.uid, ...scores };
             const response = await api.post('/prediccion/psicologica/', requestData);

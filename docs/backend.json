@@ -209,6 +209,28 @@
           "type": "string",
           "description": "The final RIASEC profile result."
         },
+        "results": {
+            "type": "object",
+            "description": "The calculated RIASEC counts from the user's answers.",
+            "properties": {
+                "general": {
+                    "type": "object",
+                    "description": "Overall counts across all sections."
+                },
+                "actividades": {
+                    "type": "object",
+                    "description": "Counts for the 'actividades' section."
+                },
+                "habilidades": {
+                    "type": "object",
+                    "description": "Counts for the 'habilidades' section."
+                },
+                "ocupaciones": {
+                    "type": "object",
+                    "description": "Counts for the 'ocupaciones' section."
+                }
+            }
+        },
         "progressOverall": {
           "type": "number",
           "description": "The overall progress percentage of the test."
