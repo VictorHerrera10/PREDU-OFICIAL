@@ -92,4 +92,3 @@ export function getRecommendation(combination: string): Recommendation {
     const keyNormalized = normalizeString(combination);
     return MATRIX[keyNormalized] || FALLBACK_RECOMMENDATION;
 }
-

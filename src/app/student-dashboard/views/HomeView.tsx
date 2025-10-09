@@ -1,12 +1,11 @@
 'use client';
 
-import { useMemo, useEffect } from 'react';
+import { useMemo } from 'react';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Loader2, Lightbulb, Compass, BrainCircuit } from 'lucide-react';
 import { getRecommendation } from './recommendation-data';
-import { useNotifications } from '@/hooks/use-notifications';
 
 type AcademicPrediction = {
     prediction: string;
@@ -16,13 +15,18 @@ type PsychologicalPrediction = {
     result: string;
 };
 
+// Normaliza strings para coincidir con las claves de MATRIX
+const normalizeString = (str: string | null | undefined) => {
+    if (!str) return '';
+    return str.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+};
+
 // Convierte a formato con mayúscula inicial
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
 export default function HomeView() {
     const { user } = useUser();
     const firestore = useFirestore();
-    const { addNotification } = useNotifications();
 
     // Referencia al documento académico
     const academicDocRef = useMemo(() => {
@@ -42,38 +46,14 @@ export default function HomeView() {
 
     const isLoading = isLoadingAcademic || isLoadingPsychological;
 
-     useEffect(() => {
-        if (isLoading) return;
-
-        const hasShownReportNotification = localStorage.getItem('hasShownReportNotification');
-        if (academicPrediction?.prediction && psychologicalPrediction?.result && hasShownReportNotification !== 'true') {
-            setTimeout(() => {
-                addNotification({
-                    title: '¡Tu Reporte está Listo!',
-                    description: 'Hemos combinado tus resultados. ¡Ve a Inicio para ver tu ruta!',
-                    emoji: '📊'
-                });
-                localStorage.setItem('hasShownReportNotification', 'true');
-            }, 1500);
-        } else if (academicPrediction?.prediction && psychologicalPrediction?.result && hasShownReportNotification === 'true') {
-             const hasShownPremiumNotification = localStorage.getItem('hasShownPremiumNotification');
-             if (hasShownPremiumNotification !== 'true') {
-                 setTimeout(() => {
-                     addNotification({
-                         title: '¿Listo para el Siguiente Nivel?',
-                         description: 'Desbloquea tu plan de mejora personalizado y lleva tu potencial al máximo.',
-                         emoji: '🌟'
-                     });
-                     localStorage.setItem('hasShownPremiumNotification', 'true');
-                 }, 5000);
-             }
-        }
-    }, [isLoading, academicPrediction, psychologicalPrediction, addNotification]);
-
     // Generación de la recomendación
     const recommendation = useMemo(() => {
         if (academicPrediction?.prediction && psychologicalPrediction?.result) {
-            return getRecommendation(academicPrediction.prediction, psychologicalPrediction.result);
+            const academic = capitalize(normalizeString(academicPrediction.prediction));
+            const psychological = capitalize(normalizeString(psychologicalPrediction.result));
+
+            const combinationKey = `${academic} — ${psychological}`;
+            return getRecommendation(combinationKey);
         }
         return null;
     }, [academicPrediction, psychologicalPrediction]);
