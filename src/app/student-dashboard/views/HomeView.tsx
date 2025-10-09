@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -30,6 +30,8 @@ export default function HomeView() {
     const { user } = useUser();
     const firestore = useFirestore();
     const { addNotification, notifications } = useNotifications();
+    const notificationTriggeredRef = useRef({ reportReady: false, nextLevel: false });
+
 
     const academicDocRef = useMemo(() => {
         if (!user || !firestore) return null;
@@ -63,35 +65,35 @@ export default function HomeView() {
     }, [academicPrediction, psychologicalPrediction]);
 
     useEffect(() => {
-        if (isLoading || !user) return;
+        if (isLoading || !recommendation || userProfile === undefined) return;
 
-        const hasNotification = (title: string) => notifications.some(n => n.title === title);
-
-        const scheduleNotification = (notification: Omit<any, 'id' | 'read' | 'createdAt'>) => {
-             if (!hasNotification(notification.title)) {
-                setTimeout(() => {
-                    addNotification(notification);
-                }, 6000);
-            }
-        };
-
-        if (recommendation && !userProfile?.hasSeenInitialReport) {
-            scheduleNotification({
-                title: '¡Tu reporte está listo!',
-                description: 'Hemos combinado tus resultados. ¡Revisa tu ruta personalizada en la sección de Inicio!',
-                emoji: '📊'
-            });
-            if(userProfileRef){
+        // Notificación para cuando el reporte está listo por primera vez
+        if (!userProfile?.hasSeenInitialReport && !notificationTriggeredRef.current.reportReady) {
+            notificationTriggeredRef.current.reportReady = true;
+            setTimeout(() => {
+                addNotification({
+                    title: '¡Tu reporte está listo!',
+                    description: 'Hemos combinado tus resultados. ¡Revisa tu ruta personalizada en la sección de Inicio!',
+                    emoji: '📊'
+                });
+            }, 6000);
+            if (userProfileRef) {
                 updateDoc(userProfileRef, { hasSeenInitialReport: true });
             }
-        } else if (userProfile?.hasSeenInitialReport) {
-             scheduleNotification({
-                title: '¿Listo para el siguiente nivel?',
-                description: 'Explora nuestro plan de mejora para obtener análisis más profundos y herramientas exclusivas.',
-                emoji: '🌟'
-            });
         }
-    }, [isLoading, recommendation, userProfile, addNotification, notifications, user, userProfileRef]);
+        // Notificación para el siguiente nivel en visitas posteriores
+        else if (userProfile?.hasSeenInitialReport && !notificationTriggeredRef.current.nextLevel) {
+            notificationTriggeredRef.current.nextLevel = true;
+            setTimeout(() => {
+                addNotification({
+                    title: '¿Listo para el siguiente nivel?',
+                    description: 'Explora nuestro plan de mejora para obtener análisis más profundos y herramientas exclusivas.',
+                    emoji: '🌟'
+                });
+            }, 6000);
+        }
+
+    }, [isLoading, recommendation, userProfile, addNotification, userProfileRef]);
 
 
     if (isLoading) {
