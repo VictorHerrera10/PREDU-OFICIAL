@@ -63,12 +63,9 @@ export default function HomeView() {
     }, [academicPrediction, psychologicalPrediction]);
 
     useEffect(() => {
-        // Se ejecuta solo una vez cuando los datos están listos.
         if (isLoading || recommendation === null || userProfile === undefined) return;
 
-        // Lógica de notificación mutuamente exclusiva
-        if (!userProfile.hasSeenInitialReport) {
-            // Notificación para cuando el reporte está listo por primera vez.
+        if (userProfile && !userProfile.hasSeenInitialReport) {
             setTimeout(() => {
                 addNotification({
                     type: 'report_ready',
@@ -80,8 +77,7 @@ export default function HomeView() {
             if (userProfileRef) {
                 updateDoc(userProfileRef, { hasSeenInitialReport: true });
             }
-        } else {
-             // Notificación para el siguiente nivel en visitas posteriores (solo si la de "reporte listo" no se mostró).
+        } else if (userProfile) { // Ensure userProfile is not null/undefined before this block
             setTimeout(() => {
                 addNotification({
                     type: 'next_level',
