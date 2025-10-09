@@ -62,6 +62,8 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
         } else {
             setIsModalOpen(false);
             setCurrentQuestion(null);
+            // Opcional: Volver a la lista de secciones si la sección termina
+            // setActiveSection(null); 
         }
     };
     
@@ -104,6 +106,14 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
         }
     };
     
+    // ===============================================================
+    // CORRECCIÓN: Definir las variables de la sección activa aquí
+    // ===============================================================
+    const activeSectionDetails = activeSection ? SECTION_DETAILS[activeSection as TestSection] : null;
+    const ActiveSectionIcon = activeSectionDetails ? activeSectionDetails.icon : null;
+    const activeSectionProgress = activeSection ? progress[activeSection] : 0;
+    // ===============================================================
+
     return (
         <div className="w-full">
             <div className="space-y-4 mb-8">
@@ -126,7 +136,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                         transition={{ duration: 0.3 }}
                         className="space-y-6"
                     >
-                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {(Object.keys(SECTION_DETAILS) as TestSection[]).map(sec => {
                                 const SectionIcon = SECTION_DETAILS[sec].icon;
                                 const isComplete = progress[sec] === 100;
@@ -137,6 +147,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                                         className="p-4 border-2 rounded-lg flex flex-col items-center justify-center gap-2 text-center transition-all bg-card/80 backdrop-blur-sm hover:border-primary/50 hover:-translate-y-1"
                                     >
                                         <div className="flex items-center gap-2">
+                                            {/* Aquí SectionIcon está correctamente definido */}
                                             <SectionIcon className="w-8 h-8 text-primary" />
                                             {isComplete && <CheckCircle className="w-5 h-5 text-green-500" />}
                                         </div>
@@ -163,9 +174,10 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                         
                         <div key={activeSection}>
                             <div className="flex items-center gap-3 mb-3">
-                                <SECTION_DETAILS[activeSection].icon className="w-6 h-6 text-primary" />
-                                <h3 className="text-xl font-semibold text-foreground">{SECTION_DETAILS[activeSection].title}</h3>
-                                {progress[activeSection] === 100 && <CheckCircle className="w-5 h-5 text-green-500" />}
+                                {/* CORRECCIÓN FINAL: Usamos las variables precalculadas */}
+                                {ActiveSectionIcon && <ActiveSectionIcon className="w-6 h-6 text-primary" />}
+                                <h3 className="text-xl font-semibold text-foreground">{activeSectionDetails?.title}</h3>
+                                {activeSectionProgress === 100 && <CheckCircle className="w-5 h-5 text-green-500" />}
                             </div>
                             <div className="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-9 lg:grid-cols-12 gap-2">
                                 {questions.filter(q => q.section === activeSection).map((q, index) => {
@@ -195,15 +207,15 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
             </AnimatePresence>
             
             {isModalOpen && currentQuestion && activeSection && (
-                 <QuestionModal
-                    key={currentQuestion.id}
-                    question={currentQuestion}
-                    allQuestions={questions.filter(q => q.section === activeSection)}
-                    answer={answers[currentQuestion.id]}
-                    onAnswer={handleAnswer}
-                    isOpen={isModalOpen}
-                    setIsOpen={setIsModalOpen}
-                />
+                     <QuestionModal
+                        key={currentQuestion.id}
+                        question={currentQuestion}
+                        allQuestions={questions.filter(q => q.section === activeSection)}
+                        answer={answers[currentQuestion.id]}
+                        onAnswer={handleAnswer}
+                        isOpen={isModalOpen}
+                        setIsOpen={setIsModalOpen}
+                    />
             )}
 
             {progress.overall === 100 && (
