@@ -209,6 +209,22 @@
           "type": "string",
           "description": "The final RIASEC profile result."
         },
+        "progressOverall": {
+          "type": "number",
+          "description": "The overall progress percentage of the test."
+        },
+        "progressActividades": {
+            "type": "number",
+            "description": "The progress percentage of the 'actividades' section."
+        },
+        "progressHabilidades": {
+            "type": "number",
+            "description": "The progress percentage of the 'habilidades' section."
+        },
+        "progressOcupaciones": {
+            "type": "number",
+            "description": "The progress percentage of the 'ocupaciones' section."
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time",

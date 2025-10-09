@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import api from '@/lib/api-client';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,6 +20,11 @@ type Answers = Record<string, 'yes' | 'no' | null>;
 
 type PsychologicalPrediction = {
     answers: Answers;
+    progressOverall?: number;
+    progressActividades?: number;
+    progressHabilidades?: number;
+    progressOcupaciones?: number;
+    result?: string;
 };
 
 type Props = {
@@ -48,19 +53,23 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     const { data: savedPrediction, isLoading: isLoadingPrediction } = useDoc<PsychologicalPrediction>(predictionDocRef);
 
     useEffect(() => {
-        if (savedPrediction?.answers) {
-            setAnswers(prev => ({ ...prev, ...savedPrediction.answers }));
+        if (savedPrediction) {
+            if (savedPrediction.answers) {
+                setAnswers(prev => ({ ...prev, ...savedPrediction.answers }));
+            }
+            if (savedPrediction.result) {
+                setPredictionResult(savedPrediction.result);
+            }
         }
-    }, [savedPrediction]);
+    }, [savedPrediction, setPredictionResult]);
 
-
-    const progress = useMemo(() => {
-        const answeredCount = Object.values(answers).filter(a => a !== null).length;
+    const calculateProgress = useCallback((currentAnswers: Answers) => {
+        const answeredCount = Object.values(currentAnswers).filter(a => a !== null).length;
         const totalCount = questions.length;
         
         const sectionProgress = (section: TestSection) => {
             const sectionQuestions = questions.filter(q => q.section === section);
-            const answeredInSection = sectionQuestions.filter(q => answers[q.id] !== null).length;
+            const answeredInSection = sectionQuestions.filter(q => currentAnswers[q.id] !== null).length;
             if (sectionQuestions.length === 0) return 0;
             return (answeredInSection / sectionQuestions.length) * 100;
         };
@@ -71,19 +80,37 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
             habilidades: sectionProgress('habilidades'),
             ocupaciones: sectionProgress('ocupaciones'),
         };
-    }, [answers]);
+    }, []);
+
+    const progress = useMemo(() => {
+        if (savedPrediction) {
+            return {
+                overall: savedPrediction.progressOverall ?? 0,
+                actividades: savedPrediction.progressActividades ?? 0,
+                habilidades: savedPrediction.progressHabilidades ?? 0,
+                ocupaciones: savedPrediction.progressOcupaciones ?? 0,
+            }
+        }
+        return calculateProgress(answers);
+    }, [answers, savedPrediction, calculateProgress]);
+
 
     const handleAnswer = (questionId: string, answer: 'yes' | 'no') => {
         const newAnswers = { ...answers, [questionId]: answer };
         setAnswers(newAnswers);
 
         if (predictionDocRef) {
-            setDocumentNonBlocking(predictionDocRef, { 
-                answers: newAnswers, 
-                updatedAt: serverTimestamp() 
-            }, { merge: true });
+            const newProgress = calculateProgress(newAnswers);
+            const dataToSave = {
+                answers: newAnswers,
+                progressOverall: newProgress.overall,
+                progressActividades: newProgress.actividades,
+                progressHabilidades: newProgress.habilidades,
+                progressOcupaciones: newProgress.ocupaciones,
+                updatedAt: serverTimestamp(),
+            };
+            setDocumentNonBlocking(predictionDocRef, dataToSave, { merge: true });
         }
-
 
         if (!activeSection) return;
 
