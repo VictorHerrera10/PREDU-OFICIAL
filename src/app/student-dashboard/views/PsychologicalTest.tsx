@@ -21,7 +21,7 @@ type Props = {
 export function PsychologicalTest({ setPredictionResult }: Props) {
     const { user } = useUser();
     const { toast } = useToast();
-    const [answers, setAnswers] = useState<Answers>(
+    const [answers, setAnswers] = useState<Answers>(() =>
         questions.reduce((acc, q) => ({ ...acc, [q.id]: null }), {})
     );
     const [activeSection, setActiveSection] = useState<TestSection | null>(null);
@@ -33,12 +33,14 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     const progress = useMemo(() => {
         const answeredCount = Object.values(answers).filter(a => a !== null).length;
         const totalCount = questions.length;
+        
         const sectionProgress = (section: TestSection) => {
             const sectionQuestions = questions.filter(q => q.section === section);
             const answeredInSection = sectionQuestions.filter(q => answers[q.id] !== null).length;
             if (sectionQuestions.length === 0) return 0;
             return (answeredInSection / sectionQuestions.length) * 100;
         };
+
         return {
             overall: (answeredCount / totalCount) * 100,
             actividades: sectionProgress('actividades'),
@@ -65,15 +67,9 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     
     const handleStartSection = (section: TestSection) => {
         setActiveSection(section);
-        const firstQuestionInSection = questions.filter(q => q.section === section)[0];
-        if (firstQuestionInSection) {
-            setCurrentQuestion(firstQuestionInSection);
-            setIsModalOpen(true);
-        }
     };
     
-    const handleOpenQuestion = (question: HollandQuestion, section: TestSection) => {
-        setActiveSection(section);
+    const handleOpenQuestion = (question: HollandQuestion) => {
         setCurrentQuestion(question);
         setIsModalOpen(true);
     };
@@ -130,14 +126,14 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                         transition={{ duration: 0.3 }}
                         className="space-y-6"
                     >
-                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {(Object.keys(SECTION_DETAILS) as TestSection[]).map(sec => {
                                 const SectionIcon = SECTION_DETAILS[sec].icon;
                                 const isComplete = progress[sec] === 100;
                                 return (
                                     <button
                                         key={sec}
-                                        onClick={() => setActiveSection(sec)}
+                                        onClick={() => handleStartSection(sec)}
                                         className="p-4 border-2 rounded-lg flex flex-col items-center justify-center gap-2 text-center transition-all bg-card/80 backdrop-blur-sm hover:border-primary/50 hover:-translate-y-1"
                                     >
                                         <div className="flex items-center gap-2">
@@ -180,7 +176,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                                     return (
                                         <button
                                             key={q.id}
-                                            onClick={() => handleOpenQuestion(q, activeSection)}
+                                            onClick={() => handleOpenQuestion(q)}
                                             className={cn(
                                                 "h-14 w-full border-2 rounded-md flex flex-col items-center justify-center transition-all",
                                                 isAnswered ? 'bg-primary/20 border-primary' : 'bg-muted/50 border-muted-foreground/20 hover:bg-muted'
