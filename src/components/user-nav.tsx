@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { useUser, useFirestore, useDoc, useAuth } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import {
@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User as UserIcon, Star, LogOut, Check, Trash2, Bell } from 'lucide-react';
+import { User as UserIcon, Star, LogOut, Check, Trash2, Bell, Clock } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
 import Link from 'next/link';
 import { handleLogout } from './logout-button';
@@ -35,6 +35,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useNotifications } from '@/hooks/use-notifications';
 import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
 
 
 type UserProfile = {
@@ -175,7 +176,7 @@ export function UserNav() {
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: index * 0.1 }}
-                                className={cn("relative rounded-lg mb-1", !notif.read && "bg-primary/10")}
+                                className={cn("relative rounded-lg mb-2", !notif.read && "bg-primary/10")}
                              >
                                 <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="flex flex-col items-start gap-1.5 p-3 whitespace-normal">
                                     <div className="flex items-center gap-2">
@@ -183,6 +184,10 @@ export function UserNav() {
                                         <p className="font-bold">{notif.title}</p>
                                     </div>
                                     <p className="text-sm text-muted-foreground">{notif.description}</p>
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground/80 mt-1">
+                                        <Clock className="w-3 h-3" />
+                                        <span>{format(new Date(notif.createdAt), "dd/MM/yy HH:mm")}</span>
+                                    </div>
                                 </DropdownMenuItem>
                                  <div className="absolute top-2 right-2 flex gap-1">
                                     {!notif.read && (
