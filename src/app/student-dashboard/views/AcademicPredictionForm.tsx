@@ -108,6 +108,7 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
       
       setTimeout(() => {
         addNotification({
+            type: 'academic_test_complete',
             title: '¡Test Académico Completo!',
             description: '¡Felicidades! Sigue así para descubrir tu vocación.',
             emoji: '🎓'

@@ -30,9 +30,6 @@ export default function HomeView() {
     const { user } = useUser();
     const firestore = useFirestore();
     const { addNotification } = useNotifications();
-    
-    // Ref para controlar que las notificaciones se disparen solo una vez por sesión
-    const notificationTriggeredRef = useRef({ reportReady: false, nextLevel: false });
 
     const academicDocRef = useMemo(() => {
         if (!user || !firestore) return null;
@@ -70,11 +67,11 @@ export default function HomeView() {
         if (isLoading || recommendation === null || userProfile === undefined) return;
 
         // Lógica de notificación mutuamente exclusiva
-        if (!userProfile.hasSeenInitialReport && !notificationTriggeredRef.current.reportReady) {
+        if (!userProfile.hasSeenInitialReport) {
             // Notificación para cuando el reporte está listo por primera vez.
-            notificationTriggeredRef.current.reportReady = true;
             setTimeout(() => {
                 addNotification({
+                    type: 'report_ready',
                     title: '¡Tu reporte está listo!',
                     description: 'Hemos combinado tus resultados. ¡Revisa tu ruta personalizada en la sección de Inicio!',
                     emoji: '📊'
@@ -83,11 +80,11 @@ export default function HomeView() {
             if (userProfileRef) {
                 updateDoc(userProfileRef, { hasSeenInitialReport: true });
             }
-        } else if (userProfile.hasSeenInitialReport && !notificationTriggeredRef.current.nextLevel) {
-            // Notificación para el siguiente nivel en visitas posteriores (solo si la de "reporte listo" no se mostró).
-            notificationTriggeredRef.current.nextLevel = true;
+        } else {
+             // Notificación para el siguiente nivel en visitas posteriores (solo si la de "reporte listo" no se mostró).
             setTimeout(() => {
                 addNotification({
+                    type: 'next_level',
                     title: '¿Listo para el siguiente nivel?',
                     description: 'Explora nuestro plan de mejora para obtener análisis más profundos y herramientas exclusivas.',
                     emoji: '🌟'

@@ -176,6 +176,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
             if (calculateProgress(newAnswers).overall === 100) {
                  setTimeout(() => {
                     addNotification({
+                        type: 'psychological_test_complete',
                         title: '¡Test Psicológico Completo!',
                         description: '¡Genial! Has terminado el test de intereses.',
                         emoji: '🧠'

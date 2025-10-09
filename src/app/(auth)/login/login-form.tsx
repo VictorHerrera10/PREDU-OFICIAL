@@ -72,6 +72,7 @@ export default function LoginForm() {
       // Welcome Notification
       setTimeout(() => {
         addNotification({
+          type: 'welcome',
           title: '¡Bienvenido a Predu!',
           description: 'Completa tus tests para descubrir tu ruta profesional.',
           emoji: '🚀'

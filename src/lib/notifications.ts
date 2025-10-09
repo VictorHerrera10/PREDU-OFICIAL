@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export type Notification = {
   id: string;
+  type?: string; // Unique type to prevent duplicates
   title: string;
   description: string;
   emoji: string;

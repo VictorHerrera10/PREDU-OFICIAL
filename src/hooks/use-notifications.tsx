@@ -30,14 +30,22 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
   }, [notifications]);
 
   const addNotification = useCallback((notification: Omit<Notification, 'id' | 'read' | 'createdAt'>) => {
-    const newNotification: Notification = {
-      ...notification,
-      id: uuidv4(),
-      read: false,
-      createdAt: Date.now(),
-    };
-    
     setNotifications(prev => {
+        // Validation logic: if a type is provided, check for duplicates
+        if (notification.type) {
+            const existingNotification = prev.find(n => n.type === notification.type);
+            if (existingNotification) {
+                return prev; // Do not add if a notification of the same type already exists
+            }
+        }
+
+        const newNotification: Notification = {
+          ...notification,
+          id: uuidv4(),
+          read: false,
+          createdAt: Date.now(),
+        };
+        
         const updated = [newNotification, ...prev];
         notificationStore.set(updated);
         return updated;
