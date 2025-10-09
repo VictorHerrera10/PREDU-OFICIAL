@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { doc, serverTimestamp } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { ResultsDisplay } from './ResultsDisplay';
+import { useNotifications } from '@/hooks/use-notifications';
 
 
 type Answers = Record<string, 'yes' | 'no' | null>;
@@ -51,6 +52,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     const { user } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
+    const { addNotification } = useNotifications();
     
     const [answers, setAnswers] = useState<Answers>(() =>
         questions.reduce((acc, q) => ({ ...acc, [q.id]: null }), {})
@@ -170,6 +172,16 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
         } else {
             setIsModalOpen(false);
             setCurrentQuestion(null);
+            
+            if (calculateProgress(newAnswers).overall === 100) {
+                 setTimeout(() => {
+                    addNotification({
+                        title: '¡Test Psicológico Completo!',
+                        description: '¡Genial! Has terminado el test de intereses.',
+                        emoji: '🧠'
+                    });
+                }, 1000);
+            }
         }
     };
     

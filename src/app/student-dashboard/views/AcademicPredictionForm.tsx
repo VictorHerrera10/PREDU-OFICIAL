@@ -9,7 +9,6 @@ import { doc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import api from '@/lib/api-client';
 
-// Importaciones de Componentes
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -32,8 +31,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { subjects } from './academic-test-data';
+import { useNotifications } from '@/hooks/use-notifications';
 
 // ===== Datos base =====
 const gradeOptions: ("AD" | "A" | "B" | "C")[] = ["AD", "A", "B", "C"];
@@ -44,12 +43,11 @@ const gradeSchema = z.enum(["AD", "A", "B", "C"], {
 });
 
 const formSchemaObject = subjects.reduce((acc, subject) => {
-    acc[subject.id] = gradeSchema;
-    return acc;
-  }, {} as Record<string, typeof gradeSchema>);
+  acc[subject.id] = gradeSchema;
+  return acc;
+}, {} as Record<string, typeof gradeSchema>);
 
 const formSchema = z.object(formSchemaObject);
-
 
 type PredictionFormValues = z.infer<typeof formSchema>;
 
@@ -64,6 +62,7 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { addNotification } = useNotifications();
 
   const form = useForm<PredictionFormValues>({
     resolver: zodResolver(formSchema),
@@ -75,7 +74,7 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
 
   const { formState: { errors } } = form;
   const hasErrors = Object.keys(errors).length > 0 && form.formState.isSubmitted;
-  
+
   const onSubmit = async (data: PredictionFormValues) => {
     if (!user || !firestore) {
       toast({
@@ -93,39 +92,45 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
         Object.values(response.data)[0] as string ||
         "No se pudo determinar la carrera.";
       setPredictionResult(result);
-      
+
       const predictionDocRef = doc(firestore, 'academic_prediction', user.uid);
       await setDocumentNonBlocking(predictionDocRef, {
-          userId: user.uid,
-          grades: data,
-          prediction: result,
-          createdAt: new Date().toISOString(),
+        userId: user.uid,
+        grades: data,
+        prediction: result,
+        createdAt: new Date().toISOString(),
       }, { merge: true });
-
 
       toast({
         title: "¡Predicción Exitosa! 🎉",
         description: `Carrera recomendada: ${result}`,
       });
+      
+      setTimeout(() => {
+        addNotification({
+            title: '¡Test Académico Completo!',
+            description: '¡Felicidades! Sigue así para descubrir tu vocación.',
+            emoji: '🎓'
+        });
+      }, 1000);
+
       setIsOpen(false);
     } catch (error: any) {
       console.error("Error al contactar la API de predicción:", error);
 
       if (error.response) {
-        // El servidor respondió con un código de estado fuera del rango 2xx
         toast({
           variant: "destructive",
           title: "Error en la Predicción",
           description: error.response.data?.detail || "Hubo un problema al procesar tus calificaciones.",
         });
       } else {
-        // La solicitud se hizo pero no se recibió respuesta (problema de red/servidor)
         toast({
           variant: "destructive",
           title: "Servicio no Disponible",
           description: "El servicio de predicción parece tener dificultades. Por favor, intenta de nuevo más tarde o regresa al inicio. 🛠️",
         });
-        setIsOpen(false); // Close the modal on network error
+        setIsOpen(false);
       }
     } finally {
       setIsSubmitting(false);
@@ -138,12 +143,13 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
         <Button>Obtener Predicción</Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-4xl h-full max-h-[95vh] flex flex-col">
-        <DialogHeader className="flex-shrink-0">
+      {/* ===== Modal con scroll externo y estilo acorde a tu página ===== */}
+      <DialogContent className="max-w-4xl max-h-[95vh] w-full overflow-y-auto flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-lg">
+        <DialogHeader className="flex-shrink-0 px-6 pt-6">
           <DialogTitle className="text-center text-2xl font-bold">
             🚀 ¡Descubramos tu Vocación!
           </DialogTitle>
-          <DialogDescription className={cn("text-center text-sm text-muted-foreground", hasErrors && "text-destructive font-semibold")}>
+          <DialogDescription className={cn("text-center text-sm text-muted-foreground mt-1", hasErrors && "text-destructive font-semibold")}>
             {hasErrors
               ? "Debes seleccionar una calificación para todos los cursos."
               : "Ingresa tus últimas calificaciones. ¡Cada nota es una pista hacia tu futuro profesional! 🎓"}
@@ -151,59 +157,56 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="overflow-hidden flex flex-col flex-grow">
-            
-            <ScrollArea className="flex-grow">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 px-6 py-4">
-                {subjects.map((subject) => (
-                  <FormField
-                    key={subject.id}
-                    control={form.control}
-                    name={subject.id as keyof PredictionFormValues}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className={cn("flex items-center gap-2 text-base font-medium", errors[subject.id] && "text-destructive")}>
-                          {subject.emoji} {subject.label}
-                        </FormLabel>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            className={cn("grid grid-cols-4 gap-2 pt-2 rounded-md", errors[subject.id] && "ring-2 ring-destructive ring-offset-2 ring-offset-background")}
-                          >
-                            {gradeOptions.map((grade) => (
-                              <FormItem key={grade}>
-                                <FormControl>
-                                  <RadioGroupItem
-                                    value={grade}
-                                    id={`${subject.id}-${grade}`}
-                                    className="sr-only"
-                                  />
-                                </FormControl>
-                                <FormLabel
-                                  htmlFor={`${subject.id}-${grade}`}
-                                  className={cn(
-                                    "flex items-center justify-center rounded-md border-2 border-muted bg-popover p-2 font-bold cursor-pointer transition-all hover:bg-accent hover:text-accent-foreground",
-                                    "h-10 min-w-[48px]",
-                                    field.value === grade &&
-                                      "border-primary ring-2 ring-primary/50 text-primary"
-                                  )}
-                                >
-                                  {grade}
-                                </FormLabel>
-                              </FormItem>
-                            ))}
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                ))}
-              </div>
-            </ScrollArea>
-            
-            <DialogFooter className="flex-shrink-0 pt-4 px-6 border-t">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-grow px-6 py-4 space-y-4">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {subjects.map((subject) => (
+                <FormField
+                  key={subject.id}
+                  control={form.control}
+                  name={subject.id as keyof PredictionFormValues}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={cn("flex items-center gap-2 text-base font-medium", errors[subject.id] && "text-destructive")}>
+                        {subject.emoji} {subject.label}
+                      </FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          className="grid grid-cols-4 gap-2"
+                        >
+                          {gradeOptions.map((grade) => (
+                            <FormItem key={grade} className="m-0 p-0">
+                              <FormControl>
+                                <RadioGroupItem
+                                  value={grade}
+                                  id={`${subject.id}-${grade}`}
+                                  className="sr-only focus:outline-none"
+                                />
+                              </FormControl>
+                              <FormLabel
+                                htmlFor={`${subject.id}-${grade}`}
+                                className={cn(
+                                  "flex items-center justify-center h-10 min-w-[48px] rounded-md border-2 border-muted bg-popover p-2 font-bold cursor-pointer transition-all hover:bg-accent hover:text-accent-foreground box-border",
+                                  field.value === grade &&
+                                    "border-primary ring-2 ring-primary/50 text-primary"
+                                )}
+                              >
+                                {grade}
+                              </FormLabel>
+                            </FormItem>
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ))}
+            </div>
+
+            <DialogFooter className="flex-shrink-0 pt-4 pb-6">
               <div className="w-full flex justify-center">
                 <Button type="submit" disabled={isSubmitting} size="lg" className='w-full md:w-auto'>
                   {isSubmitting && (

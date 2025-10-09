@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseProvider } from '@/firebase/provider';
+import { NotificationsProvider } from '@/hooks/use-notifications';
 
 export const metadata: Metadata = {
   title: 'Predu',
@@ -33,8 +34,10 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <FirebaseProvider>
-          {children}
-          <Toaster />
+          <NotificationsProvider>
+            {children}
+            <Toaster />
+          </NotificationsProvider>
         </FirebaseProvider>
       </body>
     </html>

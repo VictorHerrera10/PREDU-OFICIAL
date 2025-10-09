@@ -1,11 +1,12 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Loader2, Lightbulb, Compass, BrainCircuit } from 'lucide-react';
 import { getRecommendation } from './recommendation-data';
+import { useNotifications } from '@/hooks/use-notifications';
 
 type AcademicPrediction = {
     prediction: string;
@@ -15,25 +16,61 @@ type PsychologicalPrediction = {
     result: string;
 };
 
+// Convierte a formato con mayúscula inicial
+const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+
 export default function HomeView() {
     const { user } = useUser();
     const firestore = useFirestore();
+    const { addNotification } = useNotifications();
 
+    // Referencia al documento académico
     const academicDocRef = useMemo(() => {
         if (!user || !firestore) return null;
         return doc(firestore, 'academic_prediction', user.uid);
     }, [user, firestore]);
 
+    // Referencia al documento psicológico
     const psychologicalDocRef = useMemo(() => {
         if (!user || !firestore) return null;
         return doc(firestore, 'psychological_predictions', user.uid);
     }, [user, firestore]);
 
+    // Obtención de datos
     const { data: academicPrediction, isLoading: isLoadingAcademic } = useDoc<AcademicPrediction>(academicDocRef);
     const { data: psychologicalPrediction, isLoading: isLoadingPsychological } = useDoc<PsychologicalPrediction>(psychologicalDocRef);
 
     const isLoading = isLoadingAcademic || isLoadingPsychological;
 
+     useEffect(() => {
+        if (isLoading) return;
+
+        const hasShownReportNotification = localStorage.getItem('hasShownReportNotification');
+        if (academicPrediction?.prediction && psychologicalPrediction?.result && hasShownReportNotification !== 'true') {
+            setTimeout(() => {
+                addNotification({
+                    title: '¡Tu Reporte está Listo!',
+                    description: 'Hemos combinado tus resultados. ¡Ve a Inicio para ver tu ruta!',
+                    emoji: '📊'
+                });
+                localStorage.setItem('hasShownReportNotification', 'true');
+            }, 1500);
+        } else if (academicPrediction?.prediction && psychologicalPrediction?.result && hasShownReportNotification === 'true') {
+             const hasShownPremiumNotification = localStorage.getItem('hasShownPremiumNotification');
+             if (hasShownPremiumNotification !== 'true') {
+                 setTimeout(() => {
+                     addNotification({
+                         title: '¿Listo para el Siguiente Nivel?',
+                         description: 'Desbloquea tu plan de mejora personalizado y lleva tu potencial al máximo.',
+                         emoji: '🌟'
+                     });
+                     localStorage.setItem('hasShownPremiumNotification', 'true');
+                 }, 5000);
+             }
+        }
+    }, [isLoading, academicPrediction, psychologicalPrediction, addNotification]);
+
+    // Generación de la recomendación
     const recommendation = useMemo(() => {
         if (academicPrediction?.prediction && psychologicalPrediction?.result) {
             return getRecommendation(academicPrediction.prediction, psychologicalPrediction.result);
@@ -49,7 +86,7 @@ export default function HomeView() {
             </div>
         );
     }
-    
+
     const renderWelcomeOrGuidance = () => {
         if (recommendation) {
             return (
@@ -62,33 +99,33 @@ export default function HomeView() {
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="p-4 border-l-4 border-amber-400 bg-amber-900/20 rounded-r-lg">
-                            <h3 className="font-bold text-amber-300 text-lg mb-2">💡 Consejo de Compatibilidad (Notas + RIASEC)</h3>
-                            <p className="text-amber-200">{recommendation.compatibilityAdvice}</p>
+                            <h3 className="font-bold text-foreground text-lg mb-2">Consejo de Compatibilidad (Notas + RIASEC)</h3>
+                            <p className="text-foreground">{recommendation.compatibilityAdvice}</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                             <div className="p-4 bg-background/50 rounded-lg">
-                                <h3 className="font-bold text-foreground text-lg mb-2">📝 Consejo Académico (Notas)</h3>
+                            <div className="p-4 bg-background/50 rounded-lg">
+                                <h3 className="font-bold text-foreground text-lg mb-2">Consejo Académico (Notas)</h3>
                                 <p className="text-muted-foreground">{recommendation.academicAdvice}</p>
                             </div>
-                             <div className="p-4 bg-background/50 rounded-lg">
-                                <h3 className="font-bold text-foreground text-lg mb-2">🧠 Consejo Psicológico (RIASEC)</h3>
+                            <div className="p-4 bg-background/50 rounded-lg">
+                                <h3 className="font-bold text-foreground text-lg mb-2">Consejo Psicológico (RIASEC)</h3>
                                 <p className="text-muted-foreground">{recommendation.psychologicalAdvice}</p>
                             </div>
                         </div>
 
                         <div className="p-4 bg-background/50 rounded-lg">
-                            <h3 className="font-bold text-foreground text-lg mb-2">💼 Carreras Relacionadas</h3>
-                            <p className="text-muted-foreground">{recommendation.relatedCareers}</p>
+                            <h3 className="font-bold text-foreground text-lg mb-2">Carreras Relacionadas</h3>
+                            <p className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: recommendation.relatedCareers }} />
                         </div>
                     </CardContent>
                 </Card>
             );
         }
-        
+
         return (
             <Card className="bg-card/80 backdrop-blur-sm border-primary/20">
-                 <CardHeader>
+                <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Lightbulb className="text-primary"/> ¡Desbloquea tu Consejo Personalizado!</CardTitle>
                     <CardDescription>
                         Completa ambos tests para recibir una recomendación de carrera a tu medida.
@@ -96,7 +133,7 @@ export default function HomeView() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {!academicPrediction?.prediction && (
-                         <div className="flex items-start gap-4 p-3 border rounded-lg bg-background/50">
+                        <div className="flex items-start gap-4 p-3 border rounded-lg bg-background/50">
                             <Compass className="w-8 h-8 text-amber-400 mt-1"/>
                             <div>
                                 <h4 className="font-semibold text-foreground">Falta el Test Académico</h4>
@@ -104,10 +141,10 @@ export default function HomeView() {
                             </div>
                         </div>
                     )}
-                     {!psychologicalPrediction?.result && (
+                    {!psychologicalPrediction?.result && (
                         <div className="flex items-start gap-4 p-3 border rounded-lg bg-background/50">
                             <BrainCircuit className="w-8 h-8 text-purple-400 mt-1"/>
-                             <div>
+                            <div>
                                 <h4 className="font-semibold text-foreground">Falta el Test Psicológico</h4>
                                 <p className="text-sm text-muted-foreground">Completa el test de intereses en "Predicción Psicológica" para conocer tu perfil RIASEC.</p>
                             </div>
@@ -118,9 +155,9 @@ export default function HomeView() {
         );
     }
 
-  return (
-    <div>
-        {renderWelcomeOrGuidance()}
-    </div>
-  );
+    return (
+        <div>
+            {renderWelcomeOrGuidance()}
+        </div>
+    );
 }

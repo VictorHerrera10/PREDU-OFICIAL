@@ -12,6 +12,7 @@ import { CardTitle, CardDescription, CardHeader } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import Link from 'next/link';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { useNotifications } from '@/hooks/use-notifications';
 
 // Moved from actions.ts to avoid server-only export issues
 function getFirebaseErrorMessage(errorCode: string): string {
@@ -39,6 +40,7 @@ export default function LoginForm() {
   const router = useRouter();
   const { toast } = useToast();
   const searchParams = useSearchParams();
+  const { addNotification } = useNotifications();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -66,6 +68,16 @@ export default function LoginForm() {
         title: '¡Qué bueno verte de nuevo! 👋',
         description: '¡Listo para empezar la lección!',
       });
+      
+      // Welcome Notification
+      setTimeout(() => {
+        addNotification({
+          title: '¡Bienvenido a Predu!',
+          description: 'Completa tus tests para descubrir tu ruta profesional.',
+          emoji: '🚀'
+        });
+      }, 2000);
+
     } catch (error: any) {
        const errorCode = error.code;
        const errorMessage = getFirebaseErrorMessage(errorCode);
