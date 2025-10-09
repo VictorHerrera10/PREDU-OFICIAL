@@ -69,21 +69,21 @@ export function LevelUpView() {
             </Tooltip>
         </TooltipProvider>
         
-        <DialogContent className="max-w-7xl w-full bg-background/95 backdrop-blur-sm border-border/50 shadow-lg p-4">
-           <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary z-50">
-                <X className="h-6 w-6" />
+        <DialogContent className="max-w-7xl w-full bg-background/95 backdrop-blur-sm border-border/50 shadow-lg p-6">
+           <DialogClose className="absolute right-6 top-6 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary z-50">
+                <X className="h-5 w-5" />
                 <span className="sr-only">Cerrar</span>
             </DialogClose>
-          <div className="text-center my-8">
+          <div className="text-center my-6">
             <h1 className="text-3xl md:text-4xl font-bold text-primary font-headline">
               ¡Elige tu Destino!
             </h1>
-            <p className="text-lg text-muted-foreground mt-2">
+            <p className="text-base text-muted-foreground mt-2 max-w-2xl mx-auto">
               Sube de nivel para desbloquear nuevas habilidades y herramientas en tu aventura vocacional.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {levels.map((level, index) => (
               <motion.div
                 key={level.name}
@@ -105,20 +105,20 @@ export function LevelUpView() {
                   <CardHeader className="items-center text-center">
                     <level.icon
                       className={cn(
-                        'w-12 h-12 mb-4',
+                        'w-10 h-10 mb-3',
                         level.recommended ? 'text-destructive' : level.borderColor === 'border-primary' ? 'text-primary' : 'text-blue-500'
                       )}
                     />
-                    <CardTitle className="text-2xl font-bold">{level.name}</CardTitle>
-                    <p className="text-3xl font-headline text-foreground">{level.price}</p>
-                    <CardDescription className="text-sm text-muted-foreground min-h-[40px]">{level.description}</CardDescription>
+                    <CardTitle className="text-xl font-bold">{level.name}</CardTitle>
+                    <p className="text-2xl font-headline text-foreground">{level.price}</p>
+                    <CardDescription className="text-xs text-muted-foreground min-h-[30px]">{level.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="flex-grow">
-                    <ul className="space-y-3">
+                    <ul className="space-y-2">
                       {level.features.map((feature) => (
-                        <li key={feature} className="flex items-start gap-3">
-                          <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-sm text-foreground/90">{feature}</span>
+                        <li key={feature} className="flex items-start gap-2">
+                          <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-xs text-foreground/80">{feature}</span>
                         </li>
                       ))}
                     </ul>
