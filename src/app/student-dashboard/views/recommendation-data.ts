@@ -26,7 +26,6 @@ const RIASEC_MAP: Record<string, RiasecProfile> = {
     realista: 'Realista',
     investigador: 'Investigador',
     artistico: 'Artistico',
-    artístico: 'Artistico',
     social: 'Social',
     emprendedor: 'Emprendedor',
     convencional: 'Convencional',
