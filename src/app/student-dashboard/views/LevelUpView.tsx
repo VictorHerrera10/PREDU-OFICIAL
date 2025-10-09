@@ -27,7 +27,14 @@ const levels = [
     icon: Crown,
     price: 'S/ 19.99',
     description: 'Potencia tu camino con análisis avanzados y herramientas de exploración profesional.',
-    features: ['Todo en Caballero', 'Análisis detallado de resultados', 'Explorador de carreras y universidades', 'Plan de mejora de habilidades'],
+    features: [
+        'Todo del Nivel Caballero', 
+        'Chatbot con IA y Consejos personalizados',
+        'Reportes avanzados y análisis detallado', 
+        'Explorador de carreras, universidades y becas', 
+        'Enviar reportes por correo',
+        'Contacto con soporte 24/7'
+    ],
     current: false,
     buttonText: 'Convertirme en Héroe',
     recommended: true,
@@ -38,7 +45,7 @@ const levels = [
     icon: Gem,
     price: 'S/ 39.99',
     description: 'El dominio total de tu futuro profesional con mentoría y soporte personalizado.',
-    features: ['Todo en Héroe', 'Sesiones de mentoría con psicólogos', 'Simuladores de entrevistas', 'Soporte prioritario'],
+    features: ['Todo del Nivel Héroe', 'Sesiones de mentoría con psicólogos', 'Simuladores de entrevistas', 'Soporte prioritario'],
     current: false,
     buttonText: 'Alcanzar la Maestría',
     borderColor: 'border-blue-500', // Azul
@@ -69,16 +76,16 @@ export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
 
   return (
     <>
-      {showConfetti && width && height && (
+      {showConfetti && (
         <div className="fixed inset-0 z-[101] pointer-events-none">
-          <Confetti
-            width={width}
-            height={height}
-            recycle={false}
-            numberOfPieces={400}
-            gravity={0.1}
-            onConfettiComplete={() => setShowConfetti(false)}
-          />
+            <Confetti
+                width={width}
+                height={height}
+                recycle={false}
+                numberOfPieces={400}
+                gravity={0.1}
+                onConfettiComplete={() => setShowConfetti(false)}
+            />
         </div>
       )}
       <Dialog open={isOpen} onOpenChange={handleOpenChange}>
