@@ -12,8 +12,10 @@ type NotificationsContextType = {
   deleteNotification: (id: string) => void;
 };
 
+// 1. Define the context with a default undefined value.
 const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
 
+// 2. Create the Provider component.
 export const NotificationsProvider = ({ children }: { children: ReactNode }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -38,7 +40,6 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
         setUnreadCount(updated.filter(n => !n.read).length);
         return updated;
     });
-
   }, []);
 
   const markAsRead = useCallback((id: string) => {
@@ -59,13 +60,16 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
     });
   }, []);
   
+  const value = { notifications, unreadCount, addNotification, markAsRead, deleteNotification };
+
   return (
-    <NotificationsContext.Provider value={{ notifications, unreadCount, addNotification, markAsRead, deleteNotification }}>
+    <NotificationsContext.Provider value={value}>
       {children}
     </NotificationsContext.Provider>
   );
 };
 
+// 3. Create the custom hook to consume the context.
 export const useNotifications = (): NotificationsContextType => {
   const context = useContext(NotificationsContext);
   if (!context) {
