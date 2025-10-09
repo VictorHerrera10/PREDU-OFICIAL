@@ -62,8 +62,6 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
         } else {
             setIsModalOpen(false);
             setCurrentQuestion(null);
-            // Opcional: Volver a la lista de secciones si la sección termina
-            // setActiveSection(null); 
         }
     };
     
@@ -106,13 +104,9 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
         }
     };
     
-    // ===============================================================
-    // CORRECCIÓN: Definir las variables de la sección activa aquí
-    // ===============================================================
     const activeSectionDetails = activeSection ? SECTION_DETAILS[activeSection as TestSection] : null;
     const ActiveSectionIcon = activeSectionDetails ? activeSectionDetails.icon : null;
     const activeSectionProgress = activeSection ? progress[activeSection] : 0;
-    // ===============================================================
 
     return (
         <div className="w-full">
@@ -147,7 +141,6 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                                         className="p-4 border-2 rounded-lg flex flex-col items-center justify-center gap-2 text-center transition-all bg-card/80 backdrop-blur-sm hover:border-primary/50 hover:-translate-y-1"
                                     >
                                         <div className="flex items-center gap-2">
-                                            {/* Aquí SectionIcon está correctamente definido */}
                                             <SectionIcon className="w-8 h-8 text-primary" />
                                             {isComplete && <CheckCircle className="w-5 h-5 text-green-500" />}
                                         </div>
@@ -173,12 +166,15 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                         </Button>
                         
                         <div key={activeSection}>
-                            <div className="flex items-center gap-3 mb-3">
-                                {/* CORRECCIÓN FINAL: Usamos las variables precalculadas */}
-                                {ActiveSectionIcon && <ActiveSectionIcon className="w-6 h-6 text-primary" />}
-                                <h3 className="text-xl font-semibold text-foreground">{activeSectionDetails?.title}</h3>
+                            <div className="flex flex-col items-center justify-center gap-2 mb-4">
+                                <div className="flex items-center gap-3">
+                                    {ActiveSectionIcon && <ActiveSectionIcon className="w-8 h-8 text-primary" />}
+                                    <h3 className="text-2xl font-semibold text-foreground">{activeSectionDetails?.title}</h3>
+                                </div>
+                                <span className="text-lg font-medium text-primary">{Math.round(activeSectionProgress)}%</span>
                                 {activeSectionProgress === 100 && <CheckCircle className="w-5 h-5 text-green-500" />}
                             </div>
+
                             <div className="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-9 lg:grid-cols-12 gap-2">
                                 {questions.filter(q => q.section === activeSection).map((q, index) => {
                                     const CategoryIcon = CATEGORY_DETAILS[q.category].icon;
