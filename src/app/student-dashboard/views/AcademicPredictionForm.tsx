@@ -93,8 +93,7 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
 
     setIsSubmitting(true);
     try {
-      const requestData = { user_id: user.uid, ...data };
-      const response = await api.post("/prediccion/academico/", requestData);
+      const response = await api.post("/prediccion/academico/", data);
       const result =
         Object.values(response.data)[0] as string ||
         "No se pudo determinar la carrera.";
