@@ -11,6 +11,8 @@ import { Loader2, CheckCircle, ArrowLeft } from 'lucide-react';
 import { questions, CATEGORY_DETAILS, SECTION_DETAILS, TestSection, HollandQuestion } from './psychological-test-data';
 import { cn } from '@/lib/utils';
 import { QuestionModal } from './QuestionModal';
+import { Badge } from '@/components/ui/badge';
+
 
 type Answers = Record<string, 'yes' | 'no' | null>;
 
@@ -166,12 +168,14 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                         </Button>
                         
                         <div key={activeSection}>
-                            <div className="flex flex-col items-center justify-center gap-2 mb-4">
+                             <div className="flex flex-col items-center justify-center gap-2 mb-4">
                                 <div className="flex items-center gap-3">
                                     {ActiveSectionIcon && <ActiveSectionIcon className="w-8 h-8 text-primary" />}
                                     <h3 className="text-2xl font-semibold text-foreground">{activeSectionDetails?.title}</h3>
+                                    <Badge variant={activeSectionProgress === 100 ? "default" : "secondary"}>
+                                        {Math.round(activeSectionProgress)}%
+                                    </Badge>
                                 </div>
-                                <span className="text-lg font-medium text-primary">{Math.round(activeSectionProgress)}%</span>
                                 {activeSectionProgress === 100 && <CheckCircle className="w-5 h-5 text-green-500" />}
                             </div>
 
