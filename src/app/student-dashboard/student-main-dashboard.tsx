@@ -134,11 +134,12 @@ export function StudentMainDashboard({ user }: Props) {
                     exit={{ y: -20, opacity: 0 }}
                     transition={{ duration: 0.3 }}
                 >
-                    {selectedView ? renderContent() : <LevelUpView />}
+                    {selectedView && renderContent()}
                 </motion.div>
             </AnimatePresence>
         </div>
       </main>
+      <LevelUpView isViewSelected={!!selectedView} />
     </div>
   );
 }

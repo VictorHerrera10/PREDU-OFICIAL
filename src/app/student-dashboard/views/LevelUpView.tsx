@@ -45,7 +45,11 @@ const levels = [
   },
 ];
 
-export function LevelUpView() {
+type LevelUpViewProps = {
+  isViewSelected: boolean;
+};
+
+export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const { ref, width = 0, height = 0 } = useResizeObserver<HTMLBodyElement>();
@@ -83,11 +87,14 @@ export function LevelUpView() {
             <TooltipTrigger asChild>
               <DialogTrigger asChild>
                 <motion.button
-                  className="fixed bottom-6 right-6 z-30 h-16 w-16 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center animate-[pulse-glow_4s_ease-in-out_infinite]"
+                  className={cn(
+                    "fixed bottom-6 right-6 z-30 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center animate-[pulse-glow_4s_ease-in-out_infinite] transition-all duration-300",
+                    isViewSelected ? 'h-12 w-12' : 'h-16 w-16'
+                  )}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <Sparkles className="h-8 w-8" />
+                  <Sparkles className={cn(isViewSelected ? 'h-6 w-6' : 'h-8 w-8')} />
                   <span className="sr-only">Subir de Nivel</span>
                 </motion.button>
               </DialogTrigger>
