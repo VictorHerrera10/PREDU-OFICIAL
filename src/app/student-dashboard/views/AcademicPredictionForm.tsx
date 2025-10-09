@@ -50,16 +50,21 @@ const subjects = [
 const gradeOptions: ("AD" | "A" | "B" | "C")[] = ["AD", "A", "B", "C"];
 
 // ===== Validación Zod =====
-const gradeSchema = z.enum(["AD", "A", "B", "C"], {
-  required_error: "Debes seleccionar una calificación para todos los cursos.",
-});
+const gradeSchema = z.enum(["AD", "A", "B", "C"]);
 
 const formSchema = z.object(
   subjects.reduce((acc, subject) => {
     acc[subject.id] = gradeSchema;
     return acc;
   }, {} as Record<string, typeof gradeSchema>)
-);
+).refine(data => {
+    return Object.values(data).every(value => value !== undefined && value !== null);
+}, {
+    message: "Debes seleccionar una calificación para todos los cursos.",
+    // This path is not used but required by refine.
+    path: [subjects[0].id],
+});
+
 
 type PredictionFormValues = z.infer<typeof formSchema>;
 
