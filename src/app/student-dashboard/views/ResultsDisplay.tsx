@@ -166,11 +166,10 @@ function GeneralPieChart({ data }: { data: ResultCounts }) {
                                         <ul className="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-2 mt-4 text-sm text-muted-foreground">
                                             {payload?.map((entry) => {
                                                 const category = entry.payload?.name as QuestionCategory;
-                                                const totalYes = data[category].yes;
                                                 return (
                                                     <li key={`item-${entry.value}`} className="flex items-center gap-2">
                                                         <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
-                                                        <span>{entry.value?.toUpperCase()} ({totalYes})</span>
+                                                        <span>{entry.value?.toUpperCase()}</span>
                                                     </li>
                                                 );
                                             })}
