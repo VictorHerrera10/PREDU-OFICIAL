@@ -7,28 +7,23 @@ type Recommendation = {
     compatibilityAdvice: string;
 };
 
-// Normaliza strings para coincidir con las claves de MATRIX
-const normalizeString = (str: string | null | undefined): string => {
-    if (!str) return '';
-    return str.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-};
-
+// Mapa para agrupar carreras en áreas más grandes
 const CAREER_MAP: Record<string, string> = {
-    'ingenieria de sistemas': 'Ingenierías',
-    'ingenieria de software': 'Ingenierías',
-    'ingenieria industrial': 'Ingenierías',
-    'ciencias de la computacion': 'Ingenierías',
-    'derecho': 'Sociales',
-    'psicologia': 'Sociales',
-    'sociologia': 'Sociales',
-    'medicina': 'Biomédicas',
-    'biologia': 'Biomédicas',
-    'enfermeria': 'Biomédicas',
+    'ingenieria de sistemas': 'ingenierias',
+    'ingenieria de software': 'ingenierias',
+    'ingenieria industrial': 'ingenierias',
+    'ciencias de la computacion': 'ingenierias',
+    'derecho': 'sociales',
+    'psicologia': 'sociales',
+    'sociologia': 'sociales',
+    'medicina': 'biomedicas',
+    'biologia': 'biomedicas',
+    'enfermeria': 'biomedicas',
 };
 
-// MATRIX con todas las combinaciones y sus recomendaciones
+// MATRIX con claves en minúsculas y sin tildes
 const MATRIX: Record<string, Record<string, Recommendation>> = {
-    'Ingenierías': {
+    'ingenierias': {
         'realista': {
             academicAdvice: "Tus notas reflejan un excelente dominio en Matemática, Física y Tecnología, lo que muestra una mente lógica y resolutiva. Refuerza tus conocimientos en programación, análisis de datos y diseño de sistemas para ampliar tu campo profesional.",
             psychologicalAdvice: "El perfil 'Realista' indica que disfrutas resolver problemas concretos, crear estructuras y trabajar con herramientas o sistemas. Prefieres actividades que te permitan construir y ver resultados tangibles.",
@@ -48,7 +43,7 @@ const MATRIX: Record<string, Record<string, Recommendation>> = {
             compatibilityAdvice: "Esta mezcla te convierte en un profesional estratégico: sabes conectar la tecnología con las personas. Perfecto para roles de gestión o innovación con impacto social."
         }
     },
-    'Sociales': {
+    'sociales': {
         'social': {
             academicAdvice: "Tu desempeño en Ciencias Sociales, Comunicación, Lenguaje y Literatura revela habilidades destacadas para analizar, comunicar y empatizar. Potencia tu pensamiento crítico y tus habilidades de expresión oral y escrita.",
             psychologicalAdvice: "El perfil 'Social' refleja empatía, cooperación y orientación al servicio. Te motiva ayudar, enseñar y trabajar en equipo para mejorar la vida de los demás.",
@@ -68,7 +63,7 @@ const MATRIX: Record<string, Record<string, Recommendation>> = {
             compatibilityAdvice: "Esta combinación demuestra una vocación por el bienestar humano. Puedes destacar en la salud mental, la intervención social o la orientación educativa."
         }
     },
-    'Biomédicas': {
+    'biomedicas': {
         'investigador': {
             academicAdvice: "Tus notas en Biología, Química y Ciencias Naturales muestran un pensamiento científico estructurado. Tienes gran atención al detalle y curiosidad por comprender los procesos de la vida.",
             psychologicalAdvice: "El perfil 'Investigador' indica que disfrutas explorar, experimentar y analizar datos. Buscas respuestas profundas y soluciones basadas en evidencia.",
@@ -77,7 +72,7 @@ const MATRIX: Record<string, Record<string, Recommendation>> = {
         },
         'social': {
             academicAdvice: "Tus notas en Ciencias Sociales y Comunicación muestran comprensión del entorno humano. Puedes aplicar tu formación científica para educar o gestionar programas de salud.",
-            psychologicalAdvice: "El perfil 'Social' revela pensamiento crítico y analítico. Combinarlo con tu sensibilidad social te convierte en un gran comunicador científico o gestor en salud.",
+            psychologicalAdvice: "El perfil 'Investigador' revela pensamiento crítico y analítico. Combinarlo con tu sensibilidad social te convierte en un gran comunicador científico o gestor en salud.",
             relatedCareers: "- Gestión en Salud  <br> - Educación Científica  <br> - Divulgación Científica  <br> - Bioética Aplicada  <br> - Salud Pública",
             compatibilityAdvice: "Tienes un perfil ideal para unir la ciencia y la sociedad. Puedes liderar programas educativos o de impacto sanitario."
         },
@@ -102,11 +97,9 @@ const FALLBACK_RECOMMENDATION: Recommendation = {
  * Devuelve la recomendación basada en la combinación de carrera académica y perfil psicológico.
  */
 export function getRecommendation(academicResult: string, psychologicalResult: string): Recommendation {
-    const normalizedAcademic = normalizeString(academicResult);
-    const normalizedPsychological = normalizeString(psychologicalResult);
-
-    const academicArea = CAREER_MAP[normalizedAcademic];
-    const psychologicalProfile = normalizedPsychological; // Usar el perfil RIASEC directamente
+    // academicResult y psychologicalResult ya vienen normalizados (minúsculas, sin tildes)
+    const academicArea = CAREER_MAP[academicResult] || academicResult;
+    const psychologicalProfile = psychologicalResult;
 
     if (academicArea && psychologicalProfile && MATRIX[academicArea]?.[psychologicalProfile]) {
         return MATRIX[academicArea][psychologicalProfile];

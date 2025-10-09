@@ -20,11 +20,11 @@ type UserProfile = {
     hasSeenInitialReport?: boolean;
 };
 
-// Convierte a formato con mayúscula inicial
-const capitalize = (str: string) => {
+// Normaliza strings para coincidir con las claves de MATRIX: minúsculas y sin tildes
+const normalizeString = (str: string | null | undefined): string => {
     if (!str) return '';
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-}
+    return str.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+};
 
 export default function HomeView() {
     const { user } = useUser();
@@ -54,9 +54,9 @@ export default function HomeView() {
 
     const recommendation = useMemo(() => {
         if (academicPrediction?.prediction && psychologicalPrediction?.result) {
-            const academic = academicPrediction.prediction;
-            const psychological = psychologicalPrediction.result;
-            return getRecommendation(academic, psychological);
+            const academicKey = normalizeString(academicPrediction.prediction);
+            const psychologicalKey = normalizeString(psychologicalPrediction.result);
+            return getRecommendation(academicKey, psychologicalKey);
         }
         return null;
     }, [academicPrediction, psychologicalPrediction]);
