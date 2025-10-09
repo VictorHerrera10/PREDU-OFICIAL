@@ -79,7 +79,6 @@ export function LevelUpView() {
           recycle={false}
           numberOfPieces={400}
           gravity={0.1}
-          confettiSource={{ x: 0, y: 0, w: width, h: 0 }}
         />
       )}
       <Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -109,10 +108,10 @@ export function LevelUpView() {
             <span className="sr-only">Cerrar</span>
           </DialogClose>
           <div className="text-center my-4">
-            <h1 className="text-2xl md:text-3xl font-bold text-primary font-headline">
+            <h1 className="text-xl md:text-2xl font-bold text-primary font-headline">
               ¡Elige tu Destino!
             </h1>
-            <p className="text-sm text-muted-foreground mt-2 max-w-2xl mx-auto">
+            <p className="text-xs text-muted-foreground mt-2 max-w-2xl mx-auto">
               Sube de nivel para desbloquear nuevas habilidades y herramientas en tu aventura vocacional.
             </p>
           </div>
@@ -143,8 +142,8 @@ export function LevelUpView() {
                         level.recommended ? 'text-destructive' : level.borderColor === 'border-primary' ? 'text-primary' : 'text-blue-500'
                       )}
                     />
-                    <CardTitle className="text-lg font-bold">{level.name}</CardTitle>
-                    <p className="text-xl font-headline text-foreground">{level.price}</p>
+                    <CardTitle className="text-base font-bold">{level.name}</CardTitle>
+                    <p className="text-lg font-headline text-foreground">{level.price}</p>
                     <CardDescription className="text-xs text-muted-foreground min-h-[30px]">{level.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="flex-grow">
