@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, useCallback, createContext, useContext, ReactNode, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Notification, notificationStore } from '@/lib/notifications';
 
+// 1. Define the type for the context value
 type NotificationsContextType = {
   notifications: Notification[];
   unreadCount: number;
@@ -12,19 +13,21 @@ type NotificationsContextType = {
   deleteNotification: (id: string) => void;
 };
 
-// 1. Define the context with a default undefined value.
+// 2. Create the context with an undefined initial value
 const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
 
-// 2. Create the Provider component.
+// 3. Create the provider component
 export const NotificationsProvider = ({ children }: { children: ReactNode }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-
+  
   useEffect(() => {
     const storedNotifications = notificationStore.get();
     setNotifications(storedNotifications);
-    setUnreadCount(storedNotifications.filter(n => !n.read).length);
   }, []);
+
+  const unreadCount = useMemo(() => {
+    return notifications.filter(n => !n.read).length;
+  }, [notifications]);
 
   const addNotification = useCallback((notification: Omit<Notification, 'id' | 'read' | 'createdAt'>) => {
     const newNotification: Notification = {
@@ -37,7 +40,6 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
     setNotifications(prev => {
         const updated = [newNotification, ...prev];
         notificationStore.set(updated);
-        setUnreadCount(updated.filter(n => !n.read).length);
         return updated;
     });
   }, []);
@@ -46,7 +48,6 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
     setNotifications(prev => {
       const updated = prev.map(n => n.id === id ? { ...n, read: true } : n);
       notificationStore.set(updated);
-      setUnreadCount(updated.filter(n => !n.read).length);
       return updated;
     });
   }, []);
@@ -55,12 +56,17 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
     setNotifications(prev => {
       const updated = prev.filter(n => n.id !== id);
       notificationStore.set(updated);
-      setUnreadCount(updated.filter(n => !n.read).length);
       return updated;
     });
   }, []);
-  
-  const value = { notifications, unreadCount, addNotification, markAsRead, deleteNotification };
+
+  const value = useMemo(() => ({
+    notifications,
+    unreadCount,
+    addNotification,
+    markAsRead,
+    deleteNotification
+  }), [notifications, unreadCount, addNotification, markAsRead, deleteNotification]);
 
   return (
     <NotificationsContext.Provider value={value}>
@@ -69,10 +75,10 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
   );
 };
 
-// 3. Create the custom hook to consume the context.
+// 4. Create the custom hook to consume the context
 export const useNotifications = (): NotificationsContextType => {
   const context = useContext(NotificationsContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useNotifications must be used within a NotificationsProvider');
   }
   return context;
