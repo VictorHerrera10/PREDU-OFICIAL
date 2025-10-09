@@ -5,9 +5,9 @@ import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { VocationalFormModal } from './AcademicPredictionForm';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Lock } from 'lucide-react';
 import { SavedGradesView } from './SavedGradesView';
-import { subjects } from './psychological-test-data';
+import { motion } from 'framer-motion';
 
 type AcademicPrediction = {
     prediction: string;
@@ -53,7 +53,17 @@ export default function AcademicPredictionView() {
       </CardHeader>
       <CardContent className="text-center">
          {finalPrediction && savedPrediction?.grades ? (
-            <SavedGradesView grades={savedPrediction.grades} />
+            <div className="space-y-4">
+                 <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center justify-center gap-2 text-sm text-amber-400 bg-amber-900/30 border border-amber-500/50 rounded-lg p-2 mb-6"
+                >
+                    <Lock className="w-4 h-4" />
+                    <span>El test está finalizado y bloqueado.</span>
+                </motion.div>
+                <SavedGradesView grades={savedPrediction.grades} />
+            </div>
         ) : (
             <>
                 <p className="text-muted-foreground mb-6">
