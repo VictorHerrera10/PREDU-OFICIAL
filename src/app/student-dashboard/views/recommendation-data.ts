@@ -9,22 +9,24 @@ type Recommendation = {
     compatibilityAdvice: string;
 };
 
+// Helper function to normalize strings for robust mapping
+const normalizeString = (str: string) => {
+    return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+};
+
+
 // Mapeo de la predicción de la API a nuestras áreas de carrera
 const CAREER_MAP: Record<string, CareerArea> = {
-    'Ingenieria de Sistemas': 'Ingenierías',
-    'Ingenieria Electronica': 'Ingenierías',
-    'Ingenieria de Software': 'Ingenierías',
-    'Ingenierias': 'Ingenierías',
-    'Ingeniería de Sistemas': 'Ingenierías',
-    'Ingeniería Electronica': 'Ingenierías',
-    'Ingeniería de Software': 'Ingenierías',
-    'Ingenierías': 'Ingenierías',
-    'Sociales': 'Sociales',
-    'Ciencias Sociales': 'Sociales',
-    'Psicologia': 'Sociales',
-    'Biomedicas': 'Biomedicas',
-    'Ciencias de la Salud': 'Biomedicas',
-    'Medicina': 'Biomedicas',
+    'ingenieria de sistemas': 'Ingenierías',
+    'ingenieria electronica': 'Ingenierías',
+    'ingenieria de software': 'Ingenierías',
+    'ingenierias': 'Ingenierías',
+    'sociales': 'Sociales',
+    'ciencias sociales': 'Sociales',
+    'psicologia': 'Sociales',
+    'biomedicas': 'Biomedicas',
+    'ciencias de la salud': 'Biomedicas',
+    'medicina': 'Biomedicas',
 };
 
 // Mapeo del resultado RIASEC a un perfil más general si es necesario
@@ -87,13 +89,13 @@ const MATRIX: Partial<Record<CareerArea, Partial<Record<CareerArea, Recommendati
         },
         Sociales: {
             academicAdvice: "Tus notas en Ciencias Sociales y Comunicación muestran comprensión del entorno humano. Puedes aplicar tu formación científica para educar o gestionar programas de salud.",
-            psychologicalAdvice: "Tu perfil \"Investigador\" revela pensamiento crítico y analítico. Combinarlo con tu sensibilidad social te convierte en un gran comunicador científico o gestor en salud.",
+            psychologicalAdvice: "El perfil \"Investigador\" revela pensamiento crítico y analítico. Combinarlo con tu sensibilidad social te convierte en un gran comunicador científico o gestor en salud.",
             relatedCareers: "- Gestión en Salud <br> - Educación Científica <br> - Divulgación Científica <br> - Bioética Aplicada <br> - Salud Pública",
             compatibilityAdvice: "Tienes un perfil ideal para unir la ciencia y la sociedad. Puedes liderar programas educativos o de impacto sanitario."
         },
         Ingenierías: {
             academicAdvice: "Tus notas en Matemática, Física y Biología demuestran una mente estructurada y lógica. Refuerza tus capacidades en modelado de sistemas biológicos, robótica médica y análisis de datos en salud.",
-            psychologicalAdvice: "Tu perfil \"Investigador\" destaca por la precisión, la observación y la curiosidad científica. Buscas aplicar la tecnología para mejorar la vida.",
+            psychologicalAdvice: "El perfil \"Investigador\" destaca por la precisión, la observación y la curiosidad científica. Buscas aplicar la tecnología para mejorar la vida.",
             relatedCareers: "- Ingeniería Biomédica <br> - Ciencia de Datos en Salud <br> - Robótica Médica <br> - Inteligencia Artificial en Medicina <br> - Bioinformática",
             compatibilityAdvice: "Una de las combinaciones más prometedoras del futuro: unir biología, ingeniería y tecnología para revolucionar la salud."
         }
@@ -108,9 +110,11 @@ const FALLBACK_RECOMMENDATION: Recommendation = {
 };
 
 export function getRecommendation(academicResult: string, psychologicalResult: string): Recommendation {
-    const academicArea = CAREER_MAP[academicResult] || null;
-    const psychologicalAreaKey = psychologicalResult.toLowerCase();
-    const psychologicalArea = RIASEC_MAP[psychologicalAreaKey] as CareerArea | undefined;
+    const normalizedAcademic = normalizeString(academicResult);
+    const normalizedPsychological = normalizeString(psychologicalResult);
+
+    const academicArea = CAREER_MAP[normalizedAcademic] || null;
+    const psychologicalArea = RIASEC_MAP[normalizedPsychological] as CareerArea | undefined;
 
     if (academicArea && psychologicalArea) {
         const specificRecommendation = MATRIX[academicArea]?.[psychologicalArea];
