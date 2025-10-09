@@ -20,10 +20,10 @@ export const CATEGORY_DETAILS: Record<QuestionCategory, { icon: React.ElementTyp
     convencional: { icon: Calculator, color: 'text-teal-400' },
 };
 
-export const SECTION_DETAILS: Record<TestSection, { icon: React.ElementType, title: string }> = {
-    actividades: { icon: Landmark, title: 'Actividades' },
-    habilidades: { icon: Briefcase, title: 'Habilidades' },
-    ocupaciones: { icon: HandPlatter, title: 'Ocupaciones' },
+export const SECTION_DETAILS: Record<TestSection, { icon: React.ElementType, title: string, description: string }> = {
+    actividades: { icon: Landmark, title: 'Actividades', description: '¿Qué te gusta hacer?' },
+    habilidades: { icon: Briefcase, title: 'Habilidades', description: '¿En qué eres bueno?' },
+    ocupaciones: { icon: HandPlatter, title: 'Ocupaciones', description: '¿Qué trabajos te interesan?' },
 };
 
 
@@ -50,6 +50,28 @@ export const questions: HollandQuestion[] = [
     text: '¿Te agrada participar en colectas para ayudar a otros?',
     gifUrl: 'https://picsum.photos/seed/q3/400/200',
   },
+    {
+    id: 'act-4',
+    section: 'actividades',
+    category: 'artistico',
+    text: '¿Te gusta tocar un instrumento musical?',
+    gifUrl: 'https://picsum.photos/seed/q10/400/200',
+  },
+  {
+    id: 'act-5',
+    section: 'actividades',
+    category: 'emprendedor',
+    text: '¿Te ves dirigiendo tu propio negocio?',
+    gifUrl: 'https://picsum.photos/seed/q11/400/200',
+  },
+  {
+    id: 'act-6',
+    section: 'actividades',
+    category: 'convencional',
+    text: '¿Disfrutas organizando tu información en hojas de cálculo?',
+    gifUrl: 'https://picsum.photos/seed/q12/400/200',
+  },
+
 
   // Habilidades
   {
@@ -73,6 +95,27 @@ export const questions: HollandQuestion[] = [
     text: '¿Se te facilita explicarle cosas a los demás?',
     gifUrl: 'https://picsum.photos/seed/q6/400/200',
   },
+  {
+    id: 'hab-4',
+    section: 'habilidades',
+    category: 'realista',
+    text: '¿Eres bueno usando herramientas manuales?',
+    gifUrl: 'https://picsum.photos/seed/q13/400/200',
+  },
+  {
+    id: 'hab-5',
+    section: 'habilidades',
+    category: 'investigador',
+    text: '¿Tienes facilidad para entender fórmulas matemáticas?',
+    gifUrl: 'https://picsum.photos/seed/q14/400/200',
+  },
+    {
+    id: 'hab-6',
+    section: 'habilidades',
+    category: 'convencional',
+    text: '¿Eres una persona muy ordenada y metódica?',
+    gifUrl: 'https://picsum.photos/seed/q15/400/200',
+  },
 
   // Ocupaciones
   {
@@ -95,5 +138,26 @@ export const questions: HollandQuestion[] = [
     category: 'artistico',
     text: '¿Te atrae la idea de ser músico o diseñador gráfico?',
     gifUrl: 'https://picsum.photos/seed/q9/400/200',
+  },
+    {
+    id: 'ocu-4',
+    section: 'ocupaciones',
+    category: 'investigador',
+    text: '¿Te gustaría ser biólogo marino o químico?',
+    gifUrl: 'https://picsum.photos/seed/q16/400/200',
+  },
+  {
+    id: 'ocu-5',
+    section: 'ocupaciones',
+    category: 'social',
+    text: '¿Te interesaría trabajar como profesor o psicólogo?',
+    gifUrl: 'https://picsum.photos/seed/q17/400/200',
+  },
+    {
+    id: 'ocu-6',
+    section: 'ocupaciones',
+    category: 'emprendedor',
+    text: '¿Te ves como gerente de ventas o un político?',
+    gifUrl: 'https://picsum.photos/seed/q18/400/200',
   },
 ];

@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CheckCircle } from 'lucide-react';
+import { Loader2, CheckCircle, ArrowLeft } from 'lucide-react';
 import { questions, CATEGORY_DETAILS, SECTION_DETAILS, TestSection, HollandQuestion } from './psychological-test-data';
 import { cn } from '@/lib/utils';
 import { QuestionModal } from './QuestionModal';
@@ -27,7 +27,6 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     const [activeSection, setActiveSection] = useState<TestSection | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     
-    // State for modal
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentQuestion, setCurrentQuestion] = useState<HollandQuestion | null>(null);
 
@@ -51,31 +50,33 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     const handleAnswer = (questionId: string, answer: 'yes' | 'no') => {
         setAnswers(prev => ({ ...prev, [questionId]: answer }));
 
-        // Auto-advance logic
+        if (!activeSection) return;
+
         const sectionQuestions = questions.filter(q => q.section === activeSection);
         const currentIndex = sectionQuestions.findIndex(q => q.id === questionId);
         
         if (currentIndex !== -1 && currentIndex < sectionQuestions.length - 1) {
-            // If there's a next question in the section, show it
             setCurrentQuestion(sectionQuestions[currentIndex + 1]);
         } else {
-            // If it's the last question, close the modal
             setIsModalOpen(false);
             setCurrentQuestion(null);
         }
     };
-
+    
+    const handleStartSection = (section: TestSection) => {
+        setActiveSection(section);
+        const firstQuestionInSection = questions.filter(q => q.section === section)[0];
+        if (firstQuestionInSection) {
+            setCurrentQuestion(firstQuestionInSection);
+            setIsModalOpen(true);
+        }
+    };
+    
     const handleOpenQuestion = (question: HollandQuestion, section: TestSection) => {
         setActiveSection(section);
         setCurrentQuestion(question);
         setIsModalOpen(true);
     };
-
-    const currentSectionQuestions = useMemo(() => {
-        if (!activeSection) return [];
-        return questions.filter(q => q.section === activeSection);
-    }, [activeSection]);
-
 
     const handleSubmit = async () => {
         if (!user) {
@@ -117,34 +118,61 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                     </div>
                     <Progress value={progress.overall} />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                    {(Object.keys(SECTION_DETAILS) as TestSection[]).map(sec => (
-                        <div key={sec}>
-                            <div className="flex justify-between mb-1">
-                                <span className="font-medium text-muted-foreground">{SECTION_DETAILS[sec].title}</span>
-                                <span className="font-medium text-muted-foreground">{Math.round(progress[sec])}%</span>
-                            </div>
-                            <Progress value={progress[sec]} className="h-2"/>
-                        </div>
-                    ))}
-                </div>
             </div>
             
-            <div className="space-y-6">
-                {(Object.keys(SECTION_DETAILS) as TestSection[]).map(sec => {
-                    const SectionIcon = SECTION_DETAILS[sec].icon;
-                    const isComplete = progress[sec] === 100;
-                    const sectionQuestions = questions.filter(q => q.section === sec);
-
-                    return (
-                        <div key={sec}>
-                             <div className="flex items-center gap-3 mb-3">
-                                <SectionIcon className="w-6 h-6 text-primary" />
-                                <h3 className="text-xl font-semibold text-foreground">{SECTION_DETAILS[sec].title}</h3>
-                                {isComplete && <CheckCircle className="w-5 h-5 text-green-500" />}
+            <AnimatePresence mode="wait">
+                {!activeSection ? (
+                    <motion.div
+                        key="sections"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        transition={{ duration: 0.3 }}
+                        className="space-y-6"
+                    >
+                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                            {(Object.keys(SECTION_DETAILS) as TestSection[]).map(sec => {
+                                const SectionIcon = SECTION_DETAILS[sec].icon;
+                                const isComplete = progress[sec] === 100;
+                                return (
+                                    <button
+                                        key={sec}
+                                        onClick={() => setActiveSection(sec)}
+                                        className="p-4 border-2 rounded-lg flex flex-col items-center justify-center gap-2 text-center transition-all bg-card/80 backdrop-blur-sm hover:border-primary/50 hover:-translate-y-1"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <SectionIcon className="w-8 h-8 text-primary" />
+                                            {isComplete && <CheckCircle className="w-5 h-5 text-green-500" />}
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-foreground">{SECTION_DETAILS[sec].title}</h3>
+                                        <p className="text-muted-foreground text-sm">{SECTION_DETAILS[sec].description}</p>
+                                        <Progress value={progress[sec]} className="h-2 w-full mt-2"/>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key="questions"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <Button onClick={() => setActiveSection(null)} variant="ghost" className="mb-4">
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Volver a las Secciones
+                        </Button>
+                        
+                        <div key={activeSection}>
+                            <div className="flex items-center gap-3 mb-3">
+                                <SECTION_DETAILS[activeSection].icon className="w-6 h-6 text-primary" />
+                                <h3 className="text-xl font-semibold text-foreground">{SECTION_DETAILS[activeSection].title}</h3>
+                                {progress[activeSection] === 100 && <CheckCircle className="w-5 h-5 text-green-500" />}
                             </div>
-                            <div className="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-9 gap-2">
-                                {sectionQuestions.map((q, index) => {
+                            <div className="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-9 lg:grid-cols-12 gap-2">
+                                {questions.filter(q => q.section === activeSection).map((q, index) => {
                                     const CategoryIcon = CATEGORY_DETAILS[q.category].icon;
                                     const categoryColor = CATEGORY_DETAILS[q.category].color;
                                     const isAnswered = answers[q.id] !== null;
@@ -152,7 +180,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                                     return (
                                         <button
                                             key={q.id}
-                                            onClick={() => handleOpenQuestion(q, sec)}
+                                            onClick={() => handleOpenQuestion(q, activeSection)}
                                             className={cn(
                                                 "h-14 w-full border-2 rounded-md flex flex-col items-center justify-center transition-all",
                                                 isAnswered ? 'bg-primary/20 border-primary' : 'bg-muted/50 border-muted-foreground/20 hover:bg-muted'
@@ -166,11 +194,11 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                                 })}
                             </div>
                         </div>
-                    );
-                })}
-            </div>
-
-            {isModalOpen && currentQuestion && (
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            
+            {isModalOpen && currentQuestion && activeSection && (
                  <QuestionModal
                     key={currentQuestion.id}
                     question={currentQuestion}
