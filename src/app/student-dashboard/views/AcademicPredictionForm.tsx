@@ -130,6 +130,7 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
           title: "Servicio no Disponible",
           description: "El servicio de predicción parece tener dificultades. Por favor, intenta de nuevo más tarde o regresa al inicio. 🛠️",
         });
+        setIsOpen(false); // Close the modal on network error
       }
     } finally {
       setIsSubmitting(false);
