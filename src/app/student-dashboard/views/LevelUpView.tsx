@@ -5,7 +5,7 @@ import useResizeObserver from 'use-resize-observer';
 import Confetti from 'react-confetti';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogClose, DialogTrigger } from '@/components/ui/dialog';
 import { Check, Shield, Crown, Gem, Sparkles, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
