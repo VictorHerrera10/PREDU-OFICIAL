@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Logo } from '@/components/logo';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { UserNav } from '@/components/user-nav';
-import { BrainCircuit, Compass, Home, Sparkles } from 'lucide-react';
+import { BrainCircuit, Compass, Home } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import HomeView from './views/HomeView';
@@ -12,7 +12,7 @@ import AcademicPredictionView from './views/AcademicPredictionView';
 import PsychologicalPredictionView from './views/PsychologicalPredictionView';
 import { LevelUpView } from './views/LevelUpView';
 
-type View = 'inicio' | 'prediccionAcademica' | 'prediccionPsicologica' | 'subirNivel';
+type View = 'inicio' | 'prediccionAcademica' | 'prediccionPsicologica';
 
 type Option = {
   id: View;
@@ -25,7 +25,6 @@ const options: Option[] = [
   { id: 'inicio', icon: Home, title: 'Inicio', description: 'Tu resumen, notificaciones y próximos pasos.' },
   { id: 'prediccionAcademica', icon: Compass, title: 'Predicción Académica', description: 'Realiza tests para descubrir tu vocación profesional.' },
   { id: 'prediccionPsicologica', icon: BrainCircuit, title: 'Predicción Psicológica', description: 'Entiende tus fortalezas y áreas de mejora personal.' },
-  { id: 'subirNivel', icon: Sparkles, title: 'Subir de Nivel', description: 'Desbloquea nuevas herramientas y análisis avanzados.' },
 ];
 
 type Props = {
@@ -43,36 +42,10 @@ export function StudentMainDashboard({ user }: Props) {
         return <AcademicPredictionView />;
       case 'prediccionPsicologica':
         return <PsychologicalPredictionView />;
-      case 'subirNivel':
-        return <LevelUpView onBack={() => setSelectedView(null)} />;
       default:
         return null;
     }
   };
-  
-  if (selectedView === 'subirNivel') {
-    return (
-       <div className="flex flex-col min-h-screen">
-          <header className="fixed top-0 left-0 right-0 p-4 flex justify-between items-center z-20 bg-background/80 backdrop-blur-sm border-b">
-            <Logo />
-            <UserNav />
-          </header>
-           <main className="flex-grow pt-20">
-               <AnimatePresence mode="wait">
-                    <motion.div
-                        key={selectedView}
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: -20, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                    >
-                        {renderContent()}
-                    </motion.div>
-                </AnimatePresence>
-           </main>
-       </div>
-    )
-  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -108,7 +81,7 @@ export function StudentMainDashboard({ user }: Props) {
           <motion.div
             layout
             key="options-container"
-            className={`grid gap-8 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 ${selectedView ? 'grid-cols-4' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}
+            className={`grid gap-8 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 ${selectedView ? 'grid-cols-3' : 'grid-cols-1 md:grid-cols-3'}`}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
             {options.map((option) => (
@@ -161,7 +134,7 @@ export function StudentMainDashboard({ user }: Props) {
                     exit={{ y: -20, opacity: 0 }}
                     transition={{ duration: 0.3 }}
                 >
-                    {selectedView && renderContent()}
+                    {selectedView ? renderContent() : <LevelUpView />}
                 </motion.div>
             </AnimatePresence>
         </div>
