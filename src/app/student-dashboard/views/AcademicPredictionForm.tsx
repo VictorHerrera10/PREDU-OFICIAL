@@ -26,6 +26,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from '@/hooks/use-toast';
@@ -47,13 +48,7 @@ const formSchemaObject = subjects.reduce((acc, subject) => {
     return acc;
   }, {} as Record<string, typeof gradeSchema>);
 
-const formSchema = z.object(formSchemaObject).refine(data => {
-    const allDefined = Object.values(data).every(value => value !== undefined && value !== null && value !== '');
-    return allDefined;
-}, {
-    message: "Debes seleccionar una calificación para todos los cursos.",
-    path: [], // General form error
-});
+const formSchema = z.object(formSchemaObject);
 
 
 type PredictionFormValues = z.infer<typeof formSchema>;
@@ -200,6 +195,7 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
                             ))}
                           </RadioGroup>
                         </FormControl>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
