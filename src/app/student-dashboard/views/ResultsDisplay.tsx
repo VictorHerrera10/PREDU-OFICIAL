@@ -72,7 +72,7 @@ function ResultsTable({ title, data }: { title: string; data: ResultCounts }) {
                                     <TableCell className="font-medium">
                                         <div className={cn("flex items-center gap-2", categoryInfo.color)}>
                                             <Icon className="w-4 h-4" />
-                                            <span className="capitalize">{category}</span>
+                                            <span className="capitalize">{category.toUpperCase()}</span>
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-center font-mono">{data[category].yes}</TableCell>
@@ -87,20 +87,11 @@ function ResultsTable({ title, data }: { title: string; data: ResultCounts }) {
     );
 }
 
-const chartConfig = {
-    realista: { label: "Realista", color: "hsl(var(--chart-1))" },
-    investigador: { label: "Investigador", color: "hsl(var(--chart-2))" },
-    artistico: { label: "Artístico", color: "hsl(var(--chart-3))" },
-    social: { label: "Social", color: "hsl(var(--chart-4))" },
-    emprendedor: { label: "Emprendedor", color: "hsl(var(--chart-5))" },
-    convencional: { label: "Convencional", color: "hsl(var(--chart-1))" },
-} satisfies ChartConfig
-
 function GeneralPieChart({ data }: { data: ResultCounts }) {
     const chartData = useMemo(() => {
         return (Object.keys(data) as QuestionCategory[])
             .map(category => ({
-                name: CATEGORY_DETAILS[category].label || category,
+                name: category,
                 value: data[category].yes,
                 fill: `var(--color-${category})`,
             }))
@@ -108,23 +99,23 @@ function GeneralPieChart({ data }: { data: ResultCounts }) {
     }, [data]);
 
 
-    const chartConfigWithColors = Object.keys(CATEGORY_DETAILS).reduce((acc, key) => {
+    const chartConfig = Object.keys(CATEGORY_DETAILS).reduce((acc, key) => {
         const categoryKey = key as QuestionCategory;
         const colorName = CATEGORY_DETAILS[categoryKey].colorClass;
         
         let colorValue = '';
         switch(colorName) {
-            case 'green': colorValue = '#4ade80'; break; // green-400
-            case 'blue': colorValue = '#60a5fa'; break; // blue-400
-            case 'purple': colorValue = '#a78bfa'; break; // purple-400
-            case 'pink': colorValue = '#f472b6'; break; // pink-400
-            case 'amber': colorValue = '#facc15'; break; // amber-400
-            case 'teal': colorValue = '#2dd4bf'; break; // teal-400
+            case 'green': colorValue = '#4ade80'; break;
+            case 'blue': colorValue = '#60a5fa'; break;
+            case 'purple': colorValue = '#a78bfa'; break;
+            case 'pink': colorValue = '#f472b6'; break;
+            case 'amber': colorValue = '#facc15'; break;
+            case 'teal': colorValue = '#2dd4bf'; break;
             default: colorValue = '#8884d8';
         }
 
         acc[categoryKey] = {
-            label: CATEGORY_DETAILS[categoryKey].label,
+            label: CATEGORY_DETAILS[categoryKey].label.toUpperCase(),
             color: colorValue,
         };
         return acc;
@@ -138,8 +129,8 @@ function GeneralPieChart({ data }: { data: ResultCounts }) {
             </CardHeader>
             <CardContent className="flex-1 pb-0">
                 <ChartContainer
-                    config={chartConfigWithColors}
-                    className="mx-auto aspect-square h-[250px]"
+                    config={chartConfig}
+                    className="mx-auto aspect-square h-[350px]"
                 >
                     <ResponsiveContainer>
                         <PieChart>
@@ -152,33 +143,37 @@ function GeneralPieChart({ data }: { data: ResultCounts }) {
                                 nameKey="name"
                                 cx="50%"
                                 cy="50%"
-                                outerRadius={80}
+                                outerRadius={120}
                                 labelLine={false}
                                 label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
                                     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
                                     const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
                                     const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
                                     return (
-                                        <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+                                        <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-sm font-bold">
                                             {`${(percent * 100).toFixed(0)}%`}
                                         </text>
                                     );
                                 }}
                             >
                                 {chartData.map((entry) => (
-                                    <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                                    <Cell key={`cell-${entry.name}`} fill={chartConfig[entry.name as QuestionCategory].color} />
                                 ))}
                             </Pie>
                              <Legend
                                 content={({ payload }) => {
                                     return (
-                                        <ul className="grid grid-cols-3 gap-x-4 gap-y-1 mt-4 text-sm text-muted-foreground">
-                                            {payload?.map((entry) => (
-                                                <li key={`item-${entry.value}`} className="flex items-center gap-2">
-                                                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
-                                                    {entry.value}
-                                                </li>
-                                            ))}
+                                        <ul className="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-2 mt-4 text-sm text-muted-foreground">
+                                            {payload?.map((entry) => {
+                                                const category = entry.payload?.name as QuestionCategory;
+                                                const totalYes = data[category].yes;
+                                                return (
+                                                    <li key={`item-${entry.value}`} className="flex items-center gap-2">
+                                                        <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
+                                                        <span>{entry.value?.toUpperCase()} ({totalYes})</span>
+                                                    </li>
+                                                );
+                                            })}
                                         </ul>
                                     )
                                 }}
