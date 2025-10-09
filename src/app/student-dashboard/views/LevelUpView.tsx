@@ -73,13 +73,15 @@ export function LevelUpView() {
   return (
     <>
       {showConfetti && width && height && (
-        <Confetti
-          width={width}
-          height={height}
-          recycle={false}
-          numberOfPieces={400}
-          gravity={0.1}
-        />
+        <div className="fixed inset-0 z-[101] pointer-events-none">
+          <Confetti
+            width={width}
+            height={height}
+            recycle={false}
+            numberOfPieces={400}
+            gravity={0.1}
+          />
+        </div>
       )}
       <Dialog open={isOpen} onOpenChange={handleOpenChange}>
         <TooltipProvider>
