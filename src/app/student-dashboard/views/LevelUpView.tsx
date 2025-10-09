@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import useResizeObserver from 'use-resize-observer';
 import Confetti from 'react-confetti';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog';
 import { Check, Shield, Crown, Gem, Sparkles, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -45,9 +45,9 @@ const levels = [
   {
     name: 'Nivel Maestro Supremo',
     icon: Gem,
-    price: 'Plan Institucional',
+    price: 'S/ 39.99',
     description: 'Desbloquea el dominio total de tu futuro profesional al vincularte con tu institución educativa.',
-    features: ['Todo del Nivel Héroe', 'Sesiones de mentoría con psicólogos', 'Simuladores de entrevistas', 'Soporte prioritario'],
+    features: ['Todo del Nivel Héroe', 'Contacto y chat con tutores', 'Vinculación a tu institución', 'Mentoría y reportes avanzados', 'Foro inter-institucional'],
     current: false,
     buttonText: 'Vincular',
     isInstitutional: true,
@@ -63,6 +63,9 @@ export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const { ref, width = 0, height = 0 } = useResizeObserver<HTMLBodyElement>();
+  
+  const [institutionCode, setInstitutionCode] = useState(['', '', '', '', '']);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -74,9 +77,27 @@ export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
     setIsOpen(open);
     if (open) {
       setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 8000); // Let it rain for 8 seconds
     }
   };
+
+  const handleCodeChange = (index: number, value: string) => {
+    const newCode = [...institutionCode];
+    // Allow only single alphanumeric character
+    newCode[index] = value.slice(-1).toUpperCase();
+    setInstitutionCode(newCode);
+
+    // Move to next input
+    if (value && index < 4) {
+        inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Backspace' && !institutionCode[index] && index > 0) {
+          inputRefs.current[index - 1]?.focus();
+      }
+  };
+
 
   return (
     <>
@@ -117,15 +138,15 @@ export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
         </TooltipProvider>
 
         <DialogContent className="max-w-7xl w-full bg-background/95 backdrop-blur-sm border-border/50 shadow-lg p-6">
-           <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary z-50">
+           <DialogClose className="absolute right-6 top-6 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary z-50">
             <X className="h-5 w-5" />
             <span className="sr-only">Cerrar</span>
           </DialogClose>
-          <div className="text-center my-2">
-            <h1 className="text-xl font-bold text-primary font-headline">
+          <div className="text-center my-1">
+            <h1 className="text-lg font-bold text-primary font-headline">
               ¡Elige tu Destino!
             </h1>
-            <p className="text-xs text-muted-foreground mt-1 max-w-lg mx-auto">
+            <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
               Sube de nivel para desbloquear nuevas habilidades y herramientas en tu aventura vocacional.
             </p>
           </div>
@@ -170,12 +191,28 @@ export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
                       ))}
                     </ul>
                   </CardContent>
-                  <CardFooter className="flex-col">
+                  <CardFooter className="flex-col pt-4">
                     {level.isInstitutional ? (
-                       <form className="w-full space-y-2">
-                          <Label htmlFor="institution-code" className="sr-only">Código de Institución</Label>
-                          <Input id="institution-code" placeholder="Ingresa tu código" className="text-center"/>
-                          <Button className="w-full" variant="secondary">{level.buttonText}</Button>
+                       <form className="w-full space-y-3">
+                          <Label htmlFor="institution-code" className="text-xs text-center text-muted-foreground">Ingresa el Código Secreto de tu Institución</Label>
+                           <input type="hidden" name="institutionId" value={institutionCode.join('')} />
+                            <div className="flex justify-center gap-2">
+                                {institutionCode.map((digit, index) => (
+                                    <Input
+                                        key={index}
+                                        ref={el => inputRefs.current[index] = el}
+                                        type="text"
+                                        maxLength={1}
+                                        value={digit}
+                                        onChange={(e) => handleCodeChange(index, e.target.value)}
+                                        onKeyDown={(e) => handleKeyDown(index, e)}
+                                        className="w-10 h-10 text-center text-lg font-mono uppercase bg-input"
+                                    />
+                                ))}
+                            </div>
+                          <Button className="w-full btn-retro !text-sm !font-bold">
+                            {level.buttonText}
+                          </Button>
                        </form>
                     ) : (
                       <Button
