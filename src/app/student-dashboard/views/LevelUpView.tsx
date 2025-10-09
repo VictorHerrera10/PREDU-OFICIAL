@@ -63,13 +63,6 @@ export function LevelUpView() {
     }
   };
 
-  useEffect(() => {
-    if (showConfetti) {
-      const timer = setTimeout(() => setShowConfetti(false), 5000); // Confetti duration
-      return () => clearTimeout(timer);
-    }
-  }, [showConfetti]);
-
   return (
     <>
       {showConfetti && width && height && (
@@ -80,6 +73,7 @@ export function LevelUpView() {
             recycle={false}
             numberOfPieces={400}
             gravity={0.1}
+            onConfettiComplete={() => setShowConfetti(false)}
           />
         </div>
       )}
@@ -105,7 +99,7 @@ export function LevelUpView() {
         </TooltipProvider>
 
         <DialogContent className="max-w-7xl w-full bg-background/95 backdrop-blur-sm border-border/50 shadow-lg p-6">
-          <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary z-50">
+          <DialogClose className="absolute right-6 top-6 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary z-50">
             <X className="h-5 w-5" />
             <span className="sr-only">Cerrar</span>
           </DialogClose>
