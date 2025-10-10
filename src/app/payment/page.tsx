@@ -75,7 +75,7 @@ export default function PaymentPage() {
       <div className="w-full max-w-md">
         <Card className="bg-card/60 backdrop-blur-lg border-border/50 overflow-hidden">
           <WindowControls />
-          <div className="p-6 md:p-8">
+          <div className="p-6 md:p-8 relative">
             {isPaid ? (
               <div className="text-center flex flex-col items-center justify-center">
                 <PartyPopper className="w-16 h-16 text-primary mb-4 animate-bounce" />
@@ -91,7 +91,12 @@ export default function PaymentPage() {
               </div>
             ) : (
               <>
-                <CardHeader className="p-0 mb-6 text-center">
+                <Link href="/student-dashboard" passHref className="absolute top-4 left-4 font-semibold text-primary/80 hover:text-primary transition-colors flex items-center justify-center gap-1 text-xs">
+                    <ArrowLeft className="w-3 h-3" />
+                    Volver
+                </Link>
+
+                <CardHeader className="p-0 pt-10 mb-6 text-center">
                   <Crown className="w-12 h-12 mx-auto text-destructive mb-2" />
                   <CardTitle className="text-2xl font-bold text-primary">Nivel Héroe</CardTitle>
                   <CardDescription>
@@ -134,12 +139,6 @@ export default function PaymentPage() {
                     )}
                   </Button>
                 </form>
-                 <div className="mt-6 text-center text-sm">
-                    <Link href="/student-dashboard" passHref className="font-semibold text-primary/80 hover:text-primary transition-colors flex items-center justify-center gap-2">
-                    <ArrowLeft className="w-4 h-4" />
-                    Volver
-                    </Link>
-                </div>
               </>
             )}
           </div>
