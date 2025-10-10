@@ -426,3 +426,30 @@ export async function updateTutorProfile(prevState: any, formData: FormData) {
       return { success: false, message: 'No se pudo actualizar tu perfil de tutor. ' + error.message };
   }
 }
+
+
+export async function createIndependentTutorGroup(formData: FormData) {
+  const { firestore } = await getAuthenticatedAppForUser();
+  
+  const data = {
+    name: formData.get('name') as string,
+    tutorName: formData.get('tutorName') as string,
+    uniqueCode: generateUniqueCode(),
+  };
+
+  if (!data.name || !data.tutorName) {
+    return { success: false, message: 'El nombre del grupo y del tutor son obligatorios.' };
+  }
+
+  try {
+    const docRef = await addDoc(collection(firestore, 'independentTutorGroups'), {
+      ...data,
+      createdAt: serverTimestamp(),
+    });
+    
+    revalidatePath('/admin/independent-tutors');
+    return { success: true, name: data.name };
+  } catch (error: any) {
+    return { success: false, message: 'No se pudo crear el grupo. ' + error.message };
+  }
+}

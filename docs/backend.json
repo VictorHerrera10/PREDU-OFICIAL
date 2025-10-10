@@ -187,6 +187,42 @@
         "uniqueCode"
       ]
     },
+    "IndependentTutorGroup": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "IndependentTutorGroup",
+      "type": "object",
+      "description": "Represents a group created for an independent tutor.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the group."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the group (e.g., 'Grupo de Orientación Vocacional 2024')."
+        },
+        "tutorName": {
+          "type": "string",
+          "description": "The name of the independent tutor leading the group."
+        },
+        "uniqueCode": {
+          "type": "string",
+          "description": "A unique code for tutors and students to join this group."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The date and time when the group was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "tutorName",
+        "uniqueCode",
+        "createdAt"
+      ]
+    },
     "PsychologicalPrediction": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "PsychologicalPrediction",
@@ -330,6 +366,22 @@
             {
               "name": "institutionId",
               "description": "The unique identifier for the institution."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/independentTutorGroups/{groupId}",
+        "definition": {
+          "entityName": "IndependentTutorGroup",
+          "schema": {
+            "$ref": "#/backend/entities/IndependentTutorGroup"
+          },
+          "description": "Stores information about independent tutor groups. Writable by administrators.",
+          "params": [
+            {
+              "name": "groupId",
+              "description": "The unique identifier for the independent tutor group."
             }
           ]
         }
