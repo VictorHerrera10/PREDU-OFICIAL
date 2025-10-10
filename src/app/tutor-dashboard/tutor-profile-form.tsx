@@ -142,7 +142,7 @@ export function TutorProfileForm({ user, profileData }: Props) {
 
                        <div className="space-y-2">
                             <Label htmlFor="workArea" className="flex items-center gap-2"><GraduationCap className="w-4 h-4"/> Área de Trabajo</Label>
-                             <Select name="workArea" defaultValue={profileData?.tutorDetails?.workArea} required>
+                             <Select name="workArea" defaultValue={profileData?.tutorDetails?.workArea || ''} required>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Selecciona tu área de trabajo" />
                                 </SelectTrigger>
