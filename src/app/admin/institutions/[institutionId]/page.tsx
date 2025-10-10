@@ -21,10 +21,12 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Building, Save, Users, Mail, Phone, Briefcase } from 'lucide-react';
+import { ArrowLeft, Building, Save, Users, Mail, Phone, Briefcase, Copy } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 type Institution = {
   id: string;
@@ -137,6 +139,22 @@ export default function InstitutionDetailsPage() {
     setIsProcessing(false);
   };
   
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code).then(() => {
+        toast({
+            title: '¡Copiado!',
+            description: 'El código único ha sido copiado al portapapeles.',
+        });
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+        toast({
+            variant: 'destructive',
+            title: 'Error al copiar',
+            description: 'No se pudo copiar el código.',
+        });
+    });
+  };
+
   if (isLoading) {
     return <InstitutionDetailsSkeleton />;
   }
@@ -171,8 +189,30 @@ export default function InstitutionDetailsPage() {
                   Detalles de la Institución
                 </CardTitle>
                 <CardDescription>
-                  Revisa y edita la información de {institution.name}. Código Único: <code className="bg-muted px-2 py-1 rounded text-primary">{institution.uniqueCode}</code>
+                  Revisa y edita la información de {institution.name}.
                 </CardDescription>
+                 <div className="flex items-center gap-2 mt-2">
+                    <span className="text-sm text-muted-foreground">Código Único:</span>
+                    <code className="bg-muted px-2 py-1 rounded text-primary font-bold">{institution.uniqueCode}</code>
+                     <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-6 w-6" 
+                            onClick={() => handleCopyCode(institution.uniqueCode)}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Copiar código</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
               </div>
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/admin/institutions">
@@ -327,3 +367,5 @@ function InstitutionDetailsSkeleton() {
         </div>
     )
 }
+
+    
