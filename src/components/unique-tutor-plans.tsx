@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import useResizeObserver from 'use-resize-observer';
 import Confetti from 'react-confetti';
-import { Dialog, DialogContent, DialogTrigger, DialogClose } from '@/components/ui/dialog';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogTrigger, DialogClose, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle as CardTitleComponent, CardDescription as CardDescriptionComponent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Crown, Gem, Check, X } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -16,7 +16,7 @@ const plans = [
     icon: Gem,
     price: 'Plan Institucional',
     description: 'Accede con el código de tu colegio para desbloquear todas las herramientas de gestión y mentoría.',
-    features: ['Todo del Nivel Héroe', 'Contacto y chat con tutores', 'Vinculación a tu institución', 'Mentoría y reportes avanzados', 'Foro inter-institucional'],
+    features: ['Todo del Nivel Héroe', 'Vinculación con tu institución y tutores', 'Mentoría y reportes avanzados', 'Foro inter-institucional y chat'],
     buttonText: 'Registrarme por Institución',
     borderColor: 'border-blue-500',
     isInstitutional: true,
@@ -30,8 +30,7 @@ const plans = [
         'Todo del Nivel Caballero', 
         'Chatbot con IA, consejos y reportes avanzados',
         'Explorador de carreras, universidades y becas', 
-        'Enviar reportes por correo',
-        'Contacto con soporte 24/7'
+        'Enviar reportes por correo y soporte 24/7'
     ],
     buttonText: 'Convertirme en Héroe',
     recommended: true,
@@ -80,14 +79,14 @@ export function UniqueTutorPlans({ children }: { children: React.ReactNode }) {
                     <X className="h-5 w-5" />
                     <span className="sr-only">Cerrar</span>
                 </DialogClose>
-                <div className="text-center my-1">
-                    <h1 className="text-lg font-bold text-primary font-headline">
-                    ¡Planes para Tutores Independientes!
-                    </h1>
-                    <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
-                    Elige un plan para acceder a herramientas avanzadas y potenciar tu labor de guía.
-                    </p>
-                </div>
+                <DialogHeader className="text-center my-1">
+                    <DialogTitle className="text-lg font-bold text-primary font-headline">
+                        ¡Planes para Tutores Independientes!
+                    </DialogTitle>
+                    <DialogDescription className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
+                        Elige un plan para acceder a herramientas avanzadas y potenciar tu labor de guía.
+                    </DialogDescription>
+                </DialogHeader>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
                     {plans.map((plan, index) => (
@@ -114,9 +113,9 @@ export function UniqueTutorPlans({ children }: { children: React.ReactNode }) {
                                 plan.borderColor === 'border-destructive' ? 'text-destructive' : 'text-blue-500'
                             )}
                             />
-                            <CardTitle className="text-base font-bold">{plan.name}</CardTitle>
+                            <CardTitleComponent className="text-base font-bold">{plan.name}</CardTitleComponent>
                             <p className="text-lg font-headline text-foreground">{plan.price}</p>
-                            <CardDescription className="text-xs text-muted-foreground min-h-[30px]">{plan.description}</CardDescription>
+                            <CardDescriptionComponent className="text-xs text-muted-foreground min-h-[30px]">{plan.description}</CardDescriptionComponent>
                         </CardHeader>
                         <CardContent className="flex-grow">
                             <ul className="space-y-1.5">

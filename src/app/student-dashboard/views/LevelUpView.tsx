@@ -5,7 +5,7 @@ import useResizeObserver from 'use-resize-observer';
 import Confetti from 'react-confetti';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogClose, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogClose, DialogTrigger, DialogHeader, DialogTitle as DialogTitleComponent, DialogDescription as DialogDescriptionComponent } from '@/components/ui/dialog';
 import { Check, Shield, Crown, Gem, Sparkles, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -31,11 +31,9 @@ const levels = [
     description: 'Potencia tu camino con análisis avanzados y herramientas de exploración profesional.',
     features: [
         'Todo del Nivel Caballero', 
-        'Chatbot con IA y Consejos personalizados',
-        'Reportes avanzados y análisis detallado', 
+        'Chatbot con IA, consejos y reportes avanzados',
         'Explorador de carreras, universidades y becas', 
-        'Enviar reportes por correo',
-        'Contacto con soporte 24/7'
+        'Enviar reportes por correo y soporte 24/7'
     ],
     current: false,
     buttonText: 'Convertirme en Héroe',
@@ -47,7 +45,7 @@ const levels = [
     icon: Gem,
     price: 'S/ 39.99',
     description: 'Desbloquea el dominio total de tu futuro profesional al vincularte con tu institución educativa.',
-    features: ['Todo del Nivel Héroe', 'Contacto y chat con tutores', 'Vinculación a tu institución', 'Mentoría y reportes avanzados', 'Foro inter-institucional'],
+    features: ['Todo del Nivel Héroe', 'Vinculación con tu institución y tutores', 'Mentoría y reportes avanzados', 'Foro inter-institucional y chat'],
     current: false,
     buttonText: 'Vincular',
     isInstitutional: true,
@@ -142,14 +140,14 @@ export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
             <X className="h-5 w-5" />
             <span className="sr-only">Cerrar</span>
           </DialogClose>
-          <div className="text-center my-1">
-            <h1 className="text-lg font-bold text-primary font-headline">
+          <DialogHeader className="text-center my-1">
+            <DialogTitleComponent className="text-lg font-bold text-primary font-headline">
               ¡Elige tu Destino!
-            </h1>
-            <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
+            </DialogTitleComponent>
+            <DialogDescriptionComponent className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
               Sube de nivel para desbloquear nuevas habilidades y herramientas en tu aventura vocacional.
-            </p>
-          </div>
+            </DialogDescriptionComponent>
+          </DialogHeader>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {levels.map((level, index) => (
