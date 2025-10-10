@@ -91,8 +91,8 @@ export default function PaymentPage() {
               </div>
             ) : (
               <>
-                <Link href="/student-dashboard" passHref className="absolute top-4 left-4 font-semibold text-primary/80 hover:text-primary transition-colors flex items-center justify-center gap-1 text-xs">
-                    <ArrowLeft className="w-3 h-3" />
+                <Link href="/student-dashboard" passHref className="absolute top-4 left-4 font-semibold text-primary/80 hover:text-primary transition-colors flex items-center justify-center gap-1 text-sm">
+                    <ArrowLeft className="w-4 h-4" />
                     Volver
                 </Link>
 
