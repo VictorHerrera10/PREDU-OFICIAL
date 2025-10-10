@@ -25,6 +25,7 @@ type TutorRequest = {
   id: string;
   status: 'pending' | 'approved' | 'rejected';
   notifiedRejected?: boolean;
+  dni: string; // Ensure DNI is part of the request type
 };
 
 function DashboardPage() {
@@ -67,7 +68,8 @@ function DashboardPage() {
     if (tutorRequest) {
       if (tutorRequest.status === 'pending') {
         // Redirect to status page if request is pending
-        redirect(`/tutor-request-status?dni=${userProfile.dni}`);
+        // CORRECTED: Use the DNI from the request itself, as it's guaranteed to be there.
+        redirect(`/tutor-request-status?dni=${tutorRequest.dni}`);
         return;
       }
 
