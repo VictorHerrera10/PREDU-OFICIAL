@@ -17,6 +17,7 @@ import {
   where,
   getDocs,
   getDoc,
+  limit,
 } from 'firebase/firestore';
 import { redirect } from 'next/navigation';
 import { initializeServerApp } from '@/firebase/server-init';
@@ -464,10 +465,11 @@ export async function registerHeroTutor(prevState: State, formData: FormData): P
     }
     const dni = formData.get('dni') as string;
     const email = formData.get('email') as string;
+    const username = formData.get('username') as string;
 
     const requestData = {
         userId: userId,
-        username: formData.get('username') as string,
+        username: username,
         email: email,
         firstName: formData.get('firstName') as string,
         lastName: formData.get('lastName') as string,
@@ -480,8 +482,8 @@ export async function registerHeroTutor(prevState: State, formData: FormData): P
         createdAt: serverTimestamp(),
     };
     
-    // Create a version of requiredFields without the userId
-    const { userId: _, ...requiredFields } = requestData;
+    // Create a version of requiredFields without the userId, email, and username
+    const { userId: _, email: __, username: ___, ...requiredFields } = requestData;
 
     for (const [key, value] of Object.entries(requiredFields)) {
         if (!value) {
@@ -520,6 +522,7 @@ export async function registerHeroTutor(prevState: State, formData: FormData): P
             await addDoc(collection(firestore, 'tutorRequests'), {
                 ...requestData,
                 status: 'pending',
+                notifiedRejected: false,
             });
         }
 
@@ -623,20 +626,20 @@ export async function verifyTutorAndLogin(prevState: any, formData: FormData) {
   }
 
   try {
-    // 1. Find the group by the unique code provided
-    const groupQuery = query(collection(firestore, 'independentTutorGroups'), where('uniqueCode', '==', uniqueCode), where('tutorId', '==', userId), limit(1));
-    const groupSnapshot = await getDocs(groupQuery);
-
-    if (groupSnapshot.empty) {
-      return { success: false, message: 'El código del grupo no es válido o no corresponde a tu usuario.' };
-    }
-
-    // 2. Find the user profile and check if the DNI matches
+    // 1. Find the user profile and check if the DNI matches first
     const userProfileRef = doc(firestore, 'users', userId);
     const userProfileSnap = await getDoc(userProfileRef);
 
     if (!userProfileSnap.exists() || userProfileSnap.data().dni !== dni) {
       return { success: false, message: 'El DNI no coincide con nuestros registros.' };
+    }
+    
+    // 2. Find the group by the unique code and tutorId
+    const groupQuery = query(collection(firestore, 'independentTutorGroups'), where('uniqueCode', '==', uniqueCode), where('tutorId', '==', userId), limit(1));
+    const groupSnapshot = await getDocs(groupQuery);
+
+    if (groupSnapshot.empty) {
+      return { success: false, message: 'El código del grupo no es válido o no corresponde a tu usuario.' };
     }
 
     // 3. If both are valid, update the user profile
