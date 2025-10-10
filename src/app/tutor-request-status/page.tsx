@@ -102,7 +102,10 @@ function StatusDisplay() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-sm text-muted-foreground">Recibirás una notificación o un correo electrónico una vez que se procese. ¡Gracias por tu paciencia!</p>
+                    <p className="text-sm text-muted-foreground mb-6">Recibirás una notificación o un correo electrónico una vez que se procese. ¡Gracias por tu paciencia!</p>
+                     <Button asChild className="btn-retro">
+                        <Link href="/login">Volver al Inicio</Link>
+                    </Button>
                 </CardContent>
             </Card>
         );
