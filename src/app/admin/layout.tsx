@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Logo } from '@/components/logo';
-import { School, Users, UserCheck, Inbox } from 'lucide-react';
+import { School, Users, UserCheck } from 'lucide-react';
 import {
   SidebarProvider,
   Sidebar,
@@ -22,7 +22,6 @@ const navItems = [
   { href: '/admin', label: 'Gestión de Usuarios', icon: Users },
   { href: '/admin/institutions', label: 'Instituciones', icon: School },
   { href: '/admin/independent-tutors', label: 'Tutores Independientes', icon: UserCheck },
-  { href: '/admin/requests', label: 'Solicitudes de Tutor', icon: Inbox },
 ];
 
 export default function AdminLayout({
