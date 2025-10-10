@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, deleteDoc, doc, orderBy, query } from 'firebase/firestore';
+import { collection, deleteDoc, doc, orderBy, query, updateDoc } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, Clock, Trash2 } from 'lucide-react';
+import { Bell, Clock, Trash2, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
@@ -26,6 +26,7 @@ type Notification = {
   description: string;
   emoji: string;
   createdAt: { seconds: number; nanoseconds: number };
+  read: boolean;
 };
 
 export function AdminNotifications() {
@@ -38,6 +39,25 @@ export function AdminNotifications() {
   }, [firestore]);
 
   const { data: notifications } = useCollection<Notification>(notificationsQuery);
+
+  const unreadCount = useMemo(() => {
+    if (!notifications) return 0;
+    return notifications.filter(n => !n.read).length;
+  }, [notifications]);
+
+  const handleMarkAsRead = async (id: string) => {
+    if (!firestore) return;
+    try {
+        const notifRef = doc(firestore, 'notifications', id);
+        await updateDoc(notifRef, { read: true });
+    } catch (error) {
+         toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'No se pudo marcar como leída.',
+        });
+    }
+  };
 
   const handleDelete = async (id: string) => {
     if (!firestore) return;
@@ -62,14 +82,14 @@ export function AdminNotifications() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative h-10 w-10 rounded-full p-0">
           <Bell className="h-6 w-6" />
-          {notifications && notifications.length > 0 && (
+          {unreadCount > 0 && (
             <motion.span
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
               className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground animate-pulse"
             >
-              {notifications.length}
+              {unreadCount}
             </motion.span>
           )}
           <span className="sr-only">Notificaciones</span>
@@ -78,7 +98,7 @@ export function AdminNotifications() {
       <DropdownMenuContent className="w-80" align="end" forceMount>
         <DropdownMenuLabel className="flex justify-between items-center">
           <span>Notificaciones</span>
-          {notifications && notifications.length > 0 && <Badge>{notifications.length}</Badge>}
+          {unreadCount > 0 && <Badge>{unreadCount} nueva(s)</Badge>}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <AnimatePresence>
@@ -95,7 +115,7 @@ export function AdminNotifications() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="relative rounded-lg mb-2"
+                className={cn("relative rounded-lg mb-2", !notif.read && "bg-primary/10")}
               >
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="flex flex-col items-start gap-1.5 p-3 whitespace-normal">
                   <div className="flex items-center gap-2">
@@ -109,6 +129,11 @@ export function AdminNotifications() {
                   </div>
                 </DropdownMenuItem>
                 <div className="absolute top-2 right-2 flex gap-1">
+                   {!notif.read && (
+                        <Button variant="ghost" size="icon" className="h-6 w-6 text-green-500" onClick={() => handleMarkAsRead(notif.id)} title="Marcar como leída">
+                            <Check className="h-4 w-4" />
+                        </Button>
+                    )}
                   <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500" onClick={() => handleDelete(notif.id)} title="Eliminar">
                     <Trash2 className="h-4 w-4" />
                   </Button>

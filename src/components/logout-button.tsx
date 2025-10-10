@@ -14,10 +14,12 @@ export const handleLogout = async (auth: any, router: any, toast: any) => {
   if (!auth) return;
   try {
     await signOut(auth);
-    toast({
-      title: '¡Hasta la próxima clase! 👋',
-      description: 'Vuelve pronto, ¡el conocimiento te espera!',
-    });
+    setTimeout(() => {
+        toast({
+          title: '¡Hasta la próxima clase! 👋',
+          description: 'Vuelve pronto, ¡el conocimiento te espera!',
+        });
+    }, 4000);
     router.push('/login'); // Explicit redirection
   } catch (error) {
     console.error('Error al cerrar sesión:', error);
