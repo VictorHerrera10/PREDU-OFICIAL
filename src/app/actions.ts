@@ -479,11 +479,13 @@ export async function registerHeroTutor(prevState: State, formData: FormData): P
     groupName: formData.get('groupName') as string,
     region: formData.get('region') as string,
     reasonForUse: formData.get('reasonForUse') as string,
-    status: 'pending', // Initial status
+    status: 'pending' as const, // Initial status
     createdAt: serverTimestamp(),
   };
   
-  const { userId: uid, ...requiredFields } = requestData;
+  // Create a version of requiredFields without the userId
+  const { userId: _, ...requiredFields } = requestData;
+
   for (const [key, value] of Object.entries(requiredFields)) {
     if (!value) {
       return { success: false, message: `El campo ${key} es obligatorio.` };
@@ -491,17 +493,22 @@ export async function registerHeroTutor(prevState: State, formData: FormData): P
   }
 
   try {
-    // Check if a request with this DNI or email already exists
-    const qDni = query(collection(firestore, "tutorRequests"), where("dni", "==", dni));
-    const qEmail = query(collection(firestore, "tutorRequests"), where("email", "==", requestData.email));
+    // Check if a request with this DNI or email already exists and is not rejected
+    const qDni = query(collection(firestore, "tutorRequests"), where("dni", "==", dni), where("status", "!=", "rejected"));
+    const qEmail = query(collection(firestore, "tutorRequests"), where("email", "==", requestData.email), where("status", "!=", "rejected"));
+    
     const [dniSnapshot, emailSnapshot] = await Promise.all([getDocs(qDni), getDocs(qEmail)]);
 
     if (!dniSnapshot.empty) {
-        return { success: false, message: 'Ya existe una solicitud con este DNI.' };
+        return { success: false, message: 'Ya existe una solicitud pendiente o aprobada con este DNI.' };
     }
      if (!emailSnapshot.empty) {
-        return { success: false, message: 'Ya existe una solicitud con este correo electrónico.' };
+        return { success: false, message: 'Ya existe una solicitud pendiente o aprobada con este correo electrónico.' };
     }
+    
+    // Also save the DNI in the user's profile for later lookup
+    const userProfileRef = doc(firestore, 'users', userId);
+    await updateDoc(userProfileRef, { dni: requestData.dni });
 
     await addDoc(collection(firestore, 'tutorRequests'), requestData);
     
