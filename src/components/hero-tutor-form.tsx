@@ -38,11 +38,13 @@ import { Crown } from "lucide-react";
 type State = {
   message?: string | null;
   success?: boolean;
+  dni?: string | null;
 };
 
 const initialState: State = {
   message: null,
   success: false,
+  dni: null,
 };
 
 export function HeroTutorForm({ children }: { children: React.ReactNode }) {
@@ -50,7 +52,6 @@ export function HeroTutorForm({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
     const [state, formAction] = useActionState(registerHeroTutor, initialState);
-    const [showConfetti, setShowConfetti] = useState(false);
     const { ref, width = 0, height = 0 } = useResizeObserver<HTMLBodyElement>();
     const [selectedGender, setSelectedGender] = useState('');
 
@@ -64,42 +65,23 @@ export function HeroTutorForm({ children }: { children: React.ReactNode }) {
         if (state.message) {
             if (state.success) {
                 toast({
-                    title: "¡Bienvenido, Tutor Héroe! 🦸",
+                    title: "¡Solicitud Enviada! 🦸",
                     description: state.message,
                 });
-                setShowConfetti(true);
-                // No cerramos el dialogo, mostramos el mensaje de exito
+                if (state.dni) {
+                    router.push(`/tutor-request-status?dni=${state.dni}`);
+                }
+                setIsOpen(false);
             } else {
                 toast({
                     variant: "destructive",
-                    title: "Error en el Registro 😵",
+                    title: "Error en la Solicitud 😵",
                     description: state.message,
                 });
             }
         }
-    }, [state, toast]);
+    }, [state, toast, router]);
 
-    if (state.success) {
-        return (
-             <div className="text-center flex flex-col items-center justify-center p-8">
-                {showConfetti && <Confetti width={width} height={height} recycle={false} numberOfPieces={500} />}
-                <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold text-primary flex items-center justify-center gap-2">
-                        <Crown className="w-8 h-8 text-destructive" /> ¡Registro Completado!
-                    </DialogTitle>
-                </DialogHeader>
-                <div className="my-4 text-center">
-                    <p className="text-muted-foreground">{state.message}</p>
-                    <p className="mt-4">Serás redirigido a la página de inicio de sesión.</p>
-                </div>
-                <DialogFooter>
-                    <Button onClick={() => router.push('/login')}>
-                        Ir a Iniciar Sesión 🚀
-                    </Button>
-                </DialogFooter>
-            </div>
-        )
-    }
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -108,10 +90,10 @@ export function HeroTutorForm({ children }: { children: React.ReactNode }) {
                  <form action={formAction}>
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-bold text-destructive flex items-center gap-2">
-                           <Crown /> ¡Regístrate como Tutor Héroe!
+                           <Crown /> ¡Solicita ser un Tutor Héroe!
                         </DialogTitle>
                         <DialogDescription>
-                            Completa tu perfil para empezar a guiar a tus estudiantes con herramientas avanzadas.
+                            Completa tu solicitud para empezar a guiar a tus estudiantes con herramientas avanzadas. Tu cuenta será revisada por un administrador.
                         </DialogDescription>
                     </DialogHeader>
                     <ScrollArea className="h-96">
@@ -190,7 +172,7 @@ export function HeroTutorForm({ children }: { children: React.ReactNode }) {
                     </ScrollArea>
                     <DialogFooter>
                         <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
-                        <SubmitButton>Crear Cuenta Héroe</SubmitButton>
+                        <SubmitButton>Enviar Solicitud</SubmitButton>
                     </DialogFooter>
                 </form>
             </DialogContent>

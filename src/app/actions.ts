@@ -27,6 +27,7 @@ type State = {
   message?: string | null;
   success?: boolean;
   username?: string | null;
+  dni?: string | null;
 };
 
 async function getAuthenticatedAppForUser() {
@@ -454,23 +455,27 @@ export async function createIndependentTutorGroup(formData: FormData) {
   }
 }
 
-export async function registerHeroTutor(prevState: any, formData: FormData) {
-  const { firestore, auth } = await getAuthenticatedAppForUser();
+export async function registerHeroTutor(prevState: State, formData: FormData): Promise<State> {
+  const { firestore } = await getAuthenticatedAppForUser();
 
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
-  const username = formData.get('username') as string;
-  const firstName = formData.get('firstName') as string;
-  const lastName = formData.get('lastName') as string;
   const dni = formData.get('dni') as string;
-  const gender = formData.get('gender') as string;
-  const phone = formData.get('phone') as string;
-  const groupName = formData.get('groupName') as string;
-  const region = formData.get('region') as string;
-  const reasonForUse = formData.get('reasonForUse') as string;
-
-  const requiredFields = { email, password, username, firstName, lastName, dni, gender, phone, groupName, region, reasonForUse };
-
+  const requestData = {
+    email: formData.get('email') as string,
+    password: formData.get('password') as string, // Store hashed or handle securely
+    username: formData.get('username') as string,
+    firstName: formData.get('firstName') as string,
+    lastName: formData.get('lastName') as string,
+    dni: dni,
+    gender: formData.get('gender') as string,
+    phone: formData.get('phone') as string,
+    groupName: formData.get('groupName') as string,
+    region: formData.get('region') as string,
+    reasonForUse: formData.get('reasonForUse') as string,
+    status: 'pending', // Initial status
+    createdAt: serverTimestamp(),
+  };
+  
+  const requiredFields = { ...requestData };
   for (const [key, value] of Object.entries(requiredFields)) {
     if (!value) {
       return { success: false, message: `El campo ${key} es obligatorio.` };
@@ -478,55 +483,106 @@ export async function registerHeroTutor(prevState: any, formData: FormData) {
   }
 
   try {
-    // 1. Create Firebase Auth user
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    await updateProfile(user, { displayName: username });
+    // Check if a request with this DNI or email already exists
+    const qDni = query(collection(firestore, "tutorRequests"), where("dni", "==", dni));
+    const qEmail = query(collection(firestore, "tutorRequests"), where("email", "==", requestData.email));
+    const [dniSnapshot, emailSnapshot] = await Promise.all([getDocs(qDni), getDocs(qEmail)]);
 
-    // 2. Create UserProfile document in Firestore
-    const userProfileRef = doc(firestore, 'users', user.uid);
-    const userProfileData = {
-      id: user.uid,
-      username,
-      email,
-      firstName,
-      lastName,
-      dni,
-      gender,
-      phone,
-      role: 'tutor',
-      isProfileComplete: true,
-      creationDate: serverTimestamp(),
-      lastLogin: serverTimestamp(),
-    };
-    await setDoc(userProfileRef, userProfileData);
+    if (!dniSnapshot.empty) {
+        return { success: false, message: 'Ya existe una solicitud con este DNI.' };
+    }
+     if (!emailSnapshot.empty) {
+        return { success: false, message: 'Ya existe una solicitud con este correo electrónico.' };
+    }
 
-    // 3. Create IndependentTutorGroup document in Firestore
-    const groupData = {
-      name: groupName,
-      tutorName: `${firstName} ${lastName}`,
-      tutorId: user.uid,
-      region,
-      reasonForUse,
-      uniqueCode: generateUniqueCode(),
-      createdAt: serverTimestamp(),
-    };
-    const groupDocRef = await addDoc(collection(firestore, 'independentTutorGroups'), groupData);
-
-    // 4. Create notification for admin
-    await addDoc(collection(firestore, 'notifications'), {
-        type: 'new_hero_tutor',
-        title: 'Nuevo Tutor Héroe Registrado',
-        description: `El tutor ${username} (${email}) se ha unido como independiente.`,
+    await addDoc(collection(firestore, 'tutorRequests'), requestData);
+    
+     await addDoc(collection(firestore, 'notifications'), {
+        type: 'new_tutor_request',
+        title: 'Nueva Solicitud de Tutor',
+        description: `El usuario ${requestData.username} (${requestData.email}) ha solicitado ser Tutor Héroe.`,
         emoji: '🦸',
         createdAt: serverTimestamp(),
         read: false,
     });
     
-    return { success: true, message: '¡Felicidades! Tu cuenta de Tutor Héroe y tu grupo han sido creados.' };
+    revalidatePath('/admin/requests');
+
+    return { success: true, message: 'Tu solicitud ha sido enviada y está pendiente de aprobación.', dni: dni };
 
   } catch (e: any) {
-    console.error("Error registering hero tutor:", e);
-    return { success: false, message: getFirebaseErrorMessage(e.code) || 'Ocurrió un error inesperado.' };
+    console.error("Error creating tutor request:", e);
+    return { success: false, message: 'Ocurrió un error inesperado al enviar tu solicitud.' };
   }
+}
+
+export async function approveTutorRequest(requestId: string) {
+    const { auth, firestore } = await getAuthenticatedAppForUser();
+    const requestRef = doc(firestore, 'tutorRequests', requestId);
+
+    try {
+        const requestSnap = await getDoc(requestRef);
+        if (!requestSnap.exists()) {
+            throw new Error("Solicitud no encontrada.");
+        }
+
+        const requestData = requestSnap.data();
+
+        // 1. Create Firebase Auth user
+        const userCredential = await createUserWithEmailAndPassword(auth, requestData.email, requestData.password);
+        const user = userCredential.user;
+        await updateProfile(user, { displayName: requestData.username });
+
+        // 2. Create UserProfile document in Firestore
+        const userProfileRef = doc(firestore, 'users', user.uid);
+        await setDoc(userProfileRef, {
+            id: user.uid,
+            username: requestData.username,
+            email: requestData.email,
+            firstName: requestData.firstName,
+            lastName: requestData.lastName,
+            dni: requestData.dni,
+            gender: requestData.gender,
+            phone: requestData.phone,
+            role: 'tutor',
+            isProfileComplete: true,
+            creationDate: serverTimestamp(),
+            lastLogin: serverTimestamp(),
+        });
+
+        // 3. Create IndependentTutorGroup document in Firestore
+        const groupData = {
+            name: requestData.groupName,
+            tutorName: `${requestData.firstName} ${requestData.lastName}`,
+            tutorId: user.uid,
+            region: requestData.region,
+            reasonForUse: requestData.reasonForUse,
+            uniqueCode: generateUniqueCode(),
+            createdAt: serverTimestamp(),
+        };
+        await addDoc(collection(firestore, 'independentTutorGroups'), groupData);
+
+        // 4. Update the request status
+        await updateDoc(requestRef, { status: 'approved' });
+
+        revalidatePath('/admin/requests');
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error approving tutor request:", error);
+        return { success: false, message: getFirebaseErrorMessage(error.code) || error.message };
+    }
+}
+
+export async function rejectTutorRequest(requestId: string) {
+    const { firestore } = await getAuthenticatedAppForUser();
+    const requestRef = doc(firestore, 'tutorRequests', requestId);
+
+    try {
+        await updateDoc(requestRef, { status: 'rejected' });
+        revalidatePath('/admin/requests');
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error rejecting tutor request:", error);
+        return { success: false, message: error.message };
+    }
 }

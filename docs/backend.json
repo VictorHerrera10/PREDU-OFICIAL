@@ -236,6 +236,28 @@
         "createdAt"
       ]
     },
+    "TutorRequest": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "TutorRequest",
+        "type": "object",
+        "description": "Represents a request from a user to become an independent tutor.",
+        "properties": {
+            "id": { "type": "string" },
+            "username": { "type": "string" },
+            "email": { "type": "string", "format": "email" },
+            "firstName": { "type": "string" },
+            "lastName": { "type": "string" },
+            "dni": { "type": "string" },
+            "gender": { "type": "string" },
+            "phone": { "type": "string" },
+            "groupName": { "type": "string" },
+            "region": { "type": "string" },
+            "reasonForUse": { "type": "string" },
+            "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["email", "dni", "status"]
+    },
     "PsychologicalPrediction": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "PsychologicalPrediction",
@@ -397,6 +419,20 @@
               "description": "The unique identifier for the independent tutor group."
             }
           ]
+        }
+      },
+      {
+        "path": "/tutorRequests/{requestId}",
+        "definition": {
+            "entityName": "TutorRequest",
+            "schema": {
+                "$ref": "#/backend/entities/TutorRequest"
+            },
+            "description": "Stores requests from users wanting to become independent tutors. Read/write by admins.",
+            "params": [{
+                "name": "requestId",
+                "description": "The unique identifier for the tutor request."
+            }]
         }
       },
       {
