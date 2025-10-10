@@ -79,7 +79,7 @@ export function UniqueTutorPlans({ children }: { children: React.ReactNode }) {
                     <X className="h-5 w-5" />
                     <span className="sr-only">Cerrar</span>
                 </DialogClose>
-                <DialogHeader className="text-center my-1">
+                <DialogHeader className="text-center my-1 sm:text-center">
                     <DialogTitle className="text-lg font-bold text-primary font-headline">
                         ¡Planes para Tutores Independientes!
                     </DialogTitle>
