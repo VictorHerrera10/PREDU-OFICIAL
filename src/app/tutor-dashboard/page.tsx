@@ -3,9 +3,9 @@
 import { useMemo } from 'react';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import { StudentProfileForm } from './student-profile-form';
-import { StudentMainDashboard } from './student-main-dashboard';
-import { StudentLoader } from '@/components/student-loader';
+import { TutorProfileForm } from './tutor-profile-form';
+import { TutorMainDashboard } from './tutor-main-dashboard';
+import { TutorAdminLoader } from '@/components/tutor-admin-loader';
 
 type UserProfile = {
     id: string;
@@ -14,7 +14,7 @@ type UserProfile = {
     isProfileComplete?: boolean;
 };
 
-function StudentDashboardPage() {
+function TutorDashboardPage() {
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
 
@@ -26,23 +26,22 @@ function StudentDashboardPage() {
     const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
     if (isUserLoading || isProfileLoading) {
-        return <StudentLoader loadingText="Cargando tu perfil..." />;
+        return <TutorAdminLoader loadingText="Cargando tu perfil de tutor..." />;
     }
 
     if (userProfile && !userProfile.isProfileComplete) {
-        return <StudentProfileForm user={user} />;
+        return <TutorProfileForm user={user} />;
     }
 
     if (userProfile && userProfile.isProfileComplete) {
-        return <StudentMainDashboard user={user} />;
+        return <TutorMainDashboard user={user} />;
     }
     
-    // Fallback or should not be reached if logic is correct
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-             <p className="text-muted-foreground">No se pudo cargar el perfil del estudiante.</p>
+             <p className="text-muted-foreground">No se pudo cargar el perfil del tutor.</p>
         </div>
     );
 }
 
-export default StudentDashboardPage;
+export default TutorDashboardPage;

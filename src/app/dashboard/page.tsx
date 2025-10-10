@@ -5,13 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { LogoutButton } from '@/components/logout-button';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, GraduationCap, School, Loader2 } from 'lucide-react';
+import { ArrowRight, GraduationCap, School } from 'lucide-react';
 import Link from 'next/link';
 import { TutorRegistrationForm } from '@/components/tutor-registration-form';
 import { doc } from 'firebase/firestore';
 import { useEffect, useMemo } from 'react';
 import { redirect } from 'next/navigation';
 import { updateUserRole } from '@/app/actions';
+import { StudentLoader } from '@/components/student-loader';
 
 function DashboardPage() {
   const { user } = useUser();
@@ -44,10 +45,7 @@ function DashboardPage() {
   
   if (isLoading || (userProfile && userProfile.role)) {
     return (
-       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-          <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          <p className="mt-4 text-muted-foreground">Cargando tu aula...</p>
-       </div>
+       <StudentLoader loadingText="Cargando tu aula..." />
     )
   }
 

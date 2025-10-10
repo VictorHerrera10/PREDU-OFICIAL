@@ -3,27 +3,27 @@
 import { useMemo } from 'react';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import { StudentProfileForm } from '../student-profile-form';
+import { TutorProfileForm } from '../tutor-profile-form';
 import { User } from 'firebase/auth';
-import { StudentLoader } from '@/components/student-loader';
+import { TutorAdminLoader } from '@/components/tutor-admin-loader';
 
 type UserProfile = {
     id: string;
     username: string;
     email: string;
     isProfileComplete?: boolean;
-    // Add all other fields from the student profile form
     firstName?: string;
     lastName?: string;
     dni?: string;
-    age?: number;
-    grade?: string;
-    city?: string;
-phone?: string;
+    phone?: string;
     institutionId?: string;
+    tutorDetails?: {
+        workArea?: string;
+    };
+    gender?: string;
 };
 
-function StudentProfilePage() {
+function TutorProfilePage() {
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
 
@@ -35,12 +35,10 @@ function StudentProfilePage() {
     const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
     if (isUserLoading || isProfileLoading) {
-        return <StudentLoader loadingText="Cargando tu perfil..." />;
+        return <TutorAdminLoader loadingText="Cargando tu perfil..." />;
     }
 
-    // We can pass the existing user profile data to the form to pre-fill it.
-    // The form component needs to be adapted to accept this data.
-    return <StudentProfileForm user={user as User} profileData={userProfile} />;
+    return <TutorProfileForm user={user as User} profileData={userProfile} />;
 }
 
-export default StudentProfilePage;
+export default TutorProfilePage;
