@@ -97,21 +97,30 @@ export function InstitutionsTable() {
 
   const handleCreate = async (formData: FormData) => {
     setIsProcessing(true);
-    const result = await createInstitution(formData);
-    if (result.success) {
-      toast({
-        title: 'Institución Creada ✅',
-        description: `La institución "${result.name}" ha sido agregada.`,
-      });
-      setIsAddDialogOpen(false);
-    } else {
-      toast({
-        variant: 'destructive',
-        title: 'Error al Crear 😵',
-        description: result.message,
-      });
+    try {
+      const result = await createInstitution(formData);
+      if (result.success) {
+        toast({
+          title: 'Institución Creada ✅',
+          description: `La institución "${result.name}" ha sido agregada.`,
+        });
+        setIsAddDialogOpen(false);
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Error al Crear 😵',
+          description: result.message,
+        });
+      }
+    } catch (error) {
+       toast({
+          variant: 'destructive',
+          title: 'Error Inesperado',
+          description: 'Ocurrió un error al procesar la solicitud.',
+        });
+    } finally {
+        setIsProcessing(false);
     }
-    setIsProcessing(false);
   };
 
   const handleDelete = async (institutionId: string) => {
