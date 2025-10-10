@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import Link from 'next/link';
 
 const levels = [
   {
@@ -228,10 +229,14 @@ export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
                             {level.buttonText}
                           </Button>
                        </form>
+                    ) : level.recommended ? (
+                        <Button asChild className="w-full" variant="destructive">
+                           <Link href="/payment">{level.buttonText}</Link>
+                        </Button>
                     ) : (
                       <Button
                         className="w-full"
-                        variant={level.recommended ? 'destructive' : level.current ? 'outline' : 'secondary'}
+                        variant={level.current ? 'outline' : 'secondary'}
                         disabled={level.current}
                       >
                         {level.buttonText}
