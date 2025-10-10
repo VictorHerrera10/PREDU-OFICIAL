@@ -137,74 +137,76 @@ export function UserNav() {
         <span className="text-xl">{welcomeEmoji}</span>
       </motion.div>
       <div className="flex items-center gap-2">
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative h-10 w-10 rounded-full p-0">
-                    <Bell className="h-6 w-6" />
-                    {unreadCount > 0 && (
-                         <motion.span 
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0, opacity: 0 }}
-                            className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground animate-pulse">
-                            {unreadCount}
-                        </motion.span>
-                    )}
-                    <span className="sr-only">Notificaciones</span>
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-80" align="end" forceMount>
-                <DropdownMenuLabel className="flex justify-between items-center">
-                    <span>Notificaciones</span>
-                    {unreadCount > 0 && <Badge>{unreadCount} nueva(s)</Badge>}
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                 <AnimatePresence>
-                    {notifications.length === 0 ? (
-                         <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                         >
-                            <DropdownMenuItem disabled className="text-center justify-center text-muted-foreground">
-                                No tienes notificaciones.
-                            </DropdownMenuItem>
-                         </motion.div>
-                    ) : (
-                        notifications.map((notif, index) => (
-                             <motion.div
-                                key={notif.id}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                className={cn("relative rounded-lg mb-2", !notif.read && "bg-primary/10")}
-                             >
-                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="flex flex-col items-start gap-1.5 p-3 whitespace-normal">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xl">{notif.emoji}</span>
-                                        <p className="font-bold">{notif.title}</p>
-                                    </div>
-                                    <p className="text-sm text-muted-foreground">{notif.description}</p>
-                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground/80 mt-1">
-                                        <Clock className="w-3 h-3" />
-                                        <span>{format(new Date(notif.createdAt), "dd/MM/yy HH:mm")}</span>
-                                    </div>
+        {userProfile?.role !== 'admin' && (
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="relative h-10 w-10 rounded-full p-0">
+                        <Bell className="h-6 w-6" />
+                        {unreadCount > 0 && (
+                            <motion.span 
+                                initial={{ scale: 0, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0, opacity: 0 }}
+                                className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground animate-pulse">
+                                {unreadCount}
+                            </motion.span>
+                        )}
+                        <span className="sr-only">Notificaciones</span>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-80" align="end" forceMount>
+                    <DropdownMenuLabel className="flex justify-between items-center">
+                        <span>Notificaciones</span>
+                        {unreadCount > 0 && <Badge>{unreadCount} nueva(s)</Badge>}
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <AnimatePresence>
+                        {notifications.length === 0 ? (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                            >
+                                <DropdownMenuItem disabled className="text-center justify-center text-muted-foreground">
+                                    No tienes notificaciones.
                                 </DropdownMenuItem>
-                                 <div className="absolute top-2 right-2 flex gap-1">
-                                    {!notif.read && (
-                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-green-500" onClick={() => markAsRead(notif.id)} title="Marcar como leída">
-                                            <Check className="h-4 w-4" />
+                            </motion.div>
+                        ) : (
+                            notifications.map((notif, index) => (
+                                <motion.div
+                                    key={notif.id}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: index * 0.1 }}
+                                    className={cn("relative rounded-lg mb-2", !notif.read && "bg-primary/10")}
+                                >
+                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="flex flex-col items-start gap-1.5 p-3 whitespace-normal">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xl">{notif.emoji}</span>
+                                            <p className="font-bold">{notif.title}</p>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">{notif.description}</p>
+                                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground/80 mt-1">
+                                            <Clock className="w-3 h-3" />
+                                            <span>{format(new Date(notif.createdAt), "dd/MM/yy HH:mm")}</span>
+                                        </div>
+                                    </DropdownMenuItem>
+                                    <div className="absolute top-2 right-2 flex gap-1">
+                                        {!notif.read && (
+                                            <Button variant="ghost" size="icon" className="h-6 w-6 text-green-500" onClick={() => markAsRead(notif.id)} title="Marcar como leída">
+                                                <Check className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500" onClick={() => deleteNotification(notif.id)} title="Eliminar">
+                                            <Trash2 className="h-4 w-4" />
                                         </Button>
-                                    )}
-                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500" onClick={() => deleteNotification(notif.id)} title="Eliminar">
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                             </motion.div>
-                        ))
-                    )}
-                 </AnimatePresence>
-            </DropdownMenuContent>
-        </DropdownMenu>
+                                    </div>
+                                </motion.div>
+                            ))
+                        )}
+                    </AnimatePresence>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        )}
 
         <AlertDialog>
             <DropdownMenu open={isUserMenuOpen} onOpenChange={setIsUserMenuOpen}>

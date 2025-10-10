@@ -85,6 +85,17 @@ export async function register(prevState: State, formData: FormData): Promise<St
     
     await setDoc(userProfileRef, userProfileData);
 
+    // Create notification for admin
+    await addDoc(collection(firestore, 'notifications'), {
+        type: 'new_user',
+        title: 'Nuevo Usuario Registrado',
+        description: `El usuario ${username} (${email}) se ha unido.`,
+        emoji: '🧑‍🎓',
+        createdAt: serverTimestamp(),
+        read: false,
+    });
+
+
     return { success: true, username: username };
 
   } catch (e: any) {
@@ -252,10 +263,21 @@ export async function createInstitution(formData: FormData) {
   }
 
   try {
-    await addDoc(collection(firestore, 'institutions'), {
+    const docRef = await addDoc(collection(firestore, 'institutions'), {
       ...data,
       createdAt: serverTimestamp(),
     });
+    
+    // Create notification for admin
+    await addDoc(collection(firestore, 'notifications'), {
+        type: 'new_institution',
+        title: 'Nueva Institución Creada',
+        description: `La institución ${data.name} ha sido agregada.`,
+        emoji: '🏫',
+        createdAt: serverTimestamp(),
+        read: false,
+    });
+
     revalidatePath('/admin/institutions');
     return { success: true, name: data.name };
   } catch (error: any) {

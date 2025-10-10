@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Logo } from '@/components/logo';
-import { UserNav } from '@/components/user-nav';
 import { School, Users } from 'lucide-react';
 import {
   SidebarProvider,
@@ -17,6 +16,7 @@ import {
   SidebarInset,
   SidebarFooter,
 } from '@/components/ui/sidebar';
+import { AdminUserNav } from '@/components/admin-user-nav';
 
 const navItems = [
   { href: '/admin', label: 'Gestión de Usuarios', icon: Users },
@@ -64,7 +64,7 @@ export default function AdminLayout({
                     <SidebarTrigger />
                     <h2 className="text-lg font-semibold">Panel de Administración</h2>
                 </div>
-                <UserNav />
+                <AdminUserNav />
             </header>
             <main>{children}</main>
         </SidebarInset>
