@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import useResizeObserver from 'use-resize-observer';
 import Confetti from 'react-confetti';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { WindowControls } from '@/components/window-controls';
-import { Crown, CreditCard, User, Calendar, Lock, Loader2, PartyPopper } from 'lucide-react';
+import { Crown, CreditCard, User, Calendar, Lock, Loader2, PartyPopper, ArrowLeft } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { upgradeToHero } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
@@ -133,6 +134,12 @@ export default function PaymentPage() {
                     )}
                   </Button>
                 </form>
+                 <div className="mt-6 text-center text-sm">
+                    <Link href="/student-dashboard" passHref className="font-semibold text-primary/80 hover:text-primary transition-colors flex items-center justify-center gap-2">
+                    <ArrowLeft className="w-4 h-4" />
+                    Volver
+                    </Link>
+                </div>
               </>
             )}
           </div>
