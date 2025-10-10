@@ -456,79 +456,94 @@ export async function createIndependentTutorGroup(formData: FormData) {
 }
 
 export async function registerHeroTutor(prevState: State, formData: FormData): Promise<State> {
-  const { firestore } = await getAuthenticatedAppForUser();
-  
-  const userId = formData.get('userId') as string;
-  const username = formData.get('username') as string;
-  const email = formData.get('email') as string;
-  const dni = formData.get('dni') as string;
+    const { firestore } = await getAuthenticatedAppForUser();
 
-  if (!userId) {
-    return { success: false, message: 'Debes estar autenticado para enviar una solicitud.' };
-  }
-
-  const requestData = {
-    userId: userId,
-    username: username,
-    email: email,
-    firstName: formData.get('firstName') as string,
-    lastName: formData.get('lastName') as string,
-    dni: dni,
-    gender: formData.get('gender') as string,
-    phone: formData.get('phone') as string,
-    groupName: formData.get('groupName') as string,
-    region: formData.get('region') as string,
-    reasonForUse: formData.get('reasonForUse') as string,
-    status: 'pending' as const, // Initial status
-    createdAt: serverTimestamp(),
-  };
-  
-  // Create a version of requiredFields without the userId
-  const { userId: _, ...requiredFields } = requestData;
-
-  for (const [key, value] of Object.entries(requiredFields)) {
-    if (!value) {
-      return { success: false, message: `El campo ${key} es obligatorio.` };
+    const userId = formData.get('userId') as string;
+    if (!userId) {
+        return { success: false, message: 'Debes estar autenticado para enviar una solicitud.' };
     }
-  }
+    const dni = formData.get('dni') as string;
+    const email = formData.get('email') as string;
 
-  try {
-    // Check if a request with this DNI or email already exists and is not rejected
-    const qDni = query(collection(firestore, "tutorRequests"), where("dni", "==", dni), where("status", "!=", "rejected"));
-    const qEmail = query(collection(firestore, "tutorRequests"), where("email", "==", requestData.email), where("status", "!=", "rejected"));
-    
-    const [dniSnapshot, emailSnapshot] = await Promise.all([getDocs(qDni), getDocs(qEmail)]);
-
-    if (!dniSnapshot.empty) {
-        return { success: false, message: 'Ya existe una solicitud pendiente o aprobada con este DNI.' };
-    }
-     if (!emailSnapshot.empty) {
-        return { success: false, message: 'Ya existe una solicitud pendiente o aprobada con este correo electrónico.' };
-    }
-    
-    // Also save the DNI in the user's profile for later lookup
-    const userProfileRef = doc(firestore, 'users', userId);
-    await updateDoc(userProfileRef, { dni: requestData.dni });
-
-    await addDoc(collection(firestore, 'tutorRequests'), requestData);
-    
-     await addDoc(collection(firestore, 'notifications'), {
-        type: 'new_tutor_request',
-        title: 'Nueva Solicitud de Tutor',
-        description: `El usuario ${requestData.username} (${requestData.email}) ha solicitado ser Tutor Héroe.`,
-        emoji: '🦸',
+    const requestData = {
+        userId: userId,
+        username: formData.get('username') as string,
+        email: email,
+        firstName: formData.get('firstName') as string,
+        lastName: formData.get('lastName') as string,
+        dni: dni,
+        gender: formData.get('gender') as string,
+        phone: formData.get('phone') as string,
+        groupName: formData.get('groupName') as string,
+        region: formData.get('region') as string,
+        reasonForUse: formData.get('reasonForUse') as string,
         createdAt: serverTimestamp(),
-        read: false,
-    });
+    };
     
-    revalidatePath('/admin/requests');
+    // Create a version of requiredFields without the userId
+    const { userId: _, ...requiredFields } = requestData;
 
-    return { success: true, message: 'Tu solicitud ha sido enviada y está pendiente de aprobación.', dni: dni };
+    for (const [key, value] of Object.entries(requiredFields)) {
+        if (!value) {
+            return { success: false, message: `El campo ${key} es obligatorio.` };
+        }
+    }
 
-  } catch (e: any) {
-    console.error("Error creating tutor request:", e);
-    return { success: false, message: 'Ocurrió un error inesperado al enviar tu solicitud.' };
-  }
+    try {
+        // --- Check for existing PENDING or APPROVED requests ---
+        const qActiveDni = query(collection(firestore, "tutorRequests"), where("dni", "==", dni), where("status", "in", ["pending", "approved"]));
+        const qActiveEmail = query(collection(firestore, "tutorRequests"), where("email", "==", email), where("status", "in", ["pending", "approved"]));
+        
+        const [activeDniSnapshot, activeEmailSnapshot] = await Promise.all([getDocs(qActiveDni), getDocs(qActiveEmail)]);
+
+        if (!activeDniSnapshot.empty) {
+            return { success: false, message: 'Ya existe una solicitud pendiente o aprobada con este DNI.' };
+        }
+        if (!activeEmailSnapshot.empty) {
+            return { success: false, message: 'Ya existe una solicitud pendiente o aprobada con este correo electrónico.' };
+        }
+        
+        // --- Check for an existing REJECTED request to UPDATE ---
+        const qRejected = query(collection(firestore, "tutorRequests"), where("userId", "==", userId), where("status", "==", "rejected"));
+        const rejectedSnapshot = await getDocs(qRejected);
+        
+        if (!rejectedSnapshot.empty) {
+            // Found a rejected request, let's update it
+            const existingRequestRef = rejectedSnapshot.docs[0].ref;
+            await updateDoc(existingRequestRef, {
+                ...requestData, // Update with all new data
+                status: 'pending', // Reset status
+                notifiedRejected: false, // Reset notification flag
+            });
+        } else {
+            // No existing request found, create a new one
+            await addDoc(collection(firestore, 'tutorRequests'), {
+                ...requestData,
+                status: 'pending',
+            });
+        }
+
+        // --- Finalize ---
+        const userProfileRef = doc(firestore, 'users', userId);
+        await updateDoc(userProfileRef, { dni: requestData.dni });
+
+        await addDoc(collection(firestore, 'notifications'), {
+            type: 'new_tutor_request',
+            title: 'Nueva Solicitud de Tutor',
+            description: `El usuario ${requestData.username} (${requestData.email}) ha solicitado ser Tutor Héroe.`,
+            emoji: '🦸',
+            createdAt: serverTimestamp(),
+            read: false,
+        });
+        
+        revalidatePath('/admin/requests');
+
+        return { success: true, message: 'Tu solicitud ha sido enviada y está pendiente de aprobación.', dni: dni };
+
+    } catch (e: any) {
+        console.error("Error creating tutor request:", e);
+        return { success: false, message: 'Ocurrió un error inesperado al enviar tu solicitud.' };
+    }
 }
 
 export async function approveTutorRequest(requestId: string) {
