@@ -33,6 +33,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { SubmitButton } from "./submit-button";
 import { cn } from "@/lib/utils";
 import { Crown } from "lucide-react";
+import { useUser } from "@/firebase";
 
 
 type State = {
@@ -54,6 +55,7 @@ export function HeroTutorForm({ children }: { children: React.ReactNode }) {
     const [state, formAction] = useActionState(registerHeroTutor, initialState);
     const { ref, width = 0, height = 0 } = useResizeObserver<HTMLBodyElement>();
     const [selectedGender, setSelectedGender] = useState('');
+    const { user } = useUser();
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -98,6 +100,9 @@ export function HeroTutorForm({ children }: { children: React.ReactNode }) {
                     </DialogHeader>
                     <ScrollArea className="h-96">
                         <div className="space-y-4 py-4 pr-6">
+                             <input type="hidden" name="userId" value={user?.uid} />
+                             <input type="hidden" name="username" value={user?.displayName || ''} />
+                             <input type="hidden" name="email" value={user?.email || ''} />
                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="firstName">Nombres</Label>

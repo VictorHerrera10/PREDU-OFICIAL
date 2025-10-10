@@ -456,18 +456,21 @@ export async function createIndependentTutorGroup(formData: FormData) {
 }
 
 export async function registerHeroTutor(prevState: State, formData: FormData): Promise<State> {
-  const { auth, firestore } = await getAuthenticatedAppForUser();
-  const user = auth.currentUser;
+  const { firestore } = await getAuthenticatedAppForUser();
+  
+  const userId = formData.get('userId') as string;
+  const username = formData.get('username') as string;
+  const email = formData.get('email') as string;
+  const dni = formData.get('dni') as string;
 
-  if (!user) {
+  if (!userId) {
     return { success: false, message: 'Debes estar autenticado para enviar una solicitud.' };
   }
 
-  const dni = formData.get('dni') as string;
   const requestData = {
-    userId: user.uid,
-    username: user.displayName,
-    email: user.email,
+    userId: userId,
+    username: username,
+    email: email,
     firstName: formData.get('firstName') as string,
     lastName: formData.get('lastName') as string,
     dni: dni,
@@ -480,7 +483,7 @@ export async function registerHeroTutor(prevState: State, formData: FormData): P
     createdAt: serverTimestamp(),
   };
   
-  const { userId, ...requiredFields } = requestData;
+  const { userId: uid, ...requiredFields } = requestData;
   for (const [key, value] of Object.entries(requiredFields)) {
     if (!value) {
       return { success: false, message: `El campo ${key} es obligatorio.` };
@@ -522,7 +525,7 @@ export async function registerHeroTutor(prevState: State, formData: FormData): P
 }
 
 export async function approveTutorRequest(requestId: string) {
-    const { auth, firestore } = await getAuthenticatedAppForUser();
+    const { firestore } = await getAuthenticatedAppForUser();
     const requestRef = doc(firestore, 'tutorRequests', requestId);
 
     try {
