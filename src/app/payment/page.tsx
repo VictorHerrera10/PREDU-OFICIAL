@@ -91,12 +91,12 @@ export default function PaymentPage() {
               </div>
             ) : (
               <>
-                <Link href="/student-dashboard" passHref className="absolute top-4 left-4 font-semibold text-primary/80 hover:text-primary transition-colors flex items-center justify-center gap-1 text-sm">
+                <Link href="/student-dashboard" passHref className="absolute top-4 left-4 font-semibold text-primary/80 hover:text-primary transition-colors flex items-center justify-center gap-1">
                     <ArrowLeft className="w-4 h-4" />
                     Volver
                 </Link>
 
-                <CardHeader className="p-0 pt-10 mb-6 text-center">
+                <CardHeader className="p-0 mb-6 text-center">
                   <Crown className="w-12 h-12 mx-auto text-destructive mb-2" />
                   <CardTitle className="text-2xl font-bold text-primary">Nivel Héroe</CardTitle>
                   <CardDescription>
