@@ -111,7 +111,7 @@ export function TutorRegistrationForm({ children }: { children: React.ReactNode 
       <DialogContent className="sm:max-w-md">
          <div className="absolute top-4 right-4">
             <UniqueTutorPlans>
-                 <Button variant="link" className="text-xs h-auto p-0">¿Eres un tutor independiente?</Button>
+                 <Button variant="outline" className="text-xs h-auto p-2 border-dashed hover:border-primary hover:text-primary transition-all">¿Eres un tutor independiente?</Button>
             </UniqueTutorPlans>
         </div>
         <form action={formAction}>

@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import useResizeObserver from 'use-resize-observer';
+import Confetti from 'react-confetti';
 import { Dialog, DialogContent, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +11,16 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 const plans = [
+    {
+    name: 'Nivel Institucional',
+    icon: Gem,
+    price: 'Plan Institucional',
+    description: 'Accede con el código de tu colegio para desbloquear todas las herramientas de gestión y mentoría.',
+    features: ['Todo del Nivel Héroe', 'Contacto y chat con tutores', 'Vinculación a tu institución', 'Mentoría y reportes avanzados', 'Foro inter-institucional'],
+    buttonText: 'Registrarme por Institución',
+    borderColor: 'border-blue-500',
+    isInstitutional: true,
+  },
   {
     name: 'Nivel Héroe',
     icon: Crown,
@@ -16,8 +28,7 @@ const plans = [
     description: 'Potencia tu camino con análisis avanzados y herramientas de exploración profesional.',
     features: [
         'Todo del Nivel Caballero', 
-        'Chatbot con IA y Consejos personalizados',
-        'Reportes avanzados y análisis detallado', 
+        'Chatbot con IA, consejos y reportes avanzados',
         'Explorador de carreras, universidades y becas', 
         'Enviar reportes por correo',
         'Contacto con soporte 24/7'
@@ -26,26 +37,45 @@ const plans = [
     recommended: true,
     borderColor: 'border-destructive',
   },
-  {
-    name: 'Nivel Institucional',
-    icon: Gem,
-    price: 'S/ 39.99',
-    description: 'Desbloquea el dominio total de tu futuro profesional al vincularte con tu institución educativa.',
-    features: ['Todo del Nivel Héroe', 'Contacto y chat con tutores', 'Vinculación a tu institución', 'Mentoría y reportes avanzados', 'Foro inter-institucional'],
-    buttonText: 'Adquirir Plan Institucional',
-    borderColor: 'border-blue-500',
-  },
 ];
 
 export function UniqueTutorPlans({ children }: { children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
+    const [showConfetti, setShowConfetti] = useState(false);
+    const { ref, width = 0, height = 0 } = useResizeObserver<HTMLBodyElement>();
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            ref(document.body);
+        }
+    }, [ref]);
+
+    const handleOpenChange = (open: boolean) => {
+        setIsOpen(open);
+        if (open) {
+            setShowConfetti(true);
+        }
+    };
+
 
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
                 {children}
             </DialogTrigger>
              <DialogContent className="max-w-4xl w-full bg-background/95 backdrop-blur-sm border-border/50 shadow-lg p-6">
+                {showConfetti && (
+                    <div className="fixed inset-0 z-[101] pointer-events-none">
+                        <Confetti
+                            width={width}
+                            height={height}
+                            recycle={false}
+                            numberOfPieces={400}
+                            gravity={0.1}
+                            onConfettiComplete={() => setShowConfetti(false)}
+                        />
+                    </div>
+                )}
                 <DialogClose className="absolute right-6 top-6 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary z-50">
                     <X className="h-5 w-5" />
                     <span className="sr-only">Cerrar</span>
@@ -81,7 +111,7 @@ export function UniqueTutorPlans({ children }: { children: React.ReactNode }) {
                             <plan.icon
                             className={cn(
                                 'w-8 h-8 mb-2',
-                                plan.recommended ? 'text-destructive' : 'text-blue-500'
+                                plan.borderColor === 'border-destructive' ? 'text-destructive' : 'text-blue-500'
                             )}
                             />
                             <CardTitle className="text-base font-bold">{plan.name}</CardTitle>
@@ -99,12 +129,22 @@ export function UniqueTutorPlans({ children }: { children: React.ReactNode }) {
                             </ul>
                         </CardContent>
                         <CardFooter>
-                            <Button
-                                className="w-full"
-                                variant={plan.recommended ? 'destructive' : 'secondary'}
-                            >
-                                {plan.buttonText}
-                            </Button>
+                            {plan.isInstitutional ? (
+                                <Button
+                                    className="w-full"
+                                    variant="secondary"
+                                    onClick={() => setIsOpen(false)}
+                                >
+                                    {plan.buttonText}
+                                </Button>
+                            ) : (
+                                <Button
+                                    className="w-full"
+                                    variant={plan.recommended ? 'destructive' : 'secondary'}
+                                >
+                                    {plan.buttonText}
+                                </Button>
+                            )}
                         </CardFooter>
                         </Card>
                     </motion.div>
