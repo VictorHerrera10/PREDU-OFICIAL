@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useUser, useFirestore, useDoc } from '@/firebase';
+import { doc } from 'firebase/firestore';
 import { Logo } from '@/components/logo';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { UserNav } from '@/components/user-nav';
@@ -11,6 +13,8 @@ import HomeView from './views/HomeView';
 import AcademicPredictionView from './views/AcademicPredictionView';
 import PsychologicalPredictionView from './views/PsychologicalPredictionView';
 import { LevelUpView } from './views/LevelUpView';
+import { cn } from '@/lib/utils';
+import { StudentLoader } from '@/components/student-loader';
 
 type View = 'inicio' | 'prediccionAcademica' | 'prediccionPsicologica';
 
@@ -27,12 +31,24 @@ const options: Option[] = [
   { id: 'prediccionPsicologica', icon: BrainCircuit, title: 'Predicción Psicológica', description: 'Entiende tus fortalezas y áreas de mejora personal.' },
 ];
 
+type UserProfile = {
+  isHero?: boolean;
+};
+
 type Props = {
     user: User | null;
 };
 
 export function StudentMainDashboard({ user }: Props) {
   const [selectedView, setSelectedView] = useState<View | null>(null);
+  const firestore = useFirestore();
+
+  const userProfileRef = useMemo(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [user, firestore]);
+
+  const { data: userProfile, isLoading } = useDoc<UserProfile>(userProfileRef);
 
   const renderContent = () => {
     switch (selectedView) {
@@ -47,8 +63,12 @@ export function StudentMainDashboard({ user }: Props) {
     }
   };
 
+  if (isLoading) {
+    return <StudentLoader loadingText="Cargando tu nivel de Héroe..." />;
+  }
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className={cn("flex flex-col min-h-screen", userProfile?.isHero && 'theme-hero')}>
       <header className="fixed top-0 left-0 right-0 p-4 flex justify-between items-center z-20 bg-background/80 backdrop-blur-sm border-b">
         <Logo />
         <UserNav />
