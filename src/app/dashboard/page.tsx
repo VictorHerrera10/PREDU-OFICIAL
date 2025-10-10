@@ -2,51 +2,100 @@
 
 import { Logo } from '@/components/logo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useUser, useFirestore, useDoc } from '@/firebase';
+import { useUser, useFirestore, useDoc, useCollection } from '@/firebase';
 import { LogoutButton } from '@/components/logout-button';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, GraduationCap, School } from 'lucide-react';
 import Link from 'next/link';
 import { TutorRegistrationForm } from '@/components/tutor-registration-form';
-import { doc } from 'firebase/firestore';
-import { useEffect, useMemo } from 'react';
-import { redirect } from 'next/navigation';
+import { doc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
+import { useEffect, useMemo, useState } from 'react';
+import { redirect, useRouter } from 'next/navigation';
 import { updateUserRole } from '@/app/actions';
 import { StudentLoader } from '@/components/student-loader';
+import { useToast } from '@/hooks/use-toast';
+
+type UserProfile = {
+  id: string;
+  role?: 'student' | 'tutor' | 'admin';
+  dni?: string;
+};
+
+type TutorRequest = {
+  id: string;
+  status: 'pending' | 'approved' | 'rejected';
+  notifiedRejected?: boolean;
+};
 
 function DashboardPage() {
   const { user } = useUser();
   const firestore = useFirestore();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [initialCheckComplete, setInitialCheckComplete] = useState(false);
 
   const userProfileRef = useMemo(() => {
     if (!user || !firestore) return null;
     return doc(firestore, 'users', user.uid);
   }, [user, firestore]);
 
-  const { data: userProfile, isLoading } = useDoc(userProfileRef);
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
+
+  // Query for tutor requests using the user's ID
+  const tutorRequestQuery = useMemo(() => {
+    if (!user || !firestore) return null;
+    return query(collection(firestore, 'tutorRequests'), where('userId', '==', user.uid));
+  }, [user, firestore]);
+
+  const { data: tutorRequests, isLoading: isRequestLoading } = useCollection<TutorRequest>(tutorRequestQuery);
+  const tutorRequest = tutorRequests?.[0];
 
   useEffect(() => {
-    if (!isLoading && userProfile?.role) {
-      if (userProfile.role === 'student') {
-        redirect('/student-dashboard');
-      } else if (userProfile.role === 'tutor') {
-        redirect('/tutor-dashboard');
-      } else if (userProfile.role === 'admin') {
-        redirect('/admin');
+    if (isProfileLoading || isRequestLoading || !userProfile) {
+      return;
+    }
+
+    // 1. Check for an existing role first (most common case)
+    if (userProfile.role) {
+      if (userProfile.role === 'student') redirect('/student-dashboard');
+      if (userProfile.role === 'tutor') redirect('/tutor-dashboard');
+      if (userProfile.role === 'admin') redirect('/admin');
+      return;
+    }
+
+    // 2. If no role, check for tutor requests
+    if (tutorRequest) {
+      if (tutorRequest.status === 'pending') {
+        // Redirect to status page if request is pending
+        redirect(`/tutor-request-status?dni=${userProfile.dni}`);
+        return;
+      }
+
+      if (tutorRequest.status === 'rejected' && !tutorRequest.notifiedRejected) {
+        // Show a toast for rejected request and mark it as notified
+        toast({
+          variant: "destructive",
+          title: "Solicitud de Tutor Rechazada",
+          description: "Tu solicitud anterior para ser Tutor Héroe no fue aprobada. Puedes intentarlo de nuevo o elegir otro rol.",
+        });
+        const requestRef = doc(firestore, 'tutorRequests', tutorRequest.id);
+        updateDoc(requestRef, { notifiedRejected: true });
       }
     }
-  }, [isLoading, userProfile]);
 
+    // 3. If no role and no pending request, the initial check is complete.
+    setInitialCheckComplete(true);
+
+  }, [isProfileLoading, isRequestLoading, userProfile, tutorRequest, router, toast, firestore]);
+  
   const handleSetRole = async (role: 'student' | 'tutor') => {
     if (user) {
       await updateUserRole(user.uid, role);
     }
   };
   
-  if (isLoading || (userProfile && userProfile.role)) {
-    return (
-       <StudentLoader loadingText="Cargando tu aula..." />
-    )
+  if (isProfileLoading || isRequestLoading || !initialCheckComplete) {
+    return <StudentLoader loadingText="Cargando tu aula..." />;
   }
 
   return (

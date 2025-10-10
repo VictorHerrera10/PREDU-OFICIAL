@@ -255,6 +255,7 @@
             "region": { "type": "string" },
             "reasonForUse": { "type": "string" },
             "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+            "notifiedRejected": { "type": "boolean" },
             "createdAt": { "type": "string", "format": "date-time" }
         },
         "required": ["userId", "email", "dni", "status"]
