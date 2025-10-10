@@ -81,8 +81,12 @@ export default function TutorVerificationPage() {
       <div className="w-full max-w-md">
         <Card className="bg-card/60 backdrop-blur-lg border-border/50 overflow-hidden">
           <WindowControls />
-          <div className="p-6 md:p-8">
-            <CardHeader className="p-0 mb-6 text-center">
+          <div className="relative p-6 md:p-8">
+            <Button variant="ghost" size="sm" onClick={() => handleLogout(auth, router, toast)} className="absolute top-2 left-2 text-primary/80 hover:text-primary transition-colors flex items-center gap-1 text-xs">
+                <ArrowLeft className="w-3 h-3" />
+                Volver al Login
+            </Button>
+            <CardHeader className="p-0 pt-8 mb-6 text-center">
               <CheckCircle className="w-16 h-16 mx-auto text-green-500 mb-4" />
               <CardTitle className="text-2xl font-bold text-primary">¡Solicitud Aprobada!</CardTitle>
               <CardDescription>
@@ -119,14 +123,8 @@ export default function TutorVerificationPage() {
                     </div>
                 </div>
 
-                <SubmitButton className="w-full">Acceder al Dashboard</SubmitButton>
+                <SubmitButton className="w-full btn-retro">Acceder al Dashboard</SubmitButton>
             </form>
-            <div className="mt-6 text-center text-sm">
-                <Button variant="link" onClick={() => handleLogout(auth, router, toast)} className="font-semibold text-primary/80 hover:text-primary transition-colors flex items-center justify-center gap-2">
-                    <ArrowLeft className="w-4 h-4" />
-                    Volver al Login
-                </Button>
-            </div>
           </div>
         </Card>
       </div>
