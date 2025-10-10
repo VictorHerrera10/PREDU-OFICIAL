@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useFirestore, useCollection } from '@/firebase';
 import { collection, query, where, limit } from 'firebase/firestore';
@@ -12,13 +12,15 @@ import { Button } from '@/components/ui/button';
 
 type TutorRequest = {
   id: string;
+  userId: string;
   status: 'pending' | 'approved' | 'rejected';
   groupName?: string;
-  uniqueCode?: string; // This will be on the IndependentTutorGroup, not the request
+  uniqueCode?: string; 
 };
 
 type IndependentTutorGroup = {
     uniqueCode: string;
+    tutorId: string;
 }
 
 function StatusDisplay() {
@@ -43,14 +45,13 @@ function StatusDisplay() {
         if (!firestore || !request || request.status !== 'approved') return null;
         return query(
             collection(firestore, 'independentTutorGroups'),
-            where('tutorId', '==', request.id), // Assuming the user ID is stored on the request
+            where('tutorId', '==', request.userId), 
             limit(1)
         )
     }, [firestore, request]);
     
-    // We can't query by tutorId because the user isn't created yet.
-    // The approval action will need to add the groupCode to the request doc, or we need another way to link.
-    // Let's assume for now the approval process adds the `uniqueCode` to the `tutorRequest` doc for simplicity.
+    const { data: groups, isLoading: isLoadingGroup } = useCollection<IndependentTutorGroup>(groupQuery);
+    const group = groups?.[0];
 
     if (!dni) {
         return (
@@ -65,7 +66,7 @@ function StatusDisplay() {
         );
     }
 
-    if (isLoadingRequest) {
+    if (isLoadingRequest || isLoadingGroup) {
         return (
              <div className="flex flex-col items-center gap-4">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -121,7 +122,7 @@ function StatusDisplay() {
                      <p className="text-muted-foreground">Usa el siguiente código para que tus estudiantes se unan a tu grupo <span className="font-bold text-foreground">{request.groupName}</span>:</p>
                     <div className="p-4 bg-muted border border-dashed rounded-lg flex items-center justify-center gap-4">
                         <KeySquare className="w-8 h-8 text-primary" />
-                        <code className="text-3xl font-bold text-primary tracking-widest">{request.uniqueCode}</code>
+                        <code className="text-3xl font-bold text-primary tracking-widest">{group?.uniqueCode || '...'}</code>
                     </div>
                      <Button asChild size="lg" className="w-full">
                         <Link href="/login">Ir a Iniciar Sesión</Link>
