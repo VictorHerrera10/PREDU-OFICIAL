@@ -456,13 +456,18 @@ export async function createIndependentTutorGroup(formData: FormData) {
 }
 
 export async function registerHeroTutor(prevState: State, formData: FormData): Promise<State> {
-  const { firestore } = await getAuthenticatedAppForUser();
+  const { auth, firestore } = await getAuthenticatedAppForUser();
+  const user = auth.currentUser;
+
+  if (!user) {
+    return { success: false, message: 'Debes estar autenticado para enviar una solicitud.' };
+  }
 
   const dni = formData.get('dni') as string;
   const requestData = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string, // Store hashed or handle securely
-    username: formData.get('username') as string,
+    userId: user.uid,
+    username: user.displayName,
+    email: user.email,
     firstName: formData.get('firstName') as string,
     lastName: formData.get('lastName') as string,
     dni: dni,
@@ -475,7 +480,7 @@ export async function registerHeroTutor(prevState: State, formData: FormData): P
     createdAt: serverTimestamp(),
   };
   
-  const requiredFields = { ...requestData };
+  const { userId, ...requiredFields } = requestData;
   for (const [key, value] of Object.entries(requiredFields)) {
     if (!value) {
       return { success: false, message: `El campo ${key} es obligatorio.` };
@@ -528,33 +533,25 @@ export async function approveTutorRequest(requestId: string) {
 
         const requestData = requestSnap.data();
 
-        // 1. Create Firebase Auth user
-        const userCredential = await createUserWithEmailAndPassword(auth, requestData.email, requestData.password);
-        const user = userCredential.user;
-        await updateProfile(user, { displayName: requestData.username });
+        // 1. Get the existing user by UID from the request
+        const userToUpdateRef = doc(firestore, 'users', requestData.userId);
 
-        // 2. Create UserProfile document in Firestore
-        const userProfileRef = doc(firestore, 'users', user.uid);
-        await setDoc(userProfileRef, {
-            id: user.uid,
-            username: requestData.username,
-            email: requestData.email,
+        // 2. Update their profile with tutor information
+        await updateDoc(userToUpdateRef, {
             firstName: requestData.firstName,
             lastName: requestData.lastName,
             dni: requestData.dni,
             gender: requestData.gender,
             phone: requestData.phone,
             role: 'tutor',
-            isProfileComplete: true,
-            creationDate: serverTimestamp(),
-            lastLogin: serverTimestamp(),
+            isProfileComplete: true, // Mark as complete since they filled the form
         });
 
         // 3. Create IndependentTutorGroup document in Firestore
         const groupData = {
             name: requestData.groupName,
             tutorName: `${requestData.firstName} ${requestData.lastName}`,
-            tutorId: user.uid,
+            tutorId: requestData.userId,
             region: requestData.region,
             reasonForUse: requestData.reasonForUse,
             uniqueCode: generateUniqueCode(),
