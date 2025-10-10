@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useRef, useState } from 'react';
+import { useActionState, useEffect, useRef, useState, ChangeEvent, KeyboardEvent, ClipboardEvent } from 'react';
 import Link from 'next/link';
 import { useUser, useAuth } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
@@ -29,7 +29,7 @@ export default function TutorVerificationPage() {
   const router = useRouter();
   const [state, formAction] = useActionState(verifyTutorAndLogin, initialState);
 
-  const [uniqueCode, setUniqueCode] = useState(Array(6).fill(''));
+  const [uniqueCode, setUniqueCode] = useState('');
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -42,34 +42,39 @@ export default function TutorVerificationPage() {
     }
   }, [state, toast]);
   
-  const handleCodeChange = (index: number, value: string) => {
-    if (/^[a-zA-Z0-9]*$/.test(value) && value.length <= 1) {
-      const newCode = [...uniqueCode];
-      newCode[index] = value.toUpperCase();
-      setUniqueCode(newCode);
+  const handleCodeChange = (e: ChangeEvent<HTMLInputElement>, index: number) => {
+    const { value } = e.target;
+    const newCode = uniqueCode.split('');
 
-      if (value && index < 5) {
-        inputRefs.current[index + 1]?.focus();
-      }
+    // Ensure only one character is processed
+    const char = value.slice(-1).toUpperCase();
+
+    if (/^[A-Z0-9]$/.test(char) || char === '') {
+        newCode[index] = char;
+        setUniqueCode(newCode.join('').slice(0, 6));
+
+        // Move focus to next input if a character was entered
+        if (char !== '' && index < 5) {
+            inputRefs.current[index + 1]?.focus();
+        }
+    } else if (value === '') { // Handles backspace on an already empty input
+        newCode[index] = '';
+        setUniqueCode(newCode.join('').slice(0, 6));
     }
   };
-  
-   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && !uniqueCode[index] && index > 0) {
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === 'Backspace' && uniqueCode[index] === '' && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
   };
 
-  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+  const handlePaste = (e: ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').toUpperCase().slice(0, 6);
-    const newCode = [...uniqueCode];
-    for (let i = 0; i < 6; i++) {
-      newCode[i] = pastedData[i] || '';
-    }
-    setUniqueCode(newCode);
-
-    const lastFullIndex = Math.min(pastedData.length, 6) -1;
+    const pastedData = e.clipboardData.getData('text').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    setUniqueCode(pastedData.padEnd(6, '')); // Pad to avoid uncontrolled component issues if paste is short
+    
+    const lastFullIndex = Math.min(pastedData.length, 6) - 1;
     if (lastFullIndex >= 0 && inputRefs.current[lastFullIndex]) {
        inputRefs.current[lastFullIndex]?.focus();
     }
@@ -96,7 +101,7 @@ export default function TutorVerificationPage() {
             
             <form action={formAction} className="space-y-6">
                 <input type="hidden" name="userId" value={user?.uid} />
-                <input type="hidden" name="uniqueCode" value={uniqueCode.join('')} />
+                <input type="hidden" name="uniqueCode" value={uniqueCode} />
                 
                 <div className="space-y-2">
                     <Label htmlFor="dni">Documento Nacional de Identidad (DNI)</Label>
@@ -106,15 +111,15 @@ export default function TutorVerificationPage() {
                 <div className="pt-4 flex flex-col items-center">
                     <Label className="flex items-center gap-2 mb-2 text-center"><KeySquare className="w-4 h-4"/> Código de Grupo</Label>
                     <div className="flex justify-center gap-2">
-                        {uniqueCode.map((digit, index) => (
+                        {Array.from({ length: 6 }).map((_, index) => (
                             <Input
                                 key={index}
                                 ref={el => inputRefs.current[index] = el}
                                 type="text"
                                 maxLength={1}
-                                value={digit}
-                                onChange={(e) => handleCodeChange(index, e.target.value)}
-                                onKeyDown={(e) => handleKeyDown(index, e)}
+                                value={uniqueCode[index] || ''}
+                                onChange={(e) => handleCodeChange(e, index)}
+                                onKeyDown={(e) => handleKeyDown(e, index)}
                                 onPaste={handlePaste}
                                 className="w-10 h-10 text-center text-lg font-mono uppercase bg-input"
                                 required
