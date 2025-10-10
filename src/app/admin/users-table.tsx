@@ -214,7 +214,7 @@ export function UsersTable() {
                             <Input
                                 id="username"
                                 name="username"
-                                defaultValue={selectedUser.username}
+                                defaultValue={selectedUser.username || ''}
                                 required
                             />
                         </div>
@@ -223,7 +223,7 @@ export function UsersTable() {
                             <Input
                                 id="email"
                                 name="email"
-                                value={selectedUser.email}
+                                value={selectedUser.email || ''}
                                 readOnly
                                 disabled
                             />

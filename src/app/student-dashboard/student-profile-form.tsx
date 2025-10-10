@@ -135,22 +135,22 @@ export function StudentProfileForm({ user, profileData }: Props) {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="firstName" className="flex items-center gap-2"><UserIcon className="w-4 h-4"/> Nombres</Label>
-                                <Input id="firstName" name="firstName" placeholder="Tus nombres completos" defaultValue={profileData?.firstName} required />
+                                <Input id="firstName" name="firstName" placeholder="Tus nombres completos" defaultValue={profileData?.firstName || ''} required />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="lastName" className="flex items-center gap-2"><CaseSensitive className="w-4 h-4"/> Apellidos</Label>
-                                <Input id="lastName" name="lastName" placeholder="Tus apellidos completos" defaultValue={profileData?.lastName} required />
+                                <Input id="lastName" name="lastName" placeholder="Tus apellidos completos" defaultValue={profileData?.lastName || ''} required />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 items-end">
                              <div className="space-y-2">
                                 <Label htmlFor="dni" className="flex items-center gap-2"><Hash className="w-4 h-4"/> DNI</Label>
-                                <Input id="dni" name="dni" type="text" placeholder="8 dígitos" defaultValue={profileData?.dni} required maxLength={8} pattern="\d{8}" />
+                                <Input id="dni" name="dni" type="text" placeholder="8 dígitos" defaultValue={profileData?.dni || ''} required maxLength={8} pattern="\d{8}" />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="age" className="flex items-center gap-2"><Calendar className="w-4 h-4"/> Edad</Label>
-                                <Input id="age" name="age" type="number" placeholder="Ej: 16" defaultValue={profileData?.age} required className="w-full" />
+                                <Input id="age" name="age" type="number" placeholder="Ej: 16" defaultValue={profileData?.age || ''} required className="w-full" />
                             </div>
                              <div className="space-y-2">
                                 <Label htmlFor="grade" className="flex items-center gap-2"><BookOpen className="w-4 h-4"/> Grado</Label>
@@ -171,7 +171,7 @@ export function StudentProfileForm({ user, profileData }: Props) {
                          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 items-end">
                              <div className="space-y-2">
                                 <Label htmlFor="city" className="flex items-center gap-2"><Map className="w-4 h-4"/> Ciudad</Label>
-                                <Input id="city" name="city" placeholder="Donde vives" defaultValue={profileData?.city} required />
+                                <Input id="city" name="city" placeholder="Donde vives" defaultValue={profileData?.city || ''} required />
                             </div>
                              <div className="space-y-2 text-center">
                                 <Label className="flex items-center gap-2 mb-2.5 justify-center"><VenetianMask className="w-4 h-4"/> Género</Label>
@@ -192,7 +192,7 @@ export function StudentProfileForm({ user, profileData }: Props) {
                             </div>
                              <div className="space-y-2">
                                 <Label htmlFor="phone" className="flex items-center gap-2"><Phone className="w-4 h-4"/> Teléfono</Label>
-                                <Input id="phone" name="phone" placeholder="9 dígitos" defaultValue={profileData?.phone} required maxLength={9} />
+                                <Input id="phone" name="phone" placeholder="9 dígitos" defaultValue={profileData?.phone || ''} required maxLength={9} />
                             </div>
                         </div>
                         

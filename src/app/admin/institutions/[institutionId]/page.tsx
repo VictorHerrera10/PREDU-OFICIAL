@@ -232,19 +232,19 @@ export default function InstitutionDetailsPage() {
                         <h3 className="font-semibold text-lg text-primary">Información General</h3>
                         <div className="space-y-2">
                             <Label htmlFor="name">🏫 Nombre de la Institución</Label>
-                            <Input id="name" name="name" defaultValue={institution.name} required />
+                            <Input id="name" name="name" defaultValue={institution.name || ''} required />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="address">🗺️ Dirección Completa</Label>
-                            <Input id="address" name="address" defaultValue={institution.address} required />
+                            <Input id="address" name="address" defaultValue={institution.address || ''} required />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="contactEmail">📧 Email de Contacto General</Label>
-                            <Input id="contactEmail" name="contactEmail" type="email" defaultValue={institution.contactEmail} required />
+                            <Input id="contactEmail" name="contactEmail" type="email" defaultValue={institution.contactEmail || ''} required />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="logoUrl">🖼️ URL del Logo (Opcional)</Label>
-                            <Input id="logoUrl" name="logoUrl" defaultValue={institution.logoUrl} />
+                            <Input id="logoUrl" name="logoUrl" defaultValue={institution.logoUrl || ''} />
                         </div>
                     </div>
 
@@ -274,11 +274,11 @@ export default function InstitutionDetailsPage() {
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="studentLimit">🧑‍🎓 Límite de Estudiantes</Label>
-                            <Input id="studentLimit" name="studentLimit" type="number" defaultValue={institution.studentLimit} required />
+                            <Input id="studentLimit" name="studentLimit" type="number" defaultValue={institution.studentLimit || 0} required />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="tutorLimit">🧑‍🏫 Límite de Tutores</Label>
-                            <Input id="tutorLimit" name="tutorLimit" type="number" defaultValue={institution.tutorLimit} required />
+                            <Input id="tutorLimit" name="tutorLimit" type="number" defaultValue={institution.tutorLimit || 0} required />
                         </div>
                     </div>
 
@@ -288,15 +288,15 @@ export default function InstitutionDetailsPage() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="space-y-2">
                                 <Label htmlFor="directorName">👤 Nombre del Director</Label>
-                                <Input id="directorName" name="directorName" defaultValue={institution.directorName} required />
+                                <Input id="directorName" name="directorName" defaultValue={institution.directorName || ''} required />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="directorEmail">✉️ Email del Director</Label>
-                                <Input id="directorEmail" name="directorEmail" type="email" defaultValue={institution.directorEmail} required />
+                                <Input id="directorEmail" name="directorEmail" type="email" defaultValue={institution.directorEmail || ''} required />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="directorPhone">📞 Teléfono del Director (Opcional)</Label>
-                                <Input id="directorPhone" name="directorPhone" defaultValue={institution.directorPhone} />
+                                <Input id="directorPhone" name="directorPhone" defaultValue={institution.directorPhone || ''} />
                             </div>
                         </div>
                     </div>
