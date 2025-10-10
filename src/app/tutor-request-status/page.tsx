@@ -1,14 +1,17 @@
 'use client';
 
 import { Suspense, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { useFirestore, useCollection } from '@/firebase';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useFirestore, useCollection, useAuth } from '@/firebase';
 import { collection, query, where, limit } from 'firebase/firestore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Clock, CheckCircle, XCircle, KeySquare } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { handleLogout } from '@/components/logout-button';
+import { useToast } from '@/hooks/use-toast';
+
 
 type TutorRequest = {
   id: string;
@@ -25,6 +28,9 @@ type IndependentTutorGroup = {
 
 function StatusDisplay() {
     const searchParams = useSearchParams();
+    const router = useRouter();
+    const auth = useAuth();
+    const { toast } = useToast();
     const dni = searchParams.get('dni');
     const firestore = useFirestore();
 
@@ -83,8 +89,8 @@ function StatusDisplay() {
                 </CardHeader>
                 <CardContent>
                     <p>No pudimos encontrar una solicitud asociada a este DNI.</p>
-                     <Button asChild className="mt-4">
-                        <Link href="/">Volver al Inicio</Link>
+                     <Button onClick={() => handleLogout(auth, router, toast)} className="mt-4 btn-retro">
+                        Volver al Inicio
                     </Button>
                 </CardContent>
             </Card>
@@ -103,8 +109,8 @@ function StatusDisplay() {
                 </CardHeader>
                 <CardContent>
                     <p className="text-sm text-muted-foreground mb-6">Recibirás una notificación o un correo electrónico una vez que se procese. ¡Gracias por tu paciencia!</p>
-                     <Button asChild className="btn-retro">
-                        <Link href="/login">Volver al Inicio</Link>
+                     <Button onClick={() => handleLogout(auth, router, toast)} className="btn-retro">
+                        Volver al Inicio
                     </Button>
                 </CardContent>
             </Card>
