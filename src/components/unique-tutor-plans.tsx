@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import useResizeObserver from 'use-resize-observer';
 import Confetti from 'react-confetti';
 import { Dialog, DialogContent, DialogTrigger, DialogClose, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Crown, Gem, Check, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { HeroTutorForm } from './hero-tutor-form';
 
 const plans = [
     {
@@ -137,12 +138,14 @@ export function UniqueTutorPlans({ children }: { children: React.ReactNode }) {
                                     {plan.buttonText}
                                 </Button>
                             ) : (
-                                <Button
-                                    className="w-full"
-                                    variant={plan.recommended ? 'destructive' : 'secondary'}
-                                >
-                                    {plan.buttonText}
-                                </Button>
+                                <HeroTutorForm>
+                                    <Button
+                                        className="w-full"
+                                        variant={plan.recommended ? 'destructive' : 'secondary'}
+                                    >
+                                        {plan.buttonText}
+                                    </Button>
+                                </HeroTutorForm>
                             )}
                         </CardFooter>
                         </Card>

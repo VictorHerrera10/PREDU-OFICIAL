@@ -453,3 +453,80 @@ export async function createIndependentTutorGroup(formData: FormData) {
     return { success: false, message: 'No se pudo crear el grupo. ' + error.message };
   }
 }
+
+export async function registerHeroTutor(prevState: any, formData: FormData) {
+  const { firestore, auth } = await getAuthenticatedAppForUser();
+
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
+  const username = formData.get('username') as string;
+  const firstName = formData.get('firstName') as string;
+  const lastName = formData.get('lastName') as string;
+  const dni = formData.get('dni') as string;
+  const gender = formData.get('gender') as string;
+  const phone = formData.get('phone') as string;
+  const groupName = formData.get('groupName') as string;
+  const region = formData.get('region') as string;
+  const reasonForUse = formData.get('reasonForUse') as string;
+
+  const requiredFields = { email, password, username, firstName, lastName, dni, gender, phone, groupName, region, reasonForUse };
+
+  for (const [key, value] of Object.entries(requiredFields)) {
+    if (!value) {
+      return { success: false, message: `El campo ${key} es obligatorio.` };
+    }
+  }
+
+  try {
+    // 1. Create Firebase Auth user
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    await updateProfile(user, { displayName: username });
+
+    // 2. Create UserProfile document in Firestore
+    const userProfileRef = doc(firestore, 'users', user.uid);
+    const userProfileData = {
+      id: user.uid,
+      username,
+      email,
+      firstName,
+      lastName,
+      dni,
+      gender,
+      phone,
+      role: 'tutor',
+      isProfileComplete: true,
+      creationDate: serverTimestamp(),
+      lastLogin: serverTimestamp(),
+    };
+    await setDoc(userProfileRef, userProfileData);
+
+    // 3. Create IndependentTutorGroup document in Firestore
+    const groupData = {
+      name: groupName,
+      tutorName: `${firstName} ${lastName}`,
+      tutorId: user.uid,
+      region,
+      reasonForUse,
+      uniqueCode: generateUniqueCode(),
+      createdAt: serverTimestamp(),
+    };
+    const groupDocRef = await addDoc(collection(firestore, 'independentTutorGroups'), groupData);
+
+    // 4. Create notification for admin
+    await addDoc(collection(firestore, 'notifications'), {
+        type: 'new_hero_tutor',
+        title: 'Nuevo Tutor Héroe Registrado',
+        description: `El tutor ${username} (${email}) se ha unido como independiente.`,
+        emoji: '🦸',
+        createdAt: serverTimestamp(),
+        read: false,
+    });
+    
+    return { success: true, message: '¡Felicidades! Tu cuenta de Tutor Héroe y tu grupo han sido creados.' };
+
+  } catch (e: any) {
+    console.error("Error registering hero tutor:", e);
+    return { success: false, message: getFirebaseErrorMessage(e.code) || 'Ocurrió un error inesperado.' };
+  }
+}

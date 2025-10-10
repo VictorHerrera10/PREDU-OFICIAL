@@ -205,6 +205,10 @@
           "type": "string",
           "description": "The name of the independent tutor leading the group."
         },
+        "tutorId": {
+            "type": "string",
+            "description": "The UID of the tutor who created the group."
+        },
         "uniqueCode": {
           "type": "string",
           "description": "A unique code for tutors and students to join this group."
@@ -213,12 +217,21 @@
           "type": "string",
           "description": "The date and time when the group was created.",
           "format": "date-time"
+        },
+        "region": {
+            "type": "string",
+            "description": "The geographical region where the group is based."
+        },
+        "reasonForUse": {
+            "type": "string",
+            "description": "The reason provided by the tutor for using the platform."
         }
       },
       "required": [
         "id",
         "name",
         "tutorName",
+        "tutorId",
         "uniqueCode",
         "createdAt"
       ]
