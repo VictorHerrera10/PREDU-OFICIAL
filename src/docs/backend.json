@@ -1,0 +1,481 @@
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a user's profile in the Pixel Vault application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserProfile entity."
+        },
+        "username": {
+          "type": "string",
+          "description": "The user's chosen username for the Pixel Vault application."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The user's first name."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The user's last name."
+        },
+        "dni": {
+          "type": "string",
+          "description": "The user's national identity document number."
+        },
+        "gender": {
+            "type": "string",
+            "description": "The user's gender.",
+            "enum": ["masculino", "femenino", "otro", "prefiero no decirlo"]
+        },
+        "age": {
+          "type": "number",
+          "description": "The user's age."
+        },
+        "grade": {
+          "type": "string",
+          "description": "The user's current grade or academic level."
+        },
+        "city": {
+          "type": "string",
+          "description": "The city where the user lives."
+        },
+        "phone": {
+          "type": "string",
+          "description": "The user's phone number."
+        },
+        "profilePictureUrl": {
+          "type": "string",
+          "description": "URL for the user's profile picture."
+        },
+        "isProfileComplete": {
+          "type": "boolean",
+          "description": "Flag to indicate if the user has completed their profile setup."
+        },
+        "isHero": {
+          "type": "boolean",
+          "description": "Flag to indicate if the user has unlocked the Hero level."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "creationDate": {
+          "type": "string",
+          "description": "The date and time when the user profile was created.",
+          "format": "date-time"
+        },
+        "lastLogin": {
+          "type": "string",
+          "description": "The date and time of the user's last login.",
+          "format": "date-time"
+        },
+        "role": {
+          "type": "string",
+          "description": "The role of the user within the application.",
+          "enum": ["student", "tutor", "admin"]
+        },
+        "institutionId": {
+          "type": "string",
+          "description": "The ID of the institution the user is associated with (if any)."
+        },
+        "tutorDetails": {
+          "type": "object",
+          "description": "Additional details for users with the 'tutor' role.",
+          "properties": {
+            "roleInInstitution": {
+              "type": "string",
+              "description": "The tutor's specific role within the institution (e.g., Psicólogo, Docente)."
+            },
+            "workArea": {
+              "type": "string",
+              "description": "The tutor's area of professional expertise (e.g., Psicología Educativa)."
+            }
+          }
+        },
+        "tutorVerified": {
+          "type": "boolean",
+          "description": "Flag to indicate if a tutor has completed the post-approval verification step."
+        }
+      },
+      "required": [
+        "id",
+        "username",
+        "email",
+        "creationDate"
+      ]
+    },
+    "Institution": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Institution",
+      "type": "object",
+      "description": "Represents an educational institution or college with detailed information.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Institution entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The official name of the institution."
+        },
+        "address": {
+          "type": "string",
+          "description": "The physical address of the institution."
+        },
+        "contactEmail": {
+          "type": "string",
+          "description": "A general contact email for the institution.",
+          "format": "email"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The date and time when the institution was added.",
+          "format": "date-time"
+        },
+        "region": {
+            "type": "string",
+            "description": "The geographical region of the institution."
+        },
+        "level": {
+            "type": "string",
+            "description": "The educational level of the institution (e.g., Primary, Secondary, Higher Education)."
+        },
+        "studentLimit": {
+            "type": "number",
+            "description": "The maximum number of students that can be registered for this institution."
+        },
+        "tutorLimit": {
+            "type": "number",
+            "description": "The maximum number of tutors that can be registered for this institution."
+        },
+        "directorName": {
+            "type": "string",
+            "description": "The full name of the institution's director."
+        },
+        "directorEmail": {
+            "type": "string",
+            "description": "The contact email for the director.",
+            "format": "email"
+        },
+        "directorPhone": {
+            "type": "string",
+            "description": "The contact phone number for the director."
+        },
+        "teachingModality": {
+            "type": "string",
+            "description": "The teaching modality (e.g., In-person, Virtual, Hybrid)."
+        },
+        "logoUrl": {
+            "type": "string",
+            "description": "URL of the institution's logo.",
+            "format": "uri"
+        },
+        "uniqueCode": {
+            "type": "string",
+            "description": "A unique code generated for the institution."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "address",
+        "contactEmail",
+        "region",
+        "level",
+        "studentLimit",
+        "tutorLimit",
+        "directorName",
+        "directorEmail",
+        "teachingModality",
+        "uniqueCode"
+      ]
+    },
+    "IndependentTutorGroup": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "IndependentTutorGroup",
+      "type": "object",
+      "description": "Represents a group created for an independent tutor.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the group."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the group (e.g., 'Grupo de Orientación Vocacional 2024')."
+        },
+        "tutorName": {
+          "type": "string",
+          "description": "The name of the independent tutor leading the group."
+        },
+        "tutorId": {
+            "type": "string",
+            "description": "The UID of the tutor who created the group."
+        },
+        "uniqueCode": {
+          "type": "string",
+          "description": "A unique code for tutors and students to join this group."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The date and time when the group was created.",
+          "format": "date-time"
+        },
+        "region": {
+            "type": "string",
+            "description": "The geographical region where the group is based."
+        },
+        "reasonForUse": {
+            "type": "string",
+            "description": "The reason provided by the tutor for using the platform."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "tutorName",
+        "tutorId",
+        "uniqueCode",
+        "createdAt"
+      ]
+    },
+    "TutorRequest": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "TutorRequest",
+        "type": "object",
+        "description": "Represents a request from a user to become an independent tutor.",
+        "properties": {
+            "id": { "type": "string" },
+            "userId": { "type": "string" },
+            "username": { "type": "string" },
+            "email": { "type": "string", "format": "email" },
+            "firstName": { "type": "string" },
+            "lastName": { "type": "string" },
+            "dni": { "type": "string" },
+            "gender": { "type": "string" },
+            "phone": { "type": "string" },
+            "groupName": { "type": "string" },
+            "region": { "type": "string" },
+            "reasonForUse": { "type": "string" },
+            "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+            "notifiedRejected": { "type": "boolean" },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["userId", "email", "dni", "status"]
+    },
+    "PsychologicalPrediction": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PsychologicalPrediction",
+      "type": "object",
+      "description": "Stores the user's answers to the RIASEC psychological test.",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who took the test."
+        },
+        "answers": {
+          "type": "object",
+          "description": "An object storing the user's answers, where keys are question IDs and values are 'yes' or 'no'.",
+          "additionalProperties": {
+            "type": "string",
+            "enum": ["yes", "no"]
+          }
+        },
+        "result": {
+          "type": "string",
+          "description": "The final RIASEC profile result."
+        },
+        "results": {
+            "type": "object",
+            "description": "The calculated RIASEC counts from the user's answers.",
+            "properties": {
+                "general": {
+                    "type": "object",
+                    "description": "Overall counts across all sections."
+                },
+                "actividades": {
+                    "type": "object",
+                    "description": "Counts for the 'actividades' section."
+                },
+                "habilidades": {
+                    "type": "object",
+                    "description": "Counts for the 'habilidades' section."
+                },
+                "ocupaciones": {
+                    "type": "object",
+                    "description": "Counts for the 'ocupaciones' section."
+                }
+            }
+        },
+        "progressOverall": {
+          "type": "number",
+          "description": "The overall progress percentage of the test."
+        },
+        "progressActividades": {
+            "type": "number",
+            "description": "The progress percentage of the 'actividades' section."
+        },
+        "progressHabilidades": {
+            "type": "number",
+            "description": "The progress percentage of the 'habilidades' section."
+        },
+        "progressOcupaciones": {
+            "type": "number",
+            "description": "The progress percentage of the 'ocupaciones' section."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of when the test was first created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of when the test was last updated."
+        }
+      },
+      "required": [
+        "userId",
+        "answers"
+      ]
+    },
+    "AcademicPrediction": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "AcademicPrediction",
+        "type": "object",
+        "description": "Stores the user's grades and the resulting academic prediction.",
+        "properties": {
+            "userId": {
+                "type": "string",
+                "description": "The ID of the user for whom the prediction was made."
+            },
+            "grades": {
+                "type": "object",
+                "description": "An object storing the user's grades for each subject.",
+                "additionalProperties": {
+                    "type": "string",
+                    "enum": ["A", "B", "C", "AD"]
+                }
+            },
+            "prediction": {
+                "type": "string",
+                "description": "The predicted academic career path."
+            },
+            "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Timestamp of when the prediction was created."
+            }
+        },
+        "required": ["userId", "grades", "prediction"]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profile information. Access is restricted to the user with the matching userId. Path-based ownership ensures authorization independence: `request.auth.uid == userId`.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, corresponding to their Firebase Auth UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/institutions/{institutionId}",
+        "definition": {
+          "entityName": "Institution",
+          "schema": {
+            "$ref": "#/backend/entities/Institution"
+          },
+          "description": "Stores information about educational institutions. Should only be writable by administrators.",
+          "params": [
+            {
+              "name": "institutionId",
+              "description": "The unique identifier for the institution."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/independentTutorGroups/{groupId}",
+        "definition": {
+          "entityName": "IndependentTutorGroup",
+          "schema": {
+            "$ref": "#/backend/entities/IndependentTutorGroup"
+          },
+          "description": "Stores information about independent tutor groups. Writable by administrators.",
+          "params": [
+            {
+              "name": "groupId",
+              "description": "The unique identifier for the independent tutor group."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/tutorRequests/{requestId}",
+        "definition": {
+            "entityName": "TutorRequest",
+            "schema": {
+                "$ref": "#/backend/entities/TutorRequest"
+            },
+            "description": "Stores requests from users wanting to become independent tutors. Read/write by admins.",
+            "params": [{
+                "name": "requestId",
+                "description": "The unique identifier for the tutor request."
+            }]
+        }
+      },
+      {
+        "path": "/psychological_predictions/{userId}",
+        "definition": {
+          "entityName": "PsychologicalPrediction",
+          "schema": {
+            "$ref": "#/backend/entities/PsychologicalPrediction"
+          },
+          "description": "Stores a user's RIASEC test answers and results. Access is restricted to the user with the matching userId.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, corresponding to their Firebase Auth UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/academic_prediction/{userId}",
+        "definition": {
+            "entityName": "AcademicPrediction",
+            "schema": {
+                "$ref": "#/backend/entities/AcademicPrediction"
+            },
+            "description": "Stores a user's academic grades and the resulting career prediction. Access is restricted to the user with the matching userId.",
+            "params": [{
+                "name": "userId",
+                "description": "The unique identifier for the user, corresponding to their Firebase Auth UID."
+            }]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to ensure secure user authentication and profile management for the Pixel Vault application. The core principle is Authorization Independence, achieved through denormalization where necessary, though in this simplified scenario, it primarily relies on path-based ownership. The structure supports straightforward security rules and efficient data retrieval.\n\n- User Profiles: User profiles are stored in `/users/{userId}` using path-based ownership. This provides simple security rules based on `request.auth.uid == userId`. This approach provides Authorization Independence since access control depends only on the path and the authenticated user's ID.\n- Institutions: A collection to manage educational institutions. Access control should be strict, likely limited to admin users for write operations.\n\nThis structure supports the required QAPs (Rules are not Filters) because list operations can be securely implemented at the `/users` collection group level based on user ID."
+  }
+}

@@ -10,9 +10,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { WindowControls } from '@/components/window-controls';
 import { Crown, CreditCard, User, Calendar, Lock, Loader2, PartyPopper } from 'lucide-react';
+import { useUser } from '@/firebase';
+import { upgradeToHero } from '@/app/actions';
+import { useToast } from '@/hooks/use-toast';
 
 export default function PaymentPage() {
   const router = useRouter();
+  const { user } = useUser();
+  const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPaid, setIsPaid] = useState(false);
   const { ref, width = 0, height = 0 } = useResizeObserver<HTMLBodyElement>();
@@ -23,16 +28,37 @@ export default function PaymentPage() {
     }
   }, [ref]);
 
-  const handlePayment = (e: React.FormEvent) => {
+  const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+        toast({
+            variant: "destructive",
+            title: "Usuario no encontrado",
+            description: "Debes iniciar sesión para realizar la compra.",
+        });
+        return;
+    }
+
     setIsProcessing(true);
-    setTimeout(() => {
+
+    // Simulate payment processing
+    setTimeout(async () => {
+      const result = await upgradeToHero(user.uid);
       setIsProcessing(false);
-      setIsPaid(true);
-      setTimeout(() => {
-        router.push('/student-dashboard');
-      }, 5000); // Redirect after 5 seconds
-    }, 3000); // Simulate processing for 3 seconds
+
+      if (result.success) {
+        setIsPaid(true);
+        setTimeout(() => {
+          router.push('/student-dashboard');
+        }, 5000); // Redirect after 5 seconds
+      } else {
+        toast({
+            variant: "destructive",
+            title: "Error en la Compra",
+            description: result.message || "No se pudo completar la compra.",
+        });
+      }
+    }, 3000);
   };
 
   return (

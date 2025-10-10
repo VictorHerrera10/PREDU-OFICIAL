@@ -656,3 +656,22 @@ export async function verifyTutorAndLogin(prevState: any, formData: FormData) {
   // 4. Redirect to tutor dashboard upon success
   redirect('/tutor-dashboard');
 }
+
+
+export async function upgradeToHero(userId: string) {
+  if (!userId) {
+    return { success: false, message: "User not found." };
+  }
+  const { firestore } = await getAuthenticatedAppForUser();
+  const userProfileRef = doc(firestore, 'users', userId);
+
+  try {
+    await updateDoc(userProfileRef, {
+      isHero: true,
+    });
+    revalidatePath('/student-dashboard');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, message: 'Could not upgrade to Hero. ' + error.message };
+  }
+}
