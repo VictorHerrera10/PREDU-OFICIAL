@@ -49,7 +49,7 @@ export function StudentProfileForm({ user, profileData }: Props) {
     const [state, formAction] = useActionState(updateStudentProfile, initialState);
     const isEditing = !!profileData?.firstName;
     const [selectedGender, setSelectedGender] = useState(profileData?.gender);
-    const [institutionCode, setInstitutionCode] = useState(['', '', '', '', '']);
+    const [institutionCode, setInstitutionCode] = useState(Array(6).fill(''));
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
     useEffect(() => {
@@ -76,7 +76,7 @@ export function StudentProfileForm({ user, profileData }: Props) {
         setInstitutionCode(newCode);
 
         // Move to next input
-        if (value && index < 4) {
+        if (value && index < 5) {
             inputRefs.current[index + 1]?.focus();
         }
     };
@@ -84,6 +84,21 @@ export function StudentProfileForm({ user, profileData }: Props) {
     const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Backspace' && !institutionCode[index] && index > 0) {
             inputRefs.current[index - 1]?.focus();
+        }
+    };
+
+    const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+        e.preventDefault();
+        const pastedData = e.clipboardData.getData('text').toUpperCase().slice(0, 6);
+        const newCode = [...institutionCode];
+        for (let i = 0; i < 6; i++) {
+            newCode[i] = pastedData[i] || '';
+        }
+        setInstitutionCode(newCode);
+
+        const lastFullIndex = Math.min(pastedData.length, 6) - 1;
+        if (lastFullIndex >= 0 && inputRefs.current[lastFullIndex]) {
+            inputRefs.current[lastFullIndex]?.focus();
         }
     };
 
@@ -194,6 +209,7 @@ export function StudentProfileForm({ user, profileData }: Props) {
                                         value={digit}
                                         onChange={(e) => handleCodeChange(index, e.target.value)}
                                         onKeyDown={(e) => handleKeyDown(index, e)}
+                                        onPaste={handlePaste}
                                         className="w-12 h-12 text-center text-lg font-mono uppercase"
                                     />
                                 ))}

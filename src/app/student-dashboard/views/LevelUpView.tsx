@@ -62,7 +62,7 @@ export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
   const [showConfetti, setShowConfetti] = useState(false);
   const { ref, width = 0, height = 0 } = useResizeObserver<HTMLBodyElement>();
   
-  const [institutionCode, setInstitutionCode] = useState(['', '', '', '', '']);
+  const [institutionCode, setInstitutionCode] = useState(Array(6).fill(''));
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -85,7 +85,7 @@ export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
     setInstitutionCode(newCode);
 
     // Move to next input
-    if (value && index < 4) {
+    if (value && index < 5) {
         inputRefs.current[index + 1]?.focus();
     }
   };
@@ -94,6 +94,21 @@ export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
       if (e.key === 'Backspace' && !institutionCode[index] && index > 0) {
           inputRefs.current[index - 1]?.focus();
       }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').toUpperCase().slice(0, 6);
+    const newCode = [...institutionCode];
+    for (let i = 0; i < 6; i++) {
+      newCode[i] = pastedData[i] || '';
+    }
+    setInstitutionCode(newCode);
+
+    const lastFullIndex = Math.min(pastedData.length, 6) - 1;
+    if (lastFullIndex >= 0 && inputRefs.current[lastFullIndex]) {
+        inputRefs.current[lastFullIndex]?.focus();
+    }
   };
 
 
@@ -204,6 +219,7 @@ export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
                                         value={digit}
                                         onChange={(e) => handleCodeChange(index, e.target.value)}
                                         onKeyDown={(e) => handleKeyDown(index, e)}
+                                        onPaste={handlePaste}
                                         className="w-10 h-10 text-center text-lg font-mono uppercase bg-input"
                                     />
                                 ))}

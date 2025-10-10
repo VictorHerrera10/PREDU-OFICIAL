@@ -102,6 +102,21 @@ export function TutorRegistrationForm({ children }: { children: React.ReactNode 
     }
   };
 
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').toUpperCase().slice(0, 6);
+    const newCode = [...accessCode];
+    for (let i = 0; i < 6; i++) {
+      newCode[i] = pastedData[i] || '';
+    }
+    setAccessCode(newCode);
+
+    const lastFullIndex = Math.min(pastedData.length, 6) -1;
+    if (lastFullIndex >= 0 && inputRefs.current[lastFullIndex]) {
+       inputRefs.current[lastFullIndex]?.focus();
+    }
+  };
+
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -181,6 +196,7 @@ export function TutorRegistrationForm({ children }: { children: React.ReactNode 
                             value={digit}
                             onChange={(e) => handleCodeChange(index, e.target.value)}
                             onKeyDown={(e) => handleKeyDown(index, e)}
+                            onPaste={handlePaste}
                             className="w-10 h-10 text-center text-lg font-mono uppercase bg-input"
                             required
                         />
