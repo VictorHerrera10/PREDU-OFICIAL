@@ -14,12 +14,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useActionState, useEffect, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useState, useRef } from "react";
 import { registerTutor } from "@/app/actions";
 import { useCollection, useFirestore, useUser } from "@/firebase";
 import { collection } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { SubmitButton } from "./submit-button";
+import { KeySquare } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { UniqueTutorPlans } from "./unique-tutor-plans";
 
 type Institution = {
   id: string;
@@ -45,6 +48,8 @@ export function TutorRegistrationForm({ children }: { children: React.ReactNode 
   const [state, formAction] = useActionState(registerTutor, initialState);
 
   const [selectedRegion, setSelectedRegion] = useState('');
+  const [accessCode, setAccessCode] = useState(Array(6).fill(''));
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const institutionsCollectionRef = useMemo(() => {
     if (!firestore) return null;
@@ -79,12 +84,36 @@ export function TutorRegistrationForm({ children }: { children: React.ReactNode 
     }
   }, [state, toast]);
 
+   const handleCodeChange = (index: number, value: string) => {
+    if (/^[a-zA-Z0-9]*$/.test(value) && value.length <= 1) {
+      const newCode = [...accessCode];
+      newCode[index] = value.toUpperCase();
+      setAccessCode(newCode);
+
+      if (value && index < 5) {
+        inputRefs.current[index + 1]?.focus();
+      }
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !accessCode[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
+         <div className="absolute top-4 right-4">
+            <UniqueTutorPlans>
+                 <Button variant="link" className="text-xs h-auto p-0">¿Eres un tutor independiente?</Button>
+            </UniqueTutorPlans>
+        </div>
         <form action={formAction}>
           <DialogHeader>
             <DialogTitle className="text-primary text-2xl">Registro de Tutor 🧑‍🏫</DialogTitle>
@@ -94,24 +123,36 @@ export function TutorRegistrationForm({ children }: { children: React.ReactNode 
           </DialogHeader>
           <div className="space-y-4 py-4">
             <input type="hidden" name="userId" value={user?.uid} />
+            <input type="hidden" name="accessCode" value={accessCode.join('')} />
             
-            <div className="space-y-2">
-              <Label htmlFor="access-code">🔑 Código de Acceso</Label>
-              <Input id="access-code" name="accessCode" placeholder="Tu código secreto" required />
-            </div>
-
-             <div className="space-y-2">
-                <Label htmlFor="region">📍 Región</Label>
-                <Select name="region" required onValueChange={setSelectedRegion}>
-                    <SelectTrigger id="region">
-                        <SelectValue placeholder="Selecciona una región" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="norte">Norte</SelectItem>
-                        <SelectItem value="centro">Centro</SelectItem>
-                        <SelectItem value="sur">Sur</SelectItem>
-                    </SelectContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <div className="space-y-2">
+                  <Label htmlFor="region">📍 Región</Label>
+                  <Select name="region" required onValueChange={setSelectedRegion}>
+                      <SelectTrigger id="region">
+                          <SelectValue placeholder="Selecciona" />
+                      </SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="norte">Norte</SelectItem>
+                          <SelectItem value="centro">Centro</SelectItem>
+                          <SelectItem value="sur">Sur</SelectItem>
+                      </SelectContent>
+                  </Select>
+              </div>
+               <div className="space-y-2">
+                <Label htmlFor="roleInInstitution">💼 Rol en la Institución</Label>
+                <Select name="roleInInstitution" required>
+                  <SelectTrigger id="roleInInstitution">
+                    <SelectValue placeholder="Selecciona tu rol" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="psicologo">Psicólogo</SelectItem>
+                    <SelectItem value="docente">Docente</SelectItem>
+                    <SelectItem value="director">Director</SelectItem>
+                    <SelectItem value="autoridades gubernamentales">Autoridades Gubernamentales</SelectItem>
+                  </SelectContent>
                 </Select>
+              </div>
             </div>
             
             <div className="space-y-2">
@@ -128,28 +169,33 @@ export function TutorRegistrationForm({ children }: { children: React.ReactNode 
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="roleInInstitution">💼 Rol en la Institución</Label>
-              <Select name="roleInInstitution" required>
-                <SelectTrigger id="roleInInstitution">
-                  <SelectValue placeholder="Selecciona tu rol" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="psicologo">Psicólogo</SelectItem>
-                  <SelectItem value="docente">Docente</SelectItem>
-                  <SelectItem value="director">Director</SelectItem>
-                  <SelectItem value="autoridades gubernamentales">Autoridades Gubernamentales</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="pt-4 flex flex-col items-center">
+                <Label className="flex items-center gap-2 mb-2 text-center"><KeySquare className="w-4 h-4"/> Código de Acceso</Label>
+                <div className="flex justify-center gap-2">
+                    {accessCode.map((digit, index) => (
+                        <Input
+                            key={index}
+                            ref={el => inputRefs.current[index] = el}
+                            type="text"
+                            maxLength={1}
+                            value={digit}
+                            onChange={(e) => handleCodeChange(index, e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(index, e)}
+                            className="w-10 h-10 text-center text-lg font-mono uppercase bg-input"
+                            required
+                        />
+                    ))}
+                </div>
             </div>
+
           </div>
-          <DialogFooter className="sm:justify-between">
+          <DialogFooter className="flex flex-row sm:justify-between items-center pt-4">
               <DialogClose asChild>
                   <Button type="button" variant="secondary">
                       Cancelar
                   </Button>
               </DialogClose>
-              <SubmitButton>Completar Registro</SubmitButton>
+              <SubmitButton className="btn-retro !text-sm">Completar Registro</SubmitButton>
           </DialogFooter>
         </form>
       </DialogContent>

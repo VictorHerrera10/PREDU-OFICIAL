@@ -1,0 +1,116 @@
+'use client';
+
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Crown, Gem, Check, X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
+
+const plans = [
+  {
+    name: 'Nivel Héroe',
+    icon: Crown,
+    price: 'S/ 19.99',
+    description: 'Potencia tu camino con análisis avanzados y herramientas de exploración profesional.',
+    features: [
+        'Todo del Nivel Caballero', 
+        'Chatbot con IA y Consejos personalizados',
+        'Reportes avanzados y análisis detallado', 
+        'Explorador de carreras, universidades y becas', 
+        'Enviar reportes por correo',
+        'Contacto con soporte 24/7'
+    ],
+    buttonText: 'Convertirme en Héroe',
+    recommended: true,
+    borderColor: 'border-destructive',
+  },
+  {
+    name: 'Nivel Institucional',
+    icon: Gem,
+    price: 'S/ 39.99',
+    description: 'Desbloquea el dominio total de tu futuro profesional al vincularte con tu institución educativa.',
+    features: ['Todo del Nivel Héroe', 'Contacto y chat con tutores', 'Vinculación a tu institución', 'Mentoría y reportes avanzados', 'Foro inter-institucional'],
+    buttonText: 'Adquirir Plan Institucional',
+    borderColor: 'border-blue-500',
+  },
+];
+
+export function UniqueTutorPlans({ children }: { children: React.ReactNode }) {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+                {children}
+            </DialogTrigger>
+             <DialogContent className="max-w-4xl w-full bg-background/95 backdrop-blur-sm border-border/50 shadow-lg p-6">
+                <DialogClose className="absolute right-6 top-6 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary z-50">
+                    <X className="h-5 w-5" />
+                    <span className="sr-only">Cerrar</span>
+                </DialogClose>
+                <div className="text-center my-1">
+                    <h1 className="text-lg font-bold text-primary font-headline">
+                    ¡Planes para Tutores Independientes!
+                    </h1>
+                    <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
+                    Elige un plan para acceder a herramientas avanzadas y potenciar tu labor de guía.
+                    </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+                    {plans.map((plan, index) => (
+                    <motion.div
+                        key={plan.name}
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.2 }}
+                    >
+                        <Card
+                        className={cn(
+                            'flex flex-col h-full transition-all duration-300 transform hover:-translate-y-2 border-2 bg-card',
+                            plan.borderColor,
+                            plan.recommended
+                            ? 'ring-2 ring-offset-2 ring-offset-background'
+                            : '',
+                            plan.recommended ? `ring-destructive` : ''
+                        )}
+                        >
+                        <CardHeader className="items-center text-center">
+                            <plan.icon
+                            className={cn(
+                                'w-8 h-8 mb-2',
+                                plan.recommended ? 'text-destructive' : 'text-blue-500'
+                            )}
+                            />
+                            <CardTitle className="text-base font-bold">{plan.name}</CardTitle>
+                            <p className="text-lg font-headline text-foreground">{plan.price}</p>
+                            <CardDescription className="text-xs text-muted-foreground min-h-[30px]">{plan.description}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex-grow">
+                            <ul className="space-y-1.5">
+                            {plan.features.map((feature) => (
+                                <li key={feature} className="flex items-start gap-2">
+                                <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                                <span className="text-xs text-foreground/80">{feature}</span>
+                                </li>
+                            ))}
+                            </ul>
+                        </CardContent>
+                        <CardFooter>
+                            <Button
+                                className="w-full"
+                                variant={plan.recommended ? 'destructive' : 'secondary'}
+                            >
+                                {plan.buttonText}
+                            </Button>
+                        </CardFooter>
+                        </Card>
+                    </motion.div>
+                    ))}
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
