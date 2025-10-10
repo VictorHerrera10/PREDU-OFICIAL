@@ -2,16 +2,19 @@
 
 import { useActionState, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useUser } from '@/firebase';
+import { useUser, useAuth } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { verifyTutorAndLogin } from '@/app/actions';
+import { useRouter } from 'next/navigation';
+import { handleLogout } from '@/components/logout-button';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { SubmitButton } from '@/components/submit-button';
-import { CheckCircle, KeySquare } from 'lucide-react';
+import { CheckCircle, KeySquare, ArrowLeft } from 'lucide-react';
 import { WindowControls } from '@/components/window-controls';
+import { Button } from '@/components/ui/button';
 
 
 const initialState = {
@@ -22,6 +25,8 @@ const initialState = {
 export default function TutorVerificationPage() {
   const { toast } = useToast();
   const { user } = useUser();
+  const auth = useAuth();
+  const router = useRouter();
   const [state, formAction] = useActionState(verifyTutorAndLogin, initialState);
 
   const [uniqueCode, setUniqueCode] = useState(Array(6).fill(''));
@@ -116,6 +121,12 @@ export default function TutorVerificationPage() {
 
                 <SubmitButton className="w-full">Acceder al Dashboard</SubmitButton>
             </form>
+            <div className="mt-6 text-center text-sm">
+                <Button variant="link" onClick={() => handleLogout(auth, router, toast)} className="font-semibold text-primary/80 hover:text-primary transition-colors flex items-center justify-center gap-2">
+                    <ArrowLeft className="w-4 h-4" />
+                    Volver al Login
+                </Button>
+            </div>
           </div>
         </Card>
       </div>
