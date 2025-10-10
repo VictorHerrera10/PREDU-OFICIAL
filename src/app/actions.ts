@@ -570,6 +570,7 @@ export async function approveTutorRequest(requestId: string) {
             phone: requestData.phone,
             role: 'tutor',
             isProfileComplete: true, // Mark as complete since they filled the form
+            tutorVerified: false, // NEW: Add verification flag
         });
 
         // 3. Create IndependentTutorGroup document in Firestore
@@ -607,4 +608,48 @@ export async function rejectTutorRequest(requestId: string) {
         console.error("Error rejecting tutor request:", error);
         return { success: false, message: error.message };
     }
+}
+
+
+export async function verifyTutorAndLogin(prevState: any, formData: FormData) {
+  const { firestore } = await getAuthenticatedAppForUser();
+  
+  const dni = formData.get('dni') as string;
+  const uniqueCode = formData.get('uniqueCode') as string;
+  const userId = formData.get('userId') as string;
+
+  if (!dni || !uniqueCode || !userId) {
+    return { success: false, message: 'DNI, código y ID de usuario son obligatorios.' };
+  }
+
+  try {
+    // 1. Find the group by the unique code provided
+    const groupQuery = query(collection(firestore, 'independentTutorGroups'), where('uniqueCode', '==', uniqueCode), where('tutorId', '==', userId), limit(1));
+    const groupSnapshot = await getDocs(groupQuery);
+
+    if (groupSnapshot.empty) {
+      return { success: false, message: 'El código del grupo no es válido o no corresponde a tu usuario.' };
+    }
+
+    // 2. Find the user profile and check if the DNI matches
+    const userProfileRef = doc(firestore, 'users', userId);
+    const userProfileSnap = await getDoc(userProfileRef);
+
+    if (!userProfileSnap.exists() || userProfileSnap.data().dni !== dni) {
+      return { success: false, message: 'El DNI no coincide con nuestros registros.' };
+    }
+
+    // 3. If both are valid, update the user profile
+    await updateDoc(userProfileRef, {
+      tutorVerified: true,
+      lastLogin: serverTimestamp(),
+    });
+
+  } catch (error: any) {
+    console.error('Error verifying tutor:', error);
+    return { success: false, message: 'Ocurrió un error inesperado durante la verificación.' };
+  }
+  
+  // 4. Redirect to tutor dashboard upon success
+  redirect('/tutor-dashboard');
 }

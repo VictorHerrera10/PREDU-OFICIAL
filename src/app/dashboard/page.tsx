@@ -19,6 +19,7 @@ type UserProfile = {
   id: string;
   role?: 'student' | 'tutor' | 'admin';
   dni?: string;
+  tutorVerified?: boolean;
 };
 
 type TutorRequest = {
@@ -58,23 +59,27 @@ function DashboardPage() {
 
     // 1. Check for an existing role first (most common case)
     if (userProfile.role) {
-      if (userProfile.role === 'student') redirect('/student-dashboard');
-      if (userProfile.role === 'tutor') redirect('/tutor-dashboard');
       if (userProfile.role === 'admin') redirect('/admin');
-      return;
+      if (userProfile.role === 'student') redirect('/student-dashboard');
+      if (userProfile.role === 'tutor') {
+        // NEW: Check if the tutor is verified
+        if (userProfile.tutorVerified === false) {
+           redirect('/tutor-verification');
+           return;
+        }
+        redirect('/tutor-dashboard');
+        return;
+      }
     }
 
     // 2. If no role, check for tutor requests
     if (tutorRequest) {
       if (tutorRequest.status === 'pending') {
-        // Redirect to status page if request is pending
-        // CORRECTED: Use the DNI from the request itself, as it's guaranteed to be there.
         redirect(`/tutor-request-status?dni=${tutorRequest.dni}`);
         return;
       }
 
       if (tutorRequest.status === 'rejected' && !tutorRequest.notifiedRejected) {
-        // Show a toast for rejected request and mark it as notified
         toast({
           variant: "destructive",
           title: "Solicitud de Tutor Rechazada",
@@ -85,7 +90,7 @@ function DashboardPage() {
       }
     }
 
-    // 3. If no role and no pending request, the initial check is complete.
+    // 3. If no role and no pending/approved request, the initial check is complete.
     setInitialCheckComplete(true);
 
   }, [isProfileLoading, isRequestLoading, userProfile, tutorRequest, router, toast, firestore]);

@@ -92,6 +92,10 @@
               "description": "The tutor's area of professional expertise (e.g., Psicología Educativa)."
             }
           }
+        },
+        "tutorVerified": {
+          "type": "boolean",
+          "description": "Flag to indicate if a tutor has completed the post-approval verification step."
         }
       },
       "required": [
