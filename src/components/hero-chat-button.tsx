@@ -55,7 +55,10 @@ export function HeroChatButton() {
     setIsLoading(true);
 
     try {
-      const result = await chatWithCounselor({ message: input });
+      const result = await chatWithCounselor({ 
+          message: input,
+          username: user?.displayName 
+      });
       const aiMessage: Message = { sender: 'ai', text: result.response };
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
@@ -109,7 +112,7 @@ export function HeroChatButton() {
                 <Bot className="text-destructive" />
                 Asistente Vocacional
             </DialogTitle>
-            <DialogDescription>Chatea con el orientador vocacional para resolver tus dudas.</DialogDescription>
+            <DialogDescription>Chatea con nuestro orientador vocacional para resolver tus dudas.</DialogDescription>
         </DialogHeader>
         
         <Card className="h-full w-full flex flex-col border-0 shadow-none rounded-t-none">
