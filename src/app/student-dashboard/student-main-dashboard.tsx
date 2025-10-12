@@ -19,6 +19,8 @@ import { HeroChatButton } from '@/components/hero-chat-button';
 import CareerInfoView from './views/CareerInfoView';
 import UniversityInfoView from './views/UniversityInfoView';
 import ScholarshipInfoView from './views/ScholarshipInfoView';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 
 type View = 'inicio' | 'prediccionAcademica' | 'prediccionPsicologica' | 'infoCarreras' | 'infoUniversidades' | 'infoBecas';
 
@@ -27,16 +29,18 @@ type Option = {
   icon: React.ElementType;
   title: string;
   description: string;
-  isHero?: boolean;
 };
 
-const options: Option[] = [
+const mainOptions: Option[] = [
   { id: 'inicio', icon: Home, title: 'Inicio', description: 'Tu resumen, notificaciones y próximos pasos.' },
   { id: 'prediccionAcademica', icon: Compass, title: 'Predicción Académica', description: 'Realiza tests para descubrir tu vocación profesional.' },
   { id: 'prediccionPsicologica', icon: BrainCircuit, title: 'Predicción Psicológica', description: 'Entiende tus fortalezas y áreas de mejora personal.' },
-  { id: 'infoCarreras', icon: BookOpen, title: 'Info de Carreras', description: 'Explora un universo de profesiones y encuentra tu lugar.', isHero: true },
-  { id: 'infoUniversidades', icon: Building, title: 'Info de Universidades', description: 'Busca y compara instituciones para tu futuro académico.', isHero: true },
-  { id: 'infoBecas', icon: Award, title: 'Info de Becas', description: 'Encuentra oportunidades de financiamiento para tus estudios.', isHero: true },
+];
+
+const heroOptions: Option[] = [
+  { id: 'infoCarreras', icon: BookOpen, title: 'Info de Carreras', description: 'Explora un universo de profesiones y encuentra tu lugar.' },
+  { id: 'infoUniversidades', icon: Building, title: 'Info de Universidades', description: 'Busca y compara instituciones para tu futuro académico.' },
+  { id: 'infoBecas', icon: Award, title: 'Info de Becas', description: 'Encuentra oportunidades de financiamiento para tus estudios.' },
 ];
 
 type UserProfile = {
@@ -77,10 +81,15 @@ export function StudentMainDashboard({ user }: Props) {
     }
   };
   
-  const availableOptions = useMemo(() => {
-      return options.filter(option => !option.isHero || (option.isHero && userProfile?.isHero));
-  }, [userProfile]);
+  const allOptions = [...mainOptions, ...heroOptions];
 
+  const handleSelectView = (viewId: View) => {
+    if (selectedView === viewId) {
+        setSelectedView(null);
+    } else {
+        setSelectedView(viewId);
+    }
+  };
 
   if (isLoading) {
     return <StudentLoader loadingText="Cargando tu nivel de Héroe..." />;
@@ -92,6 +101,37 @@ export function StudentMainDashboard({ user }: Props) {
         <Logo />
         <UserNav />
       </header>
+
+       {userProfile?.isHero && (
+        <AnimatePresence>
+            <motion.div
+                initial={{ opacity: 0, x: 100 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
+                className="fixed top-1/2 right-4 -translate-y-1/2 z-10 flex flex-col items-center gap-3 p-2 bg-card/80 backdrop-blur-sm border rounded-lg"
+            >
+                <h3 className="font-headline text-xs text-destructive writing-vertical-rl rotate-180 mb-2">HERRAMIENTAS</h3>
+                <TooltipProvider>
+                    {heroOptions.map(option => (
+                    <Tooltip key={option.id}>
+                        <TooltipTrigger asChild>
+                            <Button 
+                                variant={selectedView === option.id ? 'destructive' : 'ghost'} 
+                                size="icon"
+                                onClick={() => handleSelectView(option.id)}
+                            >
+                                <option.icon className="w-5 h-5"/>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="left">
+                            <p>{option.title}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                    ))}
+                </TooltipProvider>
+            </motion.div>
+        </AnimatePresence>
+      )}
 
       <main className="flex-grow pt-20">
         <LayoutGroup>
@@ -122,19 +162,18 @@ export function StudentMainDashboard({ user }: Props) {
             key="options-container"
             className={cn(
                 "grid gap-8 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8",
-                selectedView ? `grid-cols-${availableOptions.length}` : 'grid-cols-1 md:grid-cols-3'
+                selectedView ? `grid-cols-${mainOptions.length}` : 'grid-cols-1 md:grid-cols-3'
             )}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
-            {availableOptions.map((option) => (
+            {mainOptions.map((option) => (
                 <motion.div
                     layout
                     key={option.id}
-                    onClick={() => setSelectedView(option.id)}
+                    onClick={() => handleSelectView(option.id)}
                     className={cn(
                         "cursor-pointer overflow-hidden",
-                        selectedView ? 'rounded-lg' : 'card-outline',
-                        option.isHero && 'theme-hero'
+                        selectedView ? 'rounded-lg' : 'card-outline'
                     )}
                     initial={{ borderRadius: '0.75rem' }}
                 >
@@ -147,7 +186,9 @@ export function StudentMainDashboard({ user }: Props) {
                              <motion.h2 layout="position" className="font-bold text-sm">{option.title}</motion.h2>
                         </motion.div>
                     ) : selectedView ? (
-                         <motion.div className="bg-muted hover:bg-muted/80 rounded-lg p-3 flex items-center justify-center gap-2">
+                         <motion.div className="bg-muted hover:bg-muted/80 rounded-lg p-3 flex items-center justify-center gap-2"
+                            onClick={() => handleSelectView(option.id)}
+                         >
                              <motion.div layout="position">
                                 <option.icon className="w-5 h-5" />
                             </motion.div>
