@@ -29,6 +29,7 @@ type Option = {
   icon: React.ElementType;
   title: string;
   description: string;
+  isHero?: boolean;
 };
 
 const mainOptions: Option[] = [
@@ -38,9 +39,9 @@ const mainOptions: Option[] = [
 ];
 
 const heroOptions: Option[] = [
-  { id: 'infoCarreras', icon: BookOpen, title: 'Info de Carreras', description: 'Explora un universo de profesiones y encuentra tu lugar.' },
-  { id: 'infoUniversidades', icon: Building, title: 'Info de Universidades', description: 'Busca y compara instituciones para tu futuro académico.' },
-  { id: 'infoBecas', icon: Award, title: 'Info de Becas', description: 'Encuentra oportunidades de financiamiento para tus estudios.' },
+  { id: 'infoCarreras', icon: BookOpen, title: 'Info de Carreras', description: 'Explora un universo de profesiones y encuentra tu lugar.', isHero: true },
+  { id: 'infoUniversidades', icon: Building, title: 'Info de Universidades', description: 'Busca y compara instituciones para tu futuro académico.', isHero: true },
+  { id: 'infoBecas', icon: Award, title: 'Info de Becas', description: 'Encuentra oportunidades de financiamiento para tus estudios.', isHero: true },
 ];
 
 type UserProfile = {
@@ -81,8 +82,6 @@ export function StudentMainDashboard({ user }: Props) {
     }
   };
   
-  const allOptions = [...mainOptions, ...heroOptions];
-
   const handleSelectView = (viewId: View) => {
     if (selectedView === viewId) {
         setSelectedView(null);
@@ -111,24 +110,18 @@ export function StudentMainDashboard({ user }: Props) {
                 className="fixed top-1/2 left-4 -translate-y-1/2 z-10 flex flex-col items-center gap-4 p-4 bg-card/80 backdrop-blur-sm border rounded-lg"
             >
                 <h3 className="font-headline text-sm text-destructive mb-2">INFORMACIÓN</h3>
-                <TooltipProvider>
-                    {heroOptions.map(option => (
-                    <Tooltip key={option.id}>
-                        <TooltipTrigger asChild>
-                            <Button 
-                                variant={selectedView === option.id ? 'destructive' : 'ghost'} 
-                                className="w-16 h-16"
-                                onClick={() => handleSelectView(option.id)}
-                            >
-                                <option.icon className="w-10 h-10"/>
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="right">
-                            <p>{option.title}</p>
-                        </TooltipContent>
-                    </Tooltip>
-                    ))}
-                </TooltipProvider>
+                
+                {heroOptions.map(option => (
+                  <Button 
+                      key={option.id}
+                      variant={selectedView === option.id ? 'destructive' : 'ghost'} 
+                      className="w-full h-auto flex flex-col items-center justify-center p-3 gap-2"
+                      onClick={() => handleSelectView(option.id)}
+                  >
+                      <option.icon className="w-12 h-12"/>
+                      <span className="text-xs font-semibold">{option.title}</span>
+                  </Button>
+                ))}
             </motion.div>
         </AnimatePresence>
       )}
@@ -197,7 +190,7 @@ export function StudentMainDashboard({ user }: Props) {
                     ) : (
                         <div className="card-content flex flex-col items-center text-center gap-4 p-6">
                             <motion.div layout="position">
-                                <option.icon className={cn("w-10 h-10 text-primary")} />
+                                <option.icon className={cn("w-10 h-10", option.isHero ? "text-destructive" : "text-primary")} />
                             </motion.div>
                             <div className="flex flex-col">
                                 <motion.h2 layout="position" className="font-bold text-2xl">{option.title}</motion.h2>
