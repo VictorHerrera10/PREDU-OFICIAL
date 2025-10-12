@@ -6,7 +6,7 @@ import { doc } from 'firebase/firestore';
 import { Logo } from '@/components/logo';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { UserNav } from '@/components/user-nav';
-import { BrainCircuit, Compass, Home, Award, BookOpen, Building } from 'lucide-react';
+import { BrainCircuit, Compass, Home, Award, BookOpen, Building, Route } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import HomeView from './views/HomeView';
@@ -19,10 +19,10 @@ import { HeroChatButton } from '@/components/hero-chat-button';
 import CareerInfoView from './views/CareerInfoView';
 import UniversityInfoView from './views/UniversityInfoView';
 import ScholarshipInfoView from './views/ScholarshipInfoView';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
+import RuiView from './views/RUI/RuiView';
 
-type View = 'inicio' | 'prediccionAcademica' | 'prediccionPsicologica' | 'infoCarreras' | 'infoUniversidades' | 'infoBecas';
+type View = 'inicio' | 'prediccionAcademica' | 'prediccionPsicologica' | 'infoCarreras' | 'infoUniversidades' | 'infoBecas' | 'rui';
 
 type Option = {
   id: View;
@@ -77,6 +77,8 @@ export function StudentMainDashboard({ user }: Props) {
         return <UniversityInfoView />;
       case 'infoBecas':
         return <ScholarshipInfoView />;
+      case 'rui':
+        return <RuiView />;
       default:
         return null;
     }
@@ -211,6 +213,20 @@ export function StudentMainDashboard({ user }: Props) {
             ))}
           </motion.div>
         </LayoutGroup>
+
+        {!selectedView && (
+             <motion.div 
+                className="w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mt-12 text-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+            >
+                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white font-bold" onClick={() => handleSelectView('rui')}>
+                    <Route className="mr-2 h-5 w-5" />
+                    Iniciar Ruta Universitaria Interactiva (RUI)
+                </Button>
+            </motion.div>
+        )}
 
         <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 md:p-8">
             <AnimatePresence mode="wait">
