@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -31,7 +31,8 @@ type AcademicPrediction = {
 };
 
 type PsychologicalPrediction = {
-    result: string;
+    result?: string;
+    results?: any; // Keeping it flexible for now
 };
 
 
@@ -99,7 +100,7 @@ export function HeroChatButton() {
           message: input,
           username: user?.displayName,
           academicPrediction: academicPrediction || undefined,
-          psychologicalResult: psychologicalPrediction?.result,
+          psychologicalPrediction: psychologicalPrediction || undefined,
       });
       const aiMessage: Message = { sender: 'ai', text: result.response };
       setMessages(prev => [...prev, aiMessage]);

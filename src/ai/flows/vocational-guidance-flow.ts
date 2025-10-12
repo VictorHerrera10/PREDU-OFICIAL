@@ -16,17 +16,38 @@ const AcademicPredictionSchema = z.object({
   grades: z.record(z.string()).describe("An object storing the user's grades for each subject."),
 }).optional();
 
+const RiasecCountsSchema = z.object({
+    realista: z.object({ yes: z.number(), no: z.number() }).optional(),
+    investigador: z.object({ yes: z.number(), no: z.number() }).optional(),
+    artistico: z.object({ yes: z.number(), no: z.number() }).optional(),
+    social: z.object({ yes: z.number(), no: z.number() }).optional(),
+    emprendedor: z.object({ yes: z.number(), no: z.number() }).optional(),
+    convencional: z.object({ yes: z.number(), no: z.number() }).optional(),
+});
+
+const PsychologicalPredictionSchema = z.object({
+    result: z.string().optional().describe("The final RIASEC profile result."),
+    results: z.object({
+        general: RiasecCountsSchema.optional(),
+        actividades: RiasecCountsSchema.optional(),
+        habilidades: RiasecCountsSchema.optional(),
+        ocupaciones: RiasecCountsSchema.optional(),
+    }).optional().describe("The calculated RIASEC counts from the user's answers."),
+}).optional();
+
+
 const ChatCounselorInputSchema = z.object({
   username: z.string().optional().describe('The name of the user.'),
   message: z.string().describe('The user\'s message to the vocational counselor.'),
   academicPrediction: AcademicPredictionSchema,
-  psychologicalResult: z.string().optional().describe('The result of the psychological (RIASEC) test.'),
+  psychologicalPrediction: PsychologicalPredictionSchema,
 });
 export type ChatCounselorInput = z.infer<typeof ChatCounselorInputSchema>;
 
-// New internal schema for the prompt, including the formatted grades string
+// New internal schema for the prompt, including the formatted strings
 const PromptInputSchema = ChatCounselorInputSchema.extend({
-    gradesAsString: z.string().optional().describe('A formatted string of the student\'s grades.')
+    gradesAsString: z.string().optional().describe('A formatted string of the student\'s grades.'),
+    riasecResultsAsString: z.string().optional().describe('A formatted string of the student\'s detailed RIASEC results.')
 });
 
 const ChatCounselorOutputSchema = z.object({
@@ -55,12 +76,13 @@ CONTEXT ABOUT THE STUDENT:
 - Student's Name: {{username}}
 - Academic Test Result: {{#if academicPrediction.prediction}}'{{academicPrediction.prediction}}'{{else}}'Not Completed'{{/if}}
 - Student's Grades: {{#if gradesAsString}}'{{gradesAsString}}'{{else}}'Not Provided'{{/if}}
-- Psychological (RIASEC) Test Result: {{#if psychologicalResult}}'{{psychologicalResult}}'{{else}}'Not Completed'{{/if}}
+- Psychological (RIASEC) Test Main Result: {{#if psychologicalPrediction.result}}'{{psychologicalPrediction.result}}'{{else}}'Not Completed'{{/if}}
+- Psychological (RIASEC) Detailed Counts: {{#if riasecResultsAsString}}'{{riasecResultsAsString}}'{{else}}'Not Provided'{{/if}}
 
 YOUR BEHAVIOR BASED ON CONTEXT:
 1. If BOTH the academic and psychological tests are not completed, your priority is to gently encourage the user to complete them. Example: "¡Hola, {{username}}! Para darte la mejor orientación, te recomiendo completar los tests académico y psicológico. ¡Son el primer paso para descubrir tu vocación! ¿Te animas? 💪"
 2. If ONE test is completed but the other is not, encourage the user to complete the missing one to get a full picture. Example: "¡Vas por buen camino, {{username}}! Ya completaste el test {{#if academicPrediction}}académico{{else}}psicológico{{/if}}. ¡Anímate a hacer el {{#if academicPrediction}}psicológico{{else}}académico{{/if}} para tener una guía más completa!"
-3. If BOTH tests are completed, use their results ({{academicPrediction.prediction}} and {{psychologicalResult}}) and their detailed grades ({{gradesAsString}}) to provide specific advice and answer their questions. If they ask about their grades, you have access to them and can comment on them.
+3. If BOTH tests are completed, use their results ({{academicPrediction.prediction}} and {{psychologicalPrediction.result}}) and their detailed grades ({{gradesAsString}}) and psychological counts ({{riasecResultsAsString}}) to provide specific advice and answer their questions. If they ask about their grades or skills, you have access to them and can comment on them specifically.
 
 User Message: {{message}}
 
@@ -81,10 +103,20 @@ const vocationalGuidanceFlow = ai.defineFlow(
             .map(([subject, grade]) => `${subject.replace(/_/g, ' ')}: ${grade}`)
             .join(', ');
     }
+    
+    // Convert RIASEC results to a simple string
+    let riasecResultsAsString: string | undefined;
+    if (input.psychologicalPrediction?.results?.general) {
+        riasecResultsAsString = (Object.entries(input.psychologicalPrediction.results.general) as [string, {yes: number, no: number}][])
+            .map(([category, counts]) => `${category}: ${counts.yes} sí`)
+            .join(', ');
+    }
+
 
     const promptInput = {
         ...input,
         gradesAsString: gradesAsString,
+        riasecResultsAsString: riasecResultsAsString,
     };
     
     const {output} = await prompt(promptInput);
