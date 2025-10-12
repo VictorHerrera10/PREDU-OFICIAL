@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -27,7 +26,7 @@ type UserProfile = {
 
 const welcomeMessage: Message = {
   sender: 'ai',
-  text: '¡Hola! Soy Predu-Bot, tu orientador vocacional personal. Estoy aquí para ayudarte a explorar carreras, resolver tus dudas y encontrar tu camino. ¿En qué te puedo ayudar hoy? 🚀',
+  text: '¡Hola! Soy tu Asistente Vocacional. Estoy aquí para ayudarte a explorar carreras, resolver tus dudas y encontrar tu camino. ¿En qué te puedo ayudar hoy? 🚀',
 };
 
 
@@ -110,7 +109,7 @@ export function HeroChatButton() {
                 <Bot className="text-destructive" />
                 Asistente Vocacional IA
             </DialogTitle>
-            <DialogDescription>Chatea con Predu-Bot para resolver tus dudas.</DialogDescription>
+            <DialogDescription>Chatea con el orientador vocacional para resolver tus dudas.</DialogDescription>
         </DialogHeader>
         
         <Card className="h-full w-full flex flex-col border-0 shadow-none rounded-t-none">
@@ -130,8 +129,8 @@ export function HeroChatButton() {
                                 >
                                     {message.sender === 'ai' && (
                                         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                                          <Avatar className="h-8 w-8 border-2 border-destructive flex-shrink-0">
-                                              <AvatarFallback><Bot /></AvatarFallback>
+                                          <Avatar className="h-10 w-10 border-2 border-destructive flex-shrink-0">
+                                              <AvatarFallback><Bot className="h-6 w-6"/></AvatarFallback>
                                           </Avatar>
                                         </motion.div>
                                     )}
@@ -173,8 +172,8 @@ export function HeroChatButton() {
                                     exit={{ opacity: 0, scale: 0.9 }}
                                     className="flex items-end gap-2"
                                 >
-                                    <Avatar className="h-8 w-8 border-2 border-destructive">
-                                        <AvatarFallback><Bot /></AvatarFallback>
+                                    <Avatar className="h-10 w-10 border-2 border-destructive">
+                                        <AvatarFallback><Bot className="h-6 w-6"/></AvatarFallback>
                                     </Avatar>
                                     <div className="rounded-lg rounded-bl-none px-4 py-3 bg-secondary text-secondary-foreground">
                                         <Loader2 className="w-5 h-5 animate-spin" />
