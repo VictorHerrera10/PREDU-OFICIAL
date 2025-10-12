@@ -48,7 +48,7 @@ const prompt = ai.definePrompt({
 CONTEXT ABOUT THE STUDENT:
 - Student's Name: {{username}}
 - Academic Test Result: {{#if academicPrediction.prediction}}'{{academicPrediction.prediction}}'{{else}}'Not Completed'{{/if}}
-- Student's Grades: {{#if academicPrediction.grades}}{{JSON.stringify academicPrediction.grades}}{{else}}'Not Provided'{{/if}}
+- Student's Grades: {{#if academicPrediction.grades}}{{academicPrediction.grades}}{{else}}'Not Provided'{{/if}}
 - Psychological (RIASEC) Test Result: {{#if psychologicalResult}}'{{psychologicalResult}}'{{else}}'Not Completed'{{/if}}
 
 YOUR BEHAVIOR BASED ON CONTEXT:
