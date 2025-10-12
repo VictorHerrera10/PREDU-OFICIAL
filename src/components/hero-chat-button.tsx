@@ -24,6 +24,15 @@ type UserProfile = {
   isHero?: boolean;
 };
 
+type AcademicPrediction = {
+    prediction: string;
+};
+
+type PsychologicalPrediction = {
+    result: string;
+};
+
+
 export function HeroChatButton() {
   const { user } = useUser();
   const firestore = useFirestore();
@@ -36,8 +45,21 @@ export function HeroChatButton() {
     if (!user || !firestore) return null;
     return doc(firestore, 'users', user.uid);
   }, [user, firestore]);
+  
+  const academicDocRef = useMemo(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'academic_prediction', user.uid);
+  }, [user, firestore]);
+
+  const psychologicalDocRef = useMemo(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'psychological_predictions', user.uid);
+  }, [user, firestore]);
 
   const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
+  const { data: academicPrediction } = useDoc<AcademicPrediction>(academicDocRef);
+  const { data: psychologicalPrediction } = useDoc<PsychologicalPrediction>(psychologicalDocRef);
+
 
   useEffect(() => {
     if (isOpen && messages.length === 0 && user?.displayName) {
@@ -62,7 +84,9 @@ export function HeroChatButton() {
     try {
       const result = await chatWithCounselor({ 
           message: input,
-          username: user?.displayName 
+          username: user?.displayName,
+          academicResult: academicPrediction?.prediction,
+          psychologicalResult: psychologicalPrediction?.result,
       });
       const aiMessage: Message = { sender: 'ai', text: result.response };
       setMessages(prev => [...prev, aiMessage]);
@@ -114,7 +138,9 @@ export function HeroChatButton() {
       <DialogContent className="max-w-xl h-[80vh] flex flex-col p-0">
         <DialogHeader className="p-6 pb-2">
             <DialogTitle className="flex items-center gap-2">
-                <Bot className="text-destructive h-8 w-8" />
+                <Avatar className="h-10 w-10 border-2 border-destructive flex-shrink-0">
+                    <AvatarFallback><Bot className="h-8 w-8"/></AvatarFallback>
+                </Avatar>
                 Asistente Vocacional
             </DialogTitle>
             <DialogDescription>Chatea con nuestro orientador vocacional para resolver tus dudas.</DialogDescription>
@@ -153,14 +179,6 @@ export function HeroChatButton() {
                                         }
                                     )}>
                                         <p>{message.text}</p>
-                                        
-                                        <div className={cn(
-                                            "absolute bottom-0 w-3 h-3",
-                                            {
-                                                "left-[-6px] bg-secondary": message.sender === 'ai',
-                                                "right-[-6px] bg-primary": message.sender === 'user',
-                                            }
-                                        )} style={{ clipPath: 'polygon(100% 0, 0 100%, 100% 100%)', transform: message.sender === 'ai' ? 'rotate(10deg)' : 'rotate(-10deg) scaleX(-1)' }} />
                                     </div>
                                     {message.sender === 'user' && (
                                          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
@@ -193,7 +211,7 @@ export function HeroChatButton() {
                 </ScrollArea>
             </CardContent>
             <CardFooter className="p-6 pt-0">
-                <form onSubmit={handleSendMessage} className="flex w-full items-center space-x-2">
+                <form onSubmit={handleSendMessage} className="flex w-full items-center space-x-4">
                     <Input
                         id="message"
                         placeholder="Escribe tu pregunta aquí..."
