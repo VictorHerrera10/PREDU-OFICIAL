@@ -69,7 +69,7 @@ export function HeroChatButton() {
     if (isOpen && messages.length === 0 && user?.displayName) {
         const welcomeMessage: Message = {
             sender: 'ai',
-            text: `¡Hola, ${user.displayName}! Soy tu Asistente Vocacional. Estoy aquí para ayudarte a explorar carreras, resolver tus dudas y encontrar tu camino. ¿En qué te puedo ayudar hoy? 🚀`,
+            text: `¡Hola, ${user.displayName}! Soy Ciel, tu asistente vocacional. Estoy aquí para ayudarte a explorar carreras, resolver tus dudas y encontrar tu camino. ¿En qué te puedo ayudar hoy? 🚀`,
         };
         setMessages([welcomeMessage]);
     }
@@ -155,7 +155,7 @@ export function HeroChatButton() {
                     <AvatarFallback><Bot className="h-10 w-10"/></AvatarFallback>
                 </Avatar>
                 <div>
-                  <h2 className="text-lg font-semibold">Asistente Vocacional</h2>
+                  <h2 className="text-lg font-semibold">Ciel</h2>
                   <p className="text-sm text-muted-foreground">Chatea con nuestro orientador vocacional para resolver tus dudas.</p>
                 </div>
             </DialogTitle>
