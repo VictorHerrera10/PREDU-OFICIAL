@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ type Message = {
 
 type UserProfile = {
   isHero?: boolean;
+  displayName?: string;
 };
 
 type AcademicPrediction = {
@@ -41,6 +42,8 @@ export function HeroChatButton() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
 
   const userProfileRef = useMemo(() => {
     if (!user || !firestore) return null;
@@ -71,6 +74,15 @@ export function HeroChatButton() {
         setMessages([welcomeMessage]);
     }
   }, [isOpen, user, messages.length]);
+
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+        scrollAreaRef.current.scrollTo({
+            top: scrollAreaRef.current.scrollHeight,
+            behavior: 'smooth',
+        });
+    }
+  }, [messages, isLoading]);
 
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -151,7 +163,7 @@ export function HeroChatButton() {
         
         <Card className="h-full w-full flex flex-col border-0 shadow-none rounded-t-none">
             <CardContent className="flex-grow overflow-hidden p-6 pt-0">
-                <ScrollArea className="h-full pr-4">
+                <ScrollArea className="h-full pr-4" viewportRef={scrollAreaRef}>
                     <div className="space-y-6 pt-4">
                         <AnimatePresence>
                             {messages.map((message, index) => (
