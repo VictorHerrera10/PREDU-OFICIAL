@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -138,13 +138,15 @@ export function HeroChatButton() {
       </TooltipProvider>
       <DialogContent className="max-w-xl h-[80vh] flex flex-col p-0">
         <DialogHeader className="p-6 pb-2">
-            <DialogTitle className="flex items-center gap-2">
-                <Avatar className="h-10 w-10 border-2 border-destructive flex-shrink-0">
-                    <AvatarFallback><Bot className="h-8 w-8"/></AvatarFallback>
+            <DialogTitle className="flex items-center gap-4">
+                <Avatar className="h-12 w-12 border-2 border-destructive flex-shrink-0">
+                    <AvatarFallback><Bot className="h-10 w-10"/></AvatarFallback>
                 </Avatar>
-                Asistente Vocacional
+                <div>
+                  <h2 className="text-lg font-semibold">Asistente Vocacional</h2>
+                  <p className="text-sm text-muted-foreground">Chatea con nuestro orientador vocacional para resolver tus dudas.</p>
+                </div>
             </DialogTitle>
-            <DialogDescription>Chatea con nuestro orientador vocacional para resolver tus dudas.</DialogDescription>
         </DialogHeader>
         
         <Card className="h-full w-full flex flex-col border-0 shadow-none rounded-t-none">
