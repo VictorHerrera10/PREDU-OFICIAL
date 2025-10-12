@@ -107,7 +107,7 @@ export function HeroChatButton() {
         <DialogHeader className="p-6 pb-2">
             <DialogTitle className="flex items-center gap-2">
                 <Bot className="text-destructive" />
-                Asistente Vocacional IA
+                Asistente Vocacional
             </DialogTitle>
             <DialogDescription>Chatea con el orientador vocacional para resolver tus dudas.</DialogDescription>
         </DialogHeader>
@@ -130,7 +130,7 @@ export function HeroChatButton() {
                                     {message.sender === 'ai' && (
                                         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
                                           <Avatar className="h-10 w-10 border-2 border-destructive flex-shrink-0">
-                                              <AvatarFallback><Bot className="h-6 w-6"/></AvatarFallback>
+                                              <AvatarFallback><Bot className="h-8 w-8"/></AvatarFallback>
                                           </Avatar>
                                         </motion.div>
                                     )}
@@ -173,7 +173,7 @@ export function HeroChatButton() {
                                     className="flex items-end gap-2"
                                 >
                                     <Avatar className="h-10 w-10 border-2 border-destructive">
-                                        <AvatarFallback><Bot className="h-6 w-6"/></AvatarFallback>
+                                        <AvatarFallback><Bot className="h-8 w-8"/></AvatarFallback>
                                     </Avatar>
                                     <div className="rounded-lg rounded-bl-none px-4 py-3 bg-secondary text-secondary-foreground">
                                         <Loader2 className="w-5 h-5 animate-spin" />
