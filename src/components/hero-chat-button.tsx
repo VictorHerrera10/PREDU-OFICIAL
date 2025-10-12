@@ -10,10 +10,11 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, Loader2, Sparkles } from 'lucide-react';
+import { Send, Loader2, BrainCircuit } from 'lucide-react';
 import { chatWithCounselor } from '@/ai/flows/vocational-guidance-flow';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 type Message = {
   sender: 'user' | 'ai';
@@ -86,7 +87,7 @@ export function HeroChatButton() {
                   size="icon"
                   className="fixed bottom-24 right-6 z-30 h-14 w-14 rounded-full shadow-lg flex items-center justify-center animate-[pulse-glow_4s_ease-in-out_infinite]"
                 >
-                  <Sparkles className="h-7 w-7" />
+                  <BrainCircuit className="h-7 w-7" />
                   <span className="sr-only">Asistente IA</span>
                 </Button>
               </motion.div>
@@ -100,7 +101,7 @@ export function HeroChatButton() {
       <DialogContent className="max-w-xl h-[80vh] flex flex-col p-0">
         <DialogHeader className="p-6 pb-2">
             <DialogTitle className="flex items-center gap-2">
-                <Sparkles className="text-destructive" />
+                <BrainCircuit className="text-destructive" />
                 Asistente Vocacional IA
             </DialogTitle>
             <DialogDescription>Chatea con nuestro orientador vocacional para resolver tus dudas.</DialogDescription>
@@ -109,7 +110,7 @@ export function HeroChatButton() {
         <Card className="h-full w-full flex flex-col border-0 shadow-none rounded-t-none">
             <CardContent className="flex-grow overflow-hidden p-6 pt-0">
                 <ScrollArea className="h-full pr-4">
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         <AnimatePresence>
                             {messages.map((message, index) => (
                                 <motion.div
@@ -117,18 +118,27 @@ export function HeroChatButton() {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.3 }}
-                                    className={`flex items-start gap-3 ${message.sender === 'user' ? 'justify-end' : ''}`}
+                                    className={cn('flex items-end gap-3', message.sender === 'user' && 'justify-end')}
                                 >
                                     {message.sender === 'ai' && (
-                                        <Avatar className="h-8 w-8 border-2 border-destructive">
-                                            <AvatarFallback><Sparkles /></AvatarFallback>
+                                        <Avatar className="h-8 w-8 border-2 border-destructive flex-shrink-0">
+                                            <AvatarFallback><BrainCircuit /></AvatarFallback>
                                         </Avatar>
                                     )}
-                                    <div className={`max-w-xs md:max-w-md lg:max-w-lg rounded-lg px-4 py-2 ${message.sender === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}>
-                                        <p className="text-sm">{message.text}</p>
+                                    <div className={cn(
+                                        "relative max-w-xs md:max-w-md lg:max-w-lg px-4 py-3 text-sm",
+                                        message.sender === 'user' 
+                                            ? 'bg-primary text-primary-foreground' 
+                                            : 'bg-secondary text-secondary-foreground',
+                                        {
+                                            'rounded-lg rounded-bl-none': message.sender === 'ai',
+                                            'rounded-lg rounded-br-none': message.sender === 'user',
+                                        }
+                                    )}>
+                                        <p>{message.text}</p>
                                     </div>
                                     {message.sender === 'user' && (
-                                        <Avatar className="h-8 w-8">
+                                        <Avatar className="h-8 w-8 flex-shrink-0">
                                             <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || 'User'} />
                                             <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
                                         </Avatar>
@@ -138,7 +148,7 @@ export function HeroChatButton() {
                             {isLoading && (
                                 <motion.div key="loading" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="flex items-start gap-3">
                                     <Avatar className="h-8 w-8 border-2 border-destructive">
-                                        <AvatarFallback><Sparkles /></AvatarFallback>
+                                        <AvatarFallback><BrainCircuit /></AvatarFallback>
                                     </Avatar>
                                     <div className="max-w-xs rounded-lg px-4 py-2 bg-secondary text-secondary-foreground">
                                         <Loader2 className="w-5 h-5 animate-spin" />
