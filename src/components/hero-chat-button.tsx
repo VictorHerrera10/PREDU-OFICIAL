@@ -96,11 +96,22 @@ export function HeroChatButton() {
     setIsLoading(true);
 
     try {
+      // Clean up the data to be sent to the server action
+      const cleanAcademicPrediction = academicPrediction ? {
+        prediction: academicPrediction.prediction,
+        grades: academicPrediction.grades
+      } : undefined;
+
+      const cleanPsychologicalPrediction = psychologicalPrediction ? {
+        result: psychologicalPrediction.result,
+        results: psychologicalPrediction.results
+      } : undefined;
+
       const result = await chatWithCounselor({ 
           message: input,
           username: user?.displayName,
-          academicPrediction: academicPrediction || undefined,
-          psychologicalPrediction: psychologicalPrediction || undefined,
+          academicPrediction: cleanAcademicPrediction,
+          psychologicalPrediction: cleanPsychologicalPrediction,
       });
       const aiMessage: Message = { sender: 'ai', text: result.response };
       setMessages(prev => [...prev, aiMessage]);
@@ -227,7 +238,7 @@ export function HeroChatButton() {
                 </ScrollArea>
             </CardContent>
             <CardFooter className="p-6 pt-0">
-                <form onSubmit={handleSendMessage} className="flex w-full items-center space-x-4">
+                <form onSubmit={handleSendMessage} className="flex w-full items-center space-x-2">
                     <Input
                         id="message"
                         placeholder="Escribe tu pregunta aquí..."
