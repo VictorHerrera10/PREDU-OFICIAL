@@ -54,7 +54,7 @@ export default function ChatbotView() {
   };
 
   return (
-    <Card className="h-[75vh] flex flex-col">
+    <Card className="h-full w-full flex flex-col border-0 shadow-none rounded-lg">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Sparkles className="text-destructive" />

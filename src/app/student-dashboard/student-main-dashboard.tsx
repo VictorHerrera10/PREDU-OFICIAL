@@ -6,18 +6,18 @@ import { doc } from 'firebase/firestore';
 import { Logo } from '@/components/logo';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { UserNav } from '@/components/user-nav';
-import { BrainCircuit, Compass, Home, Sparkles } from 'lucide-react';
+import { BrainCircuit, Compass, Home } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import HomeView from './views/HomeView';
 import AcademicPredictionView from './views/AcademicPredictionView';
 import PsychologicalPredictionView from './views/PsychologicalPredictionView';
-import ChatbotView from './views/ChatbotView';
 import { LevelUpView } from './views/LevelUpView';
 import { cn } from '@/lib/utils';
 import { StudentLoader } from '@/components/student-loader';
+import { HeroChatButton } from '@/components/hero-chat-button';
 
-type View = 'inicio' | 'prediccionAcademica' | 'prediccionPsicologica' | 'asistenteIA';
+type View = 'inicio' | 'prediccionAcademica' | 'prediccionPsicologica';
 
 type Option = {
   id: View;
@@ -31,7 +31,6 @@ const options: Option[] = [
   { id: 'inicio', icon: Home, title: 'Inicio', description: 'Tu resumen, notificaciones y próximos pasos.' },
   { id: 'prediccionAcademica', icon: Compass, title: 'Predicción Académica', description: 'Realiza tests para descubrir tu vocación profesional.' },
   { id: 'prediccionPsicologica', icon: BrainCircuit, title: 'Predicción Psicológica', description: 'Entiende tus fortalezas y áreas de mejora personal.' },
-  { id: 'asistenteIA', icon: Sparkles, title: 'Asistente IA', description: 'Chatea con un orientador vocacional IA.', isHero: true },
 ];
 
 type UserProfile = {
@@ -61,8 +60,6 @@ export function StudentMainDashboard({ user }: Props) {
         return <AcademicPredictionView />;
       case 'prediccionPsicologica':
         return <PsychologicalPredictionView />;
-      case 'asistenteIA':
-        return <ChatbotView />;
       default:
         return null;
     }
@@ -111,7 +108,7 @@ export function StudentMainDashboard({ user }: Props) {
           <motion.div
             layout
             key="options-container"
-            className={`grid gap-8 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 ${selectedView ? 'grid-cols-4' : 'grid-cols-1 md:grid-cols-3'}`}
+            className={`grid gap-8 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 ${selectedView ? 'grid-cols-3' : 'grid-cols-1 md:grid-cols-3'}`}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
             {availableOptions.map((option) => (
@@ -173,6 +170,7 @@ export function StudentMainDashboard({ user }: Props) {
         </div>
       </main>
       {!userProfile?.isHero && <LevelUpView isViewSelected={!!selectedView} />}
+      <HeroChatButton />
     </div>
   );
 }
