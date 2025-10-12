@@ -120,7 +120,10 @@ export function StudentMainDashboard({ user }: Props) {
           <motion.div
             layout
             key="options-container"
-            className={`grid gap-8 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 ${selectedView ? `grid-cols-${availableOptions.length}` : 'grid-cols-1 md:grid-cols-3'}`}
+            className={cn(
+                "grid gap-8 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8",
+                selectedView ? `grid-cols-${availableOptions.length}` : 'grid-cols-1 md:grid-cols-3'
+            )}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
             {availableOptions.map((option) => (
@@ -128,20 +131,27 @@ export function StudentMainDashboard({ user }: Props) {
                 layout
                 key={option.id}
                 onClick={() => setSelectedView(option.id)}
-                className={`cursor-pointer overflow-hidden rounded-lg ${selectedView ? '' : 'bg-card/80 backdrop-blur-sm border text-left hover:border-primary/50 transition-all transform hover:-translate-y-1'}`}
+                className={cn(
+                    "cursor-pointer overflow-hidden rounded-lg",
+                    selectedView ? '' : 'bg-card/80 backdrop-blur-sm border text-left hover:border-primary/50 transition-all transform hover:-translate-y-1',
+                    option.isHero && 'theme-hero'
+                )}
                 initial={{ borderRadius: '0.75rem' }}
               >
                 <div
                     className={
-                        `p-6 ${selectedView === option.id ? 'bg-primary text-primary-foreground rounded-lg' 
+                        cn(
+                        "p-6",
+                        selectedView === option.id ? 'bg-primary text-primary-foreground rounded-lg' 
                         : selectedView ? 'bg-muted hover:bg-muted/80 rounded-lg' 
-                        : 'flex flex-col items-center text-center gap-4'} ${selectedView ? 'flex items-center justify-center gap-2' : ''}`
+                        : 'flex flex-col items-center text-center gap-4',
+                        selectedView ? 'flex items-center justify-center gap-2' : ''
+                        )
                     }
                   >
                     <motion.div layout="position">
                         <option.icon className={cn(
-                            selectedView ? "w-5 h-5" : "w-10 h-10",
-                            option.isHero ? 'text-destructive' : 'text-primary'
+                            selectedView ? "w-5 h-5" : "w-10 h-10 text-primary"
                         )} />
                     </motion.div>
                     
