@@ -24,17 +24,11 @@ type UserProfile = {
   isHero?: boolean;
 };
 
-const welcomeMessage: Message = {
-  sender: 'ai',
-  text: '¡Hola! Soy tu Asistente Vocacional. Estoy aquí para ayudarte a explorar carreras, resolver tus dudas y encontrar tu camino. ¿En qué te puedo ayudar hoy? 🚀',
-};
-
-
 export function HeroChatButton() {
   const { user } = useUser();
   const firestore = useFirestore();
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([welcomeMessage]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -44,6 +38,17 @@ export function HeroChatButton() {
   }, [user, firestore]);
 
   const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
+
+  useEffect(() => {
+    if (isOpen && messages.length === 0 && user?.displayName) {
+        const welcomeMessage: Message = {
+            sender: 'ai',
+            text: `¡Hola, ${user.displayName}! Soy tu Asistente Vocacional. Estoy aquí para ayudarte a explorar carreras, resolver tus dudas y encontrar tu camino. ¿En qué te puedo ayudar hoy? 🚀`,
+        };
+        setMessages([welcomeMessage]);
+    }
+  }, [isOpen, user, messages.length]);
+
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,14 +107,14 @@ export function HeroChatButton() {
             </DialogTrigger>
           </TooltipTrigger>
           <TooltipContent side="left" className="bg-destructive text-destructive-foreground">
-            <p>¡Asistente IA!</p>
+            <p>Asistente Vocacional IA</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
       <DialogContent className="max-w-xl h-[80vh] flex flex-col p-0">
         <DialogHeader className="p-6 pb-2">
             <DialogTitle className="flex items-center gap-2">
-                <Bot className="text-destructive" />
+                <Bot className="text-destructive h-8 w-8" />
                 Asistente Vocacional
             </DialogTitle>
             <DialogDescription>Chatea con nuestro orientador vocacional para resolver tus dudas.</DialogDescription>
