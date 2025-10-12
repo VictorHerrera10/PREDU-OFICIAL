@@ -6,7 +6,7 @@ import { doc } from 'firebase/firestore';
 import { Logo } from '@/components/logo';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { UserNav } from '@/components/user-nav';
-import { BrainCircuit, Compass, Home } from 'lucide-react';
+import { BrainCircuit, Compass, Home, Award, BookOpen, Building } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import HomeView from './views/HomeView';
@@ -16,8 +16,11 @@ import { LevelUpView } from './views/LevelUpView';
 import { cn } from '@/lib/utils';
 import { StudentLoader } from '@/components/student-loader';
 import { HeroChatButton } from '@/components/hero-chat-button';
+import CareerInfoView from './views/CareerInfoView';
+import UniversityInfoView from './views/UniversityInfoView';
+import ScholarshipInfoView from './views/ScholarshipInfoView';
 
-type View = 'inicio' | 'prediccionAcademica' | 'prediccionPsicologica';
+type View = 'inicio' | 'prediccionAcademica' | 'prediccionPsicologica' | 'infoCarreras' | 'infoUniversidades' | 'infoBecas';
 
 type Option = {
   id: View;
@@ -31,6 +34,9 @@ const options: Option[] = [
   { id: 'inicio', icon: Home, title: 'Inicio', description: 'Tu resumen, notificaciones y próximos pasos.' },
   { id: 'prediccionAcademica', icon: Compass, title: 'Predicción Académica', description: 'Realiza tests para descubrir tu vocación profesional.' },
   { id: 'prediccionPsicologica', icon: BrainCircuit, title: 'Predicción Psicológica', description: 'Entiende tus fortalezas y áreas de mejora personal.' },
+  { id: 'infoCarreras', icon: BookOpen, title: 'Info de Carreras', description: 'Explora un universo de profesiones y encuentra tu lugar.', isHero: true },
+  { id: 'infoUniversidades', icon: Building, title: 'Info de Universidades', description: 'Busca y compara instituciones para tu futuro académico.', isHero: true },
+  { id: 'infoBecas', icon: Award, title: 'Info de Becas', description: 'Encuentra oportunidades de financiamiento para tus estudios.', isHero: true },
 ];
 
 type UserProfile = {
@@ -60,6 +66,12 @@ export function StudentMainDashboard({ user }: Props) {
         return <AcademicPredictionView />;
       case 'prediccionPsicologica':
         return <PsychologicalPredictionView />;
+      case 'infoCarreras':
+        return <CareerInfoView />;
+      case 'infoUniversidades':
+        return <UniversityInfoView />;
+      case 'infoBecas':
+        return <ScholarshipInfoView />;
       default:
         return null;
     }
@@ -108,7 +120,7 @@ export function StudentMainDashboard({ user }: Props) {
           <motion.div
             layout
             key="options-container"
-            className={`grid gap-8 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 ${selectedView ? 'grid-cols-3' : 'grid-cols-1 md:grid-cols-3'}`}
+            className={`grid gap-8 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 ${selectedView ? `grid-cols-${availableOptions.length}` : 'grid-cols-1 md:grid-cols-3'}`}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
             {availableOptions.map((option) => (
