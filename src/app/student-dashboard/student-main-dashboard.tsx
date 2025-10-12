@@ -108,19 +108,19 @@ export function StudentMainDashboard({ user }: Props) {
                 initial={{ opacity: 0, x: -100 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.5 }}
-                className="fixed top-1/2 left-4 -translate-y-1/2 z-10 flex flex-col items-center gap-3 p-2 bg-card/80 backdrop-blur-sm border rounded-lg"
+                className="fixed top-1/2 left-4 -translate-y-1/2 z-10 flex flex-col items-center gap-4 p-4 bg-card/80 backdrop-blur-sm border rounded-lg"
             >
-                <h3 className="font-headline text-xs text-destructive [writing-mode:vertical-rl] mb-2">INFORMACIÓN</h3>
+                <h3 className="font-headline text-sm text-destructive mb-2">INFORMACIÓN</h3>
                 <TooltipProvider>
                     {heroOptions.map(option => (
                     <Tooltip key={option.id}>
                         <TooltipTrigger asChild>
                             <Button 
                                 variant={selectedView === option.id ? 'destructive' : 'ghost'} 
-                                size="icon"
+                                className="w-16 h-16"
                                 onClick={() => handleSelectView(option.id)}
                             >
-                                <option.icon className="w-6 h-6"/>
+                                <option.icon className="w-10 h-10"/>
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent side="right">
