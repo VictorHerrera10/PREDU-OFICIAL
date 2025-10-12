@@ -134,7 +134,7 @@ export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
               <DialogTrigger asChild>
                 <motion.button
                   className={cn(
-                    "fixed bottom-6 right-6 z-30 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center animate-[pulse-glow_4s_ease-in-out_infinite] transition-all duration-300",
+                    "fixed bottom-6 right-6 z-30 rounded-full bg-destructive text-destructive-foreground shadow-lg flex items-center justify-center animate-[pulse-glow_4s_ease-in-out_infinite] transition-all duration-300",
                     isViewSelected ? 'h-12 w-12' : 'h-16 w-16'
                   )}
                   whileHover={{ scale: 1.1 }}
@@ -145,7 +145,7 @@ export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
                 </motion.button>
               </DialogTrigger>
             </TooltipTrigger>
-            <TooltipContent side="left" className="bg-primary text-primary-foreground">
+            <TooltipContent side="left" className="bg-destructive text-destructive-foreground">
               <p>¡Sube de Nivel!</p>
             </TooltipContent>
           </Tooltip>
@@ -157,7 +157,7 @@ export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
             <span className="sr-only">Cerrar</span>
           </DialogClose>
           <DialogHeader className="text-center my-1">
-            <DialogTitleComponent className="text-lg font-bold text-primary font-headline">
+            <DialogTitleComponent className="text-lg font-bold text-destructive font-headline">
               ¡Elige tu Destino!
             </DialogTitleComponent>
             <DialogDescriptionComponent className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
@@ -191,9 +191,9 @@ export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
                         level.recommended ? 'text-destructive' : level.borderColor === 'border-primary' ? 'text-primary' : 'text-blue-500'
                       )}
                     />
-                    <CardTitle className="text-base font-bold">{level.name}</CardTitle>
+                    <CardTitleComponent className="text-base font-bold">{level.name}</CardTitleComponent>
                     <p className="text-lg font-headline text-foreground">{level.price}</p>
-                    <CardDescription className="text-xs text-muted-foreground min-h-[30px]">{level.description}</CardDescription>
+                    <CardDescriptionComponent className="text-xs text-muted-foreground min-h-[30px]">{level.description}</CardDescriptionComponent>
                   </CardHeader>
                   <CardContent className="flex-grow">
                     <ul className="space-y-1.5">
