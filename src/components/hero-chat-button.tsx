@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -10,7 +10,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, Loader2, BrainCircuit } from 'lucide-react';
+import { Send, Loader2, Bot } from 'lucide-react';
 import { chatWithCounselor } from '@/ai/flows/vocational-guidance-flow';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -25,11 +25,17 @@ type UserProfile = {
   isHero?: boolean;
 };
 
+const welcomeMessage: Message = {
+  sender: 'ai',
+  text: '¡Hola! Soy Predu-Bot, tu orientador vocacional personal. Estoy aquí para ayudarte a explorar carreras, resolver tus dudas y encontrar tu camino. ¿En qué te puedo ayudar hoy? 🚀',
+};
+
+
 export function HeroChatButton() {
   const { user } = useUser();
   const firestore = useFirestore();
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([welcomeMessage]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -55,7 +61,7 @@ export function HeroChatButton() {
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       console.error('Error with AI counselor:', error);
-      const errorMessage: Message = { sender: 'ai', text: 'Lo siento, estoy teniendo problemas para conectar. Inténtalo de nuevo más tarde.' };
+      const errorMessage: Message = { sender: 'ai', text: '¡Ups! Parece que mis circuitos están un poco cruzados ahora mismo. Estoy teniendo algunas dificultades técnicas, pero el equipo técnico ya está trabajando para solucionarlo. ¡Inténtalo de nuevo en un momento! 🛠️' };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
@@ -85,9 +91,9 @@ export function HeroChatButton() {
                 <Button
                   variant="destructive"
                   size="icon"
-                  className="fixed bottom-24 right-6 z-30 h-14 w-14 rounded-full shadow-lg flex items-center justify-center animate-[pulse-glow_4s_ease-in-out_infinite]"
+                  className="fixed bottom-24 right-6 z-30 h-16 w-16 rounded-full shadow-lg flex items-center justify-center animate-[pulse-glow_4s_ease-in-out_infinite]"
                 >
-                  <BrainCircuit className="h-7 w-7" />
+                  <Bot className="h-9 w-9" />
                   <span className="sr-only">Asistente IA</span>
                 </Button>
               </motion.div>
@@ -101,10 +107,10 @@ export function HeroChatButton() {
       <DialogContent className="max-w-xl h-[80vh] flex flex-col p-0">
         <DialogHeader className="p-6 pb-2">
             <DialogTitle className="flex items-center gap-2">
-                <BrainCircuit className="text-destructive" />
+                <Bot className="text-destructive" />
                 Asistente Vocacional IA
             </DialogTitle>
-            <DialogDescription>Chatea con nuestro orientador vocacional para resolver tus dudas.</DialogDescription>
+            <DialogDescription>Chatea con Predu-Bot para resolver tus dudas.</DialogDescription>
         </DialogHeader>
         
         <Card className="h-full w-full flex flex-col border-0 shadow-none rounded-t-none">
@@ -115,15 +121,19 @@ export function HeroChatButton() {
                             {messages.map((message, index) => (
                                 <motion.div
                                     key={index}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
+                                    layout
+                                    initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
                                     transition={{ duration: 0.3 }}
-                                    className={cn('flex items-end gap-3', message.sender === 'user' && 'justify-end')}
+                                    className={cn('flex items-end gap-2', message.sender === 'user' && 'justify-end')}
                                 >
                                     {message.sender === 'ai' && (
-                                        <Avatar className="h-8 w-8 border-2 border-destructive flex-shrink-0">
-                                            <AvatarFallback><BrainCircuit /></AvatarFallback>
-                                        </Avatar>
+                                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                                          <Avatar className="h-8 w-8 border-2 border-destructive flex-shrink-0">
+                                              <AvatarFallback><Bot /></AvatarFallback>
+                                          </Avatar>
+                                        </motion.div>
                                     )}
                                     <div className={cn(
                                         "relative max-w-xs md:max-w-md lg:max-w-lg px-4 py-3 text-sm",
@@ -138,19 +148,27 @@ export function HeroChatButton() {
                                         <p>{message.text}</p>
                                     </div>
                                     {message.sender === 'user' && (
-                                        <Avatar className="h-8 w-8 flex-shrink-0">
-                                            <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || 'User'} />
-                                            <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
-                                        </Avatar>
+                                         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                                            <Avatar className="h-8 w-8 flex-shrink-0">
+                                                <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || 'User'} />
+                                                <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
+                                            </Avatar>
+                                        </motion.div>
                                     )}
                                 </motion.div>
                             ))}
                             {isLoading && (
-                                <motion.div key="loading" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="flex items-start gap-3">
+                                <motion.div 
+                                    key="loading" 
+                                    initial={{ opacity: 0, y: 10, scale: 0.9 }} 
+                                    animate={{ opacity: 1, y: 0, scale: 1 }} 
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    className="flex items-end gap-2"
+                                >
                                     <Avatar className="h-8 w-8 border-2 border-destructive">
-                                        <AvatarFallback><BrainCircuit /></AvatarFallback>
+                                        <AvatarFallback><Bot /></AvatarFallback>
                                     </Avatar>
-                                    <div className="max-w-xs rounded-lg px-4 py-2 bg-secondary text-secondary-foreground">
+                                    <div className="rounded-lg rounded-bl-none px-4 py-3 bg-secondary text-secondary-foreground">
                                         <Loader2 className="w-5 h-5 animate-spin" />
                                     </div>
                                 </motion.div>
@@ -170,7 +188,7 @@ export function HeroChatButton() {
                         onChange={e => setInput(e.target.value)}
                         disabled={isLoading}
                     />
-                    <Button type="submit" size="icon" disabled={isLoading || !input.trim()} className="bg-destructive hover:bg-destructive/90">
+                    <Button type="submit" size="icon" disabled={isLoading || !input.trim()} className="bg-destructive hover:bg-destructive/90 rounded-full w-10 h-10 flex-shrink-0">
                         <Send className="h-4 w-4" />
                         <span className="sr-only">Enviar</span>
                     </Button>
