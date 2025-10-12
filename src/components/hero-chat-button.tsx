@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,7 @@ type UserProfile = {
 
 type AcademicPrediction = {
     prediction: string;
+    grades: Record<string, string>;
 };
 
 type PsychologicalPrediction = {
@@ -85,7 +86,7 @@ export function HeroChatButton() {
       const result = await chatWithCounselor({ 
           message: input,
           username: user?.displayName,
-          academicResult: academicPrediction?.prediction,
+          academicPrediction: academicPrediction || undefined,
           psychologicalResult: psychologicalPrediction?.result,
       });
       const aiMessage: Message = { sender: 'ai', text: result.response };
