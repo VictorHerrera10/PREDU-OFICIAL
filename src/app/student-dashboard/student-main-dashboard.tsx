@@ -127,52 +127,53 @@ export function StudentMainDashboard({ user }: Props) {
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
             {availableOptions.map((option) => (
-              <motion.div
-                layout
-                key={option.id}
-                onClick={() => setSelectedView(option.id)}
-                className={cn(
-                    "cursor-pointer overflow-hidden rounded-lg",
-                    selectedView ? '' : 'bg-card/80 backdrop-blur-sm border text-left hover:border-primary/50 transition-all transform hover:-translate-y-1',
-                    option.isHero && 'theme-hero'
-                )}
-                initial={{ borderRadius: '0.75rem' }}
-              >
-                <div
-                    className={
-                        cn(
-                        "p-6",
-                        selectedView === option.id ? 'bg-primary text-primary-foreground rounded-lg' 
-                        : selectedView ? 'bg-muted hover:bg-muted/80 rounded-lg' 
-                        : 'flex flex-col items-center text-center gap-4',
-                        selectedView ? 'flex items-center justify-center gap-2' : ''
-                        )
-                    }
-                  >
-                    <motion.div layout="position">
-                        <option.icon className={cn(
-                            selectedView ? "w-5 h-5" : "w-10 h-10 text-primary"
-                        )} />
-                    </motion.div>
-                    
-                    <div className="flex flex-col">
-                      <motion.h2 layout="position" className={`font-bold ${selectedView ? 'text-sm' : 'text-2xl'}`}>{option.title}</motion.h2>
-                      <AnimatePresence>
-                        {!selectedView && (
-                          <motion.p 
-                            layout 
-                            className="text-muted-foreground mt-2"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                          >
-                            {option.description}
-                          </motion.p>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </div>
-              </motion.div>
+                <motion.div
+                    layout
+                    key={option.id}
+                    onClick={() => setSelectedView(option.id)}
+                    className={cn(
+                        "cursor-pointer overflow-hidden",
+                        selectedView ? 'rounded-lg' : 'card-outline',
+                        option.isHero && 'theme-hero'
+                    )}
+                    initial={{ borderRadius: '0.75rem' }}
+                >
+                    <AnimatePresence>
+                    {selectedView === option.id ? (
+                        <motion.div className="bg-primary text-primary-foreground rounded-lg p-3 flex items-center justify-center gap-2">
+                             <motion.div layout="position">
+                                <option.icon className="w-5 h-5" />
+                            </motion.div>
+                             <motion.h2 layout="position" className="font-bold text-sm">{option.title}</motion.h2>
+                        </motion.div>
+                    ) : selectedView ? (
+                         <motion.div className="bg-muted hover:bg-muted/80 rounded-lg p-3 flex items-center justify-center gap-2">
+                             <motion.div layout="position">
+                                <option.icon className="w-5 h-5" />
+                            </motion.div>
+                             <motion.h2 layout="position" className="font-bold text-sm">{option.title}</motion.h2>
+                        </motion.div>
+                    ) : (
+                        <div className="card-content flex flex-col items-center text-center gap-4 p-6">
+                            <motion.div layout="position">
+                                <option.icon className={cn("w-10 h-10 text-primary")} />
+                            </motion.div>
+                            <div className="flex flex-col">
+                                <motion.h2 layout="position" className="font-bold text-2xl">{option.title}</motion.h2>
+                                <motion.p 
+                                    layout 
+                                    className="text-muted-foreground mt-2"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                >
+                                    {option.description}
+                                </motion.p>
+                            </div>
+                        </div>
+                    )}
+                    </AnimatePresence>
+                </motion.div>
             ))}
           </motion.div>
         </LayoutGroup>
