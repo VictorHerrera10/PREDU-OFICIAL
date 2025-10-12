@@ -93,7 +93,7 @@ export function HeroChatButton() {
                   size="icon"
                   className="fixed bottom-24 right-6 z-30 h-16 w-16 rounded-full shadow-lg flex items-center justify-center animate-[pulse-glow_4s_ease-in-out_infinite]"
                 >
-                  <Bot className="h-9 w-9" />
+                  <Bot className="h-10 w-10" />
                   <span className="sr-only">Asistente IA</span>
                 </Button>
               </motion.div>
@@ -116,7 +116,7 @@ export function HeroChatButton() {
         <Card className="h-full w-full flex flex-col border-0 shadow-none rounded-t-none">
             <CardContent className="flex-grow overflow-hidden p-6 pt-0">
                 <ScrollArea className="h-full pr-4">
-                    <div className="space-y-6">
+                    <div className="space-y-6 pt-4">
                         <AnimatePresence>
                             {messages.map((message, index) => (
                                 <motion.div
@@ -137,15 +137,23 @@ export function HeroChatButton() {
                                     )}
                                     <div className={cn(
                                         "relative max-w-xs md:max-w-md lg:max-w-lg px-4 py-3 text-sm",
-                                        message.sender === 'user' 
-                                            ? 'bg-primary text-primary-foreground' 
-                                            : 'bg-secondary text-secondary-foreground',
+                                        "shadow-md",
                                         {
-                                            'rounded-lg rounded-bl-none': message.sender === 'ai',
-                                            'rounded-lg rounded-br-none': message.sender === 'user',
+                                          "bg-secondary text-secondary-foreground": message.sender === 'ai',
+                                          "bg-primary text-primary-foreground": message.sender === 'user',
+                                          "rounded-lg rounded-bl-none": message.sender === 'ai',
+                                          "rounded-lg rounded-br-none": message.sender === 'user',
                                         }
                                     )}>
                                         <p>{message.text}</p>
+                                        
+                                        <div className={cn(
+                                            "absolute bottom-0 w-3 h-3",
+                                            {
+                                                "left-[-6px] bg-secondary": message.sender === 'ai',
+                                                "right-[-6px] bg-primary": message.sender === 'user',
+                                            }
+                                        )} style={{ clipPath: 'polygon(100% 0, 0 100%, 100% 100%)', transform: message.sender === 'ai' ? 'rotate(10deg)' : 'rotate(-10deg) scaleX(-1)' }} />
                                     </div>
                                     {message.sender === 'user' && (
                                          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
