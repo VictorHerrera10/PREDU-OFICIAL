@@ -24,6 +24,11 @@ const ChatCounselorInputSchema = z.object({
 });
 export type ChatCounselorInput = z.infer<typeof ChatCounselorInputSchema>;
 
+// New internal schema for the prompt, including the formatted grades string
+const PromptInputSchema = ChatCounselorInputSchema.extend({
+    gradesAsString: z.string().optional().describe('A formatted string of the student\'s grades.')
+});
+
 const ChatCounselorOutputSchema = z.object({
   response: z.string().describe('The AI counselor\'s response.'),
 });
@@ -35,7 +40,7 @@ export async function chatWithCounselor(input: ChatCounselorInput): Promise<Chat
 
 const prompt = ai.definePrompt({
   name: 'vocationalCounselorPrompt',
-  input: {schema: ChatCounselorInputSchema},
+  input: {schema: PromptInputSchema},
   output: {schema: ChatCounselorOutputSchema},
   prompt: `You are an expert vocational counselor AI. Your ONLY purpose is to help students discover their passions and guide them toward a professional career.
 
@@ -48,13 +53,13 @@ const prompt = ai.definePrompt({
 CONTEXT ABOUT THE STUDENT:
 - Student's Name: {{username}}
 - Academic Test Result: {{#if academicPrediction.prediction}}'{{academicPrediction.prediction}}'{{else}}'Not Completed'{{/if}}
-- Student's Grades: {{#if academicPrediction.grades}}{{academicPrediction.grades}}{{else}}'Not Provided'{{/if}}
+- Student's Grades: {{#if gradesAsString}}'{{gradesAsString}}'{{else}}'Not Provided'{{/if}}
 - Psychological (RIASEC) Test Result: {{#if psychologicalResult}}'{{psychologicalResult}}'{{else}}'Not Completed'{{/if}}
 
 YOUR BEHAVIOR BASED ON CONTEXT:
 1. If BOTH the academic and psychological tests are not completed, your priority is to gently encourage the user to complete them. Example: "¡Hola, {{username}}! Para darte la mejor orientación, te recomiendo completar los tests académico y psicológico. ¡Son el primer paso para descubrir tu vocación! ¿Te animas? 💪"
 2. If ONE test is completed but the other is not, encourage the user to complete the missing one to get a full picture. Example: "¡Vas por buen camino, {{username}}! Ya completaste el test {{#if academicPrediction}}académico{{else}}psicológico{{/if}}. ¡Anímate a hacer el {{#if academicPrediction}}psicológico{{else}}académico{{/if}} para tener una guía más completa!"
-3. If BOTH tests are completed, use their results ({{academicPrediction.prediction}} and {{psychologicalResult}}) and their detailed grades to provide specific advice and answer their questions. If they ask about their grades, you have access to them and can comment on them.
+3. If BOTH tests are completed, use their results ({{academicPrediction.prediction}} and {{psychologicalResult}}) and their detailed grades ({{gradesAsString}}) to provide specific advice and answer their questions. If they ask about their grades, you have access to them and can comment on them.
 
 User Message: {{message}}
 
@@ -68,7 +73,20 @@ const vocationalGuidanceFlow = ai.defineFlow(
     outputSchema: ChatCounselorOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    // Convert grades object to a simple string for the prompt
+    let gradesAsString: string | undefined;
+    if (input.academicPrediction?.grades) {
+        gradesAsString = Object.entries(input.academicPrediction.grades)
+            .map(([subject, grade]) => `${subject.replace(/_/g, ' ')}: ${grade}`)
+            .join(', ');
+    }
+
+    const promptInput = {
+        ...input,
+        gradesAsString: gradesAsString,
+    };
+    
+    const {output} = await prompt(promptInput);
     return output!;
   }
 );
