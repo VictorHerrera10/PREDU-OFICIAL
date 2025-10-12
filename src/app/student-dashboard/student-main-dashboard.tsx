@@ -105,12 +105,12 @@ export function StudentMainDashboard({ user }: Props) {
        {userProfile?.isHero && (
         <AnimatePresence>
             <motion.div
-                initial={{ opacity: 0, x: 100 }}
+                initial={{ opacity: 0, x: -100 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.5 }}
-                className="fixed top-1/2 right-4 -translate-y-1/2 z-10 flex flex-col items-center gap-3 p-2 bg-card/80 backdrop-blur-sm border rounded-lg"
+                className="fixed top-1/2 left-4 -translate-y-1/2 z-10 flex flex-col items-center gap-3 p-2 bg-card/80 backdrop-blur-sm border rounded-lg"
             >
-                <h3 className="font-headline text-xs text-destructive writing-vertical-rl rotate-180 mb-2">HERRAMIENTAS</h3>
+                <h3 className="font-headline text-xs text-destructive [writing-mode:vertical-rl] mb-2">INFORMACIÓN</h3>
                 <TooltipProvider>
                     {heroOptions.map(option => (
                     <Tooltip key={option.id}>
@@ -120,10 +120,10 @@ export function StudentMainDashboard({ user }: Props) {
                                 size="icon"
                                 onClick={() => handleSelectView(option.id)}
                             >
-                                <option.icon className="w-5 h-5"/>
+                                <option.icon className="w-6 h-6"/>
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent side="left">
+                        <TooltipContent side="right">
                             <p>{option.title}</p>
                         </TooltipContent>
                     </Tooltip>
