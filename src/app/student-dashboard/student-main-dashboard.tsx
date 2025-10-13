@@ -104,28 +104,26 @@ export function StudentMainDashboard({ user }: Props) {
       </header>
 
       {userProfile?.isHero && (
-        <AnimatePresence>
-          <motion.div
-              initial={{ opacity: 0, x: -100 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="fixed top-1/2 left-4 -translate-y-1/2 z-10 flex flex-col items-center gap-4 p-4 bg-card/60 backdrop-blur-sm border rounded-lg w-20"
-          >
-              {heroOptions.map(option => (
-                  <Button
-                      key={option.id}
-                      variant="ghost"
-                      className={cn(
-                          "w-16 h-16 flex items-center justify-center transition-all duration-300 rounded-lg",
-                          selectedView === option.id ? 'bg-destructive/20 text-destructive-foreground' : 'text-foreground'
-                      )}
-                      onClick={() => handleSelectView(option.id)}
-                  >
-                      <option.icon style={{ width: '48px', height: '48px' }} className="flex-shrink-0" />
-                  </Button>
-              ))}
-          </motion.div>
-        </AnimatePresence>
+        <div className="group fixed top-1/2 left-4 -translate-y-1/2 z-10 flex flex-col items-center gap-4 p-2 bg-card/60 backdrop-blur-sm border rounded-lg w-20 hover:w-48 transition-all duration-300">
+            {heroOptions.map(option => (
+                <Button
+                    key={option.id}
+                    variant="ghost"
+                    className={cn(
+                        "w-full h-16 flex items-center justify-start gap-4 transition-all duration-300 rounded-lg",
+                        selectedView === option.id ? 'bg-destructive/20' : ''
+                    )}
+                    onClick={() => handleSelectView(option.id)}
+                >
+                    <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center">
+                      <option.icon style={{ width: '30px', height: '30px' }} className="text-foreground" />
+                    </div>
+                    <span className="font-semibold text-foreground whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-150">
+                        {option.title}
+                    </span>
+                </Button>
+            ))}
+        </div>
       )}
 
 
