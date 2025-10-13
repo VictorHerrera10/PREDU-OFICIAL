@@ -227,14 +227,17 @@ export function StudentMainDashboard({ user }: Props) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <Button
-              size="lg"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
-              onClick={() => handleSelectView('rui')}
-            >
-              <Route className="mr-2 h-5 w-5" />
-              Iniciar Ruta Universitaria Interactiva (RUI)
-            </Button>
+            <div className="flex flex-col items-center gap-4">
+              <Button
+                size="lg"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                onClick={() => handleSelectView('rui')}
+              >
+                <Route className="mr-2 h-5 w-5" />
+                Iniciar Ruta Universitaria Interactiva (RUI)
+              </Button>
+              <Button variant="secondary" size="lg">prueba</Button>
+            </div>
           </motion.div>
         )}
 
