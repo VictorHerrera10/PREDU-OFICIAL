@@ -106,51 +106,33 @@ export function StudentMainDashboard({ user }: Props) {
       {userProfile?.isHero && (
         <AnimatePresence>
           <motion.div
-            initial={{ opacity: 0, x: -100 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            className="fixed top-1/2 left-4 -translate-y-1/2 z-10 flex flex-col items-center gap-4 p-4 bg-card/80 backdrop-blur-sm border rounded-lg"
+              initial={{ opacity: 0, x: -100 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              className="group fixed top-1/2 left-4 -translate-y-1/2 z-10 flex flex-col items-center gap-4 p-4 bg-card/60 backdrop-blur-sm border rounded-lg transition-all duration-300 w-20 hover:w-48"
           >
-            <h3 className="font-headline text-sm text-destructive mb-2">INFORMACIÓN</h3>
+              <h3 className="font-headline text-sm text-destructive mb-2 opacity-0 group-hover:opacity-100 transition-opacity">INFORMACIÓN</h3>
 
-
-            {heroOptions.map(option => (
-  <Button
-    key={option.id}
-    variant={selectedView === option.id ? 'destructive' : 'ghost'}
-    className={`w-full h-auto flex flex-col items-center justify-center
-                py-6 px-4 gap-4 transition-all duration-300
-                hover:scale-105 hover:shadow-[0_0_25px_rgba(255,0,0,0.5)]
-                rounded-2xl group`}
-    onClick={() => handleSelectView(option.id)}
-  >
-    <div className="flex items-center justify-center relative">
-      {/* Glow animado detrás del icono */}
-      <div
-        className="absolute inset-0 rounded-full blur-2xl opacity-0 
-                   group-hover:opacity-80 transition-opacity duration-500"
-        style={{
-          background: 'radial-gradient(circle, rgba(0, 0, 0, 0.6) 0%, transparent 70%)',
-        }}
-      ></div>
-
-      {/* Icono principal */}
-      <option.icon
-        className="text-destructive drop-shadow-lg relative z-10"
-        style={{ width: '30px', height: '30px' }}
-      />
-    </div>
-
-    {/* Título */}
-    <span className="text-lg font-bold text-center tracking-wide">
-      {option.title}
-    </span>
-  </Button>
-))}
-
+              {heroOptions.map(option => (
+                  <Button
+                      key={option.id}
+                      variant="ghost"
+                      className={cn(
+                          "w-full h-auto flex items-center justify-start py-3 px-3 gap-4 transition-all duration-300 rounded-lg group-hover:justify-start",
+                          selectedView === option.id ? 'bg-destructive/20 text-destructive-foreground' : 'text-foreground'
+                      )}
+                      onClick={() => handleSelectView(option.id)}
+                  >
+                      <option.icon style={{ width: '30px', height: '30px' }} className="flex-shrink-0" />
+                      <span className="text-base font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-100">
+                          {option.title}
+                      </span>
+                  </Button>
+              ))}
           </motion.div>
         </AnimatePresence>
       )}
+
 
       <main className="flex-grow pt-20">
         <LayoutGroup>
