@@ -5,10 +5,12 @@ import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
 import { getFirestore, Firestore, initializeFirestore } from 'firebase/firestore';
 import { getFunctions, Functions } from 'firebase/functions';
-import { getStorage, Storage } from 'firebase/storage';
+// Importamos el tipo FirebaseStorage, no solo Storage.
+import { getStorage, FirebaseStorage } from 'firebase/storage';
 
-// This function now robustly handles initialization for both dev and prod.
-export function initializeFirebase(): { firebaseApp: FirebaseApp; auth: Auth; firestore: Firestore, functions: Functions, storage: Storage } {
+// Esta función maneja de forma robusta la inicialización tanto para desarrollo como para producción.
+// Usamos FirebaseStorage como el tipo correcto para 'storage'.
+export function initializeFirebase(): { firebaseApp: FirebaseApp; auth: Auth; firestore: Firestore, functions: Functions, storage: FirebaseStorage } {
   if (getApps().length) {
     const app = getApp();
     return getSdks(app);
@@ -24,6 +26,7 @@ export function initializeFirebase(): { firebaseApp: FirebaseApp; auth: Auth; fi
 export function getSdks(firebaseApp: FirebaseApp) {
   const firestore = getFirestore(firebaseApp);
   const functions = getFunctions(firebaseApp);
+  // getStorage devuelve el objeto FirebaseStorage
   const storage = getStorage(firebaseApp);
 
   return {
