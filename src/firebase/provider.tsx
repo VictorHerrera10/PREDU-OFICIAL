@@ -5,6 +5,7 @@ import { FirebaseApp } from 'firebase/app';
 import { Firestore } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged } from 'firebase/auth';
 import { Functions } from 'firebase/functions';
+import { Storage } from 'firebase/storage';
 import { initializeFirebase } from '@/firebase'; // Import the initialization function
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
@@ -14,6 +15,7 @@ export interface FirebaseContextState {
   firestore: Firestore;
   auth: Auth;
   functions: Functions;
+  storage: Storage;
   user: User | null;
   isUserLoading: boolean;
 }
@@ -94,6 +96,9 @@ export const useFirestore = (): Firestore => useFirebase().firestore;
 
 /** Hook to access Firebase Functions instance. */
 export const useFunctions = (): Functions => useFirebase().functions;
+
+/** Hook to access Firebase Storage instance. */
+export const useStorage = (): Storage => useFirebase().storage;
 
 /** Hook to access Firebase App instance. */
 export const useFirebaseApp = (): FirebaseApp => useFirebase().firebaseApp;
