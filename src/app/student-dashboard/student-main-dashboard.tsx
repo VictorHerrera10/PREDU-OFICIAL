@@ -118,7 +118,7 @@ export function StudentMainDashboard({ user }: Props) {
                       key={option.id}
                       variant="ghost"
                       className={cn(
-                          "w-full h-auto flex items-center justify-start py-3 px-3 gap-4 transition-all duration-300 rounded-lg group-hover:justify-start",
+                          "w-full h-auto flex items-center justify-center group-hover:justify-start py-3 px-3 gap-4 transition-all duration-300 rounded-lg",
                           selectedView === option.id ? 'bg-destructive/20 text-destructive-foreground' : 'text-foreground'
                       )}
                       onClick={() => handleSelectView(option.id)}
