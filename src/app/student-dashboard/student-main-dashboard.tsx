@@ -39,9 +39,9 @@ const mainOptions: Option[] = [
 ];
 
 const heroOptions: Option[] = [
-  { id: 'infoCarreras', icon: BookOpen, title: 'Info de Carreras', description: 'Explora un universo de profesiones y encuentra tu lugar.', isHero: true },
-  { id: 'infoUniversidades', icon: Building, title: 'Info de Universidades', description: 'Busca y compara instituciones para tu futuro académico.', isHero: true },
-  { id: 'infoBecas', icon: Award, title: 'Info de Becas', description: 'Encuentra oportunidades de financiamiento para tus estudios.', isHero: true },
+  { id: 'infoCarreras', icon: BookOpen, title: 'Carreras', description: 'Explora un universo de profesiones y encuentra tu lugar.', isHero: true },
+  { id: 'infoUniversidades', icon: Building, title: 'Universidades', description: 'Busca y compara instituciones para tu futuro académico.', isHero: true },
+  { id: 'infoBecas', icon: Award, title: 'Becas', description: 'Encuentra oportunidades de financiamiento para tus estudios.', isHero: true },
 ];
 
 type UserProfile = {
