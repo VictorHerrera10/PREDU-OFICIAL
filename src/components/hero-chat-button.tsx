@@ -33,6 +33,9 @@ type AcademicPrediction = {
 type PsychologicalPrediction = {
     result?: string;
     results?: any; // Keeping it flexible for now
+    id?: string;
+    createdAt?: any;
+    updatedAt?: any;
 };
 
 
@@ -104,7 +107,7 @@ export function HeroChatButton() {
 
       const cleanPsychologicalPrediction = psychologicalPrediction ? {
         result: psychologicalPrediction.result,
-        results: psychologicalPrediction.results
+        results: psychologicalPrediction.results,
       } : undefined;
 
       const result = await chatWithCounselor({ 
@@ -149,7 +152,7 @@ export function HeroChatButton() {
                   size="icon"
                   className="fixed bottom-24 right-6 z-30 h-16 w-16 rounded-full shadow-lg flex items-center justify-center animate-[pulse-glow_4s_ease-in-out_infinite]"
                 >
-                  <Bot className="h-10 w-10" />
+                  <Bot style={{ width: '40px', height: '40px' }} />
                   <span className="sr-only">Asistente IA</span>
                 </Button>
               </motion.div>
@@ -164,7 +167,7 @@ export function HeroChatButton() {
         <DialogHeader className="p-6 pb-2">
             <DialogTitle className="flex items-center gap-4">
                 <Avatar className="h-12 w-12 border-2 border-destructive flex-shrink-0">
-                    <AvatarFallback><Bot className="h-10 w-10"/></AvatarFallback>
+                    <AvatarFallback><Bot style={{ width: '32px', height: '32px' }} /></AvatarFallback>
                 </Avatar>
                 <div>
                   <h2 className="text-lg font-semibold">Ciel</h2>
@@ -191,7 +194,7 @@ export function HeroChatButton() {
                                     {message.sender === 'ai' && (
                                         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
                                           <Avatar className="h-10 w-10 border-2 border-destructive flex-shrink-0">
-                                              <AvatarFallback><Bot className="h-8 w-8"/></AvatarFallback>
+                                              <AvatarFallback><Bot style={{ width: '32px', height: '32px' }} /></AvatarFallback>
                                           </Avatar>
                                         </motion.div>
                                     )}
@@ -226,7 +229,7 @@ export function HeroChatButton() {
                                     className="flex items-end gap-2"
                                 >
                                     <Avatar className="h-10 w-10 border-2 border-destructive">
-                                        <AvatarFallback><Bot className="h-8 w-8"/></AvatarFallback>
+                                        <AvatarFallback><Bot style={{ width: '32px', height: '32px' }} /></AvatarFallback>
                                     </Avatar>
                                     <div className="rounded-lg rounded-bl-none px-4 py-3 bg-secondary text-secondary-foreground">
                                         <Loader2 className="w-5 h-5 animate-spin" />
