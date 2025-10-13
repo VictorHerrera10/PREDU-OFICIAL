@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import useResizeObserver from 'use-resize-observer';
 import Confetti from 'react-confetti';
 import { Dialog, DialogContent, DialogTrigger, DialogClose, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle as CardTitleComponent, CardDescription as CardDescriptionComponent } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Crown, Gem, Check, X } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -114,9 +114,9 @@ export function UniqueTutorPlans({ children }: { children: React.ReactNode }) {
                                 plan.borderColor === 'border-destructive' ? 'text-destructive' : 'text-blue-500'
                             )}
                             />
-                            <CardTitleComponent className="text-base font-bold">{plan.name}</CardTitleComponent>
+                            <CardTitle className="text-base font-bold">{plan.name}</CardTitle>
                             <p className="text-lg font-headline text-foreground">{plan.price}</p>
-                            <CardDescriptionComponent className="text-xs text-muted-foreground min-h-[30px]">{plan.description}</CardDescriptionComponent>
+                            <CardDescription className="text-xs text-muted-foreground min-h-[30px]">{plan.description}</CardDescription>
                         </CardHeader>
                         <CardContent className="flex-grow">
                             <ul className="space-y-1.5">

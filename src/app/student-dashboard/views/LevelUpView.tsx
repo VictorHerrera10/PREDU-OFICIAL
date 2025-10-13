@@ -191,9 +191,9 @@ export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
                         level.recommended ? 'text-destructive' : level.borderColor === 'border-primary' ? 'text-primary' : 'text-blue-500'
                       )}
                     />
-                    <CardTitleComponent className="text-base font-bold">{level.name}</CardTitleComponent>
+                    <CardTitle className="text-base font-bold">{level.name}</CardTitle>
                     <p className="text-lg font-headline text-foreground">{level.price}</p>
-                    <CardDescriptionComponent className="text-xs text-muted-foreground min-h-[30px]">{level.description}</CardDescriptionComponent>
+                    <CardDescription className="text-xs text-muted-foreground min-h-[30px]">{level.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="flex-grow">
                     <ul className="space-y-1.5">
