@@ -49,7 +49,7 @@ type UserProfile = {
 };
 
 type Props = {
-    user: User | null;
+  user: User | null;
 };
 
 export function StudentMainDashboard({ user }: Props) {
@@ -83,12 +83,12 @@ export function StudentMainDashboard({ user }: Props) {
         return null;
     }
   };
-  
+
   const handleSelectView = (viewId: View) => {
     if (selectedView === viewId) {
-        setSelectedView(null);
+      setSelectedView(null);
     } else {
-        setSelectedView(viewId);
+      setSelectedView(viewId);
     }
   };
 
@@ -103,28 +103,39 @@ export function StudentMainDashboard({ user }: Props) {
         <UserNav />
       </header>
 
-       {userProfile?.isHero && (
+      {userProfile?.isHero && (
         <AnimatePresence>
-            <motion.div
-                initial={{ opacity: 0, x: -100 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.5 }}
-                className="fixed top-1/2 left-4 -translate-y-1/2 z-10 flex flex-col items-center gap-4 p-4 bg-card/80 backdrop-blur-sm border rounded-lg"
-            >
-                <h3 className="font-headline text-sm text-destructive mb-2">INFORMACIÓN</h3>
-                
-                {heroOptions.map(option => (
-                  <Button 
-                      key={option.id}
-                      variant={selectedView === option.id ? 'destructive' : 'ghost'} 
-                      className="w-full h-auto flex flex-col items-center justify-center p-3 gap-2"
-                      onClick={() => handleSelectView(option.id)}
-                  >
-                      <option.icon className="w-12 h-12"/>
-                      <span className="text-xs font-semibold">{option.title}</span>
-                  </Button>
-                ))}
-            </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: -100 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="fixed top-1/2 left-4 -translate-y-1/2 z-10 flex flex-col items-center gap-4 p-4 bg-card/80 backdrop-blur-sm border rounded-lg"
+          >
+            <h3 className="font-headline text-sm text-destructive mb-2">INFORMACIÓN</h3>
+
+            {heroOptions.map(option => (
+  <Button 
+      key={option.id}
+      variant={selectedView === option.id ? 'destructive' : 'ghost'} 
+      className={`w-full h-auto flex flex-col items-center justify-center 
+                  py-6 px-4 gap-4 transition-all duration-300 
+                  hover:scale-105 hover:shadow-lg rounded-2xl`}
+      onClick={() => handleSelectView(option.id)}
+  >
+      <div className="flex items-center justify-center">
+          <option.icon 
+              className="text-destructive drop-shadow-lg" 
+              style={{ width: '30px', height: '30px' }} // <-- tamaño forzado
+          />
+      </div>
+      <span className="text-lg font-bold text-center tracking-wide">
+          {option.title}
+      </span>
+  </Button>
+))}
+
+
+          </motion.div>
         </AnimatePresence>
       )}
 
@@ -151,97 +162,103 @@ export function StudentMainDashboard({ user }: Props) {
               </motion.div>
             )}
           </AnimatePresence>
-          
+
           <motion.div
             layout
             key="options-container"
             className={cn(
-                "grid gap-8 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8",
-                selectedView ? `grid-cols-${mainOptions.length}` : 'grid-cols-1 md:grid-cols-3'
+              "grid gap-8 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8",
+              selectedView ? `grid-cols-${mainOptions.length}` : 'grid-cols-1 md:grid-cols-3'
             )}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
             {mainOptions.map((option) => (
-                <motion.div
-                    layout
-                    key={option.id}
-                    onClick={() => handleSelectView(option.id)}
-                    className={cn(
-                        "cursor-pointer overflow-hidden",
-                        selectedView ? 'rounded-lg' : 'card-outline'
-                    )}
-                    initial={{ borderRadius: '0.75rem' }}
-                >
-                    <AnimatePresence>
-                    {selectedView === option.id ? (
-                        <motion.div className="bg-primary text-primary-foreground rounded-lg p-3 flex items-center justify-center gap-2">
-                             <motion.div layout="position">
-                                <option.icon className="w-5 h-5" />
-                            </motion.div>
-                             <motion.h2 layout="position" className="font-bold text-sm">{option.title}</motion.h2>
-                        </motion.div>
-                    ) : selectedView ? (
-                         <motion.div className="bg-muted hover:bg-muted/80 rounded-lg p-3 flex items-center justify-center gap-2"
-                            onClick={() => handleSelectView(option.id)}
-                         >
-                             <motion.div layout="position">
-                                <option.icon className="w-5 h-5" />
-                            </motion.div>
-                             <motion.h2 layout="position" className="font-bold text-sm">{option.title}</motion.h2>
-                        </motion.div>
-                    ) : (
-                        <div className="card-content flex flex-col items-center text-center gap-4 p-6">
-                            <motion.div layout="position">
-                                <option.icon className={cn("w-10 h-10", option.isHero ? "text-destructive" : "text-primary")} />
-                            </motion.div>
-                            <div className="flex flex-col">
-                                <motion.h2 layout="position" className="font-bold text-2xl">{option.title}</motion.h2>
-                                <motion.p 
-                                    layout 
-                                    className="text-muted-foreground mt-2"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                >
-                                    {option.description}
-                                </motion.p>
-                            </div>
-                        </div>
-                    )}
-                    </AnimatePresence>
-                </motion.div>
+              <motion.div
+                layout
+                key={option.id}
+                onClick={() => handleSelectView(option.id)}
+                className={cn(
+                  "cursor-pointer overflow-hidden",
+                  selectedView ? 'rounded-lg' : 'card-outline'
+                )}
+                initial={{ borderRadius: '0.75rem' }}
+              >
+                <AnimatePresence>
+                  {selectedView === option.id ? (
+                    <motion.div className="bg-primary text-primary-foreground rounded-lg p-3 flex items-center justify-center gap-2">
+                      <motion.div layout="position">
+                        <option.icon className="w-5 h-5" />
+                      </motion.div>
+                      <motion.h2 layout="position" className="font-bold text-sm">{option.title}</motion.h2>
+                    </motion.div>
+                  ) : selectedView ? (
+                    <motion.div
+                      className="bg-muted hover:bg-muted/80 rounded-lg p-3 flex items-center justify-center gap-2"
+                      onClick={() => handleSelectView(option.id)}
+                    >
+                      <motion.div layout="position">
+                        <option.icon className="w-5 h-5" />
+                      </motion.div>
+                      <motion.h2 layout="position" className="font-bold text-sm">{option.title}</motion.h2>
+                    </motion.div>
+                  ) : (
+                    <div className="card-content flex flex-col items-center text-center gap-4 p-6">
+                      <motion.div layout="position">
+                        <option.icon className={cn("w-10 h-10", option.isHero ? "text-destructive" : "text-primary")} />
+                      </motion.div>
+                      <div className="flex flex-col">
+                        <motion.h2 layout="position" className="font-bold text-2xl">{option.title}</motion.h2>
+                        <motion.p
+                          layout
+                          className="text-muted-foreground mt-2"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                        >
+                          {option.description}
+                        </motion.p>
+                      </div>
+                    </div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             ))}
           </motion.div>
         </LayoutGroup>
 
         {!selectedView && (
-             <motion.div 
-                className="w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mt-12 text-center"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
+          <motion.div
+            className="w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mt-12 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <Button
+              size="lg"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
+              onClick={() => handleSelectView('rui')}
             >
-                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white font-bold" onClick={() => handleSelectView('rui')}>
-                    <Route className="mr-2 h-5 w-5" />
-                    Iniciar Ruta Universitaria Interactiva (RUI)
-                </Button>
-            </motion.div>
+              <Route className="mr-2 h-5 w-5" />
+              Iniciar Ruta Universitaria Interactiva (RUI)
+            </Button>
+          </motion.div>
         )}
 
         <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 md:p-8">
-            <AnimatePresence mode="wait">
-                <motion.div
-                    key={selectedView}
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -20, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                >
-                    {selectedView && renderContent()}
-                </motion.div>
-            </AnimatePresence>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={selectedView}
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {selectedView && renderContent()}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
+
       {!userProfile?.isHero && <LevelUpView isViewSelected={!!selectedView} />}
       <HeroChatButton />
     </div>
