@@ -109,24 +109,19 @@ export function StudentMainDashboard({ user }: Props) {
               initial={{ opacity: 0, x: -100 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
-              className="group fixed top-1/2 left-4 -translate-y-1/2 z-10 flex flex-col items-center gap-4 p-4 bg-card/60 backdrop-blur-sm border rounded-lg transition-all duration-300 w-20 hover:w-48"
+              className="fixed top-1/2 left-4 -translate-y-1/2 z-10 flex flex-col items-center gap-4 p-4 bg-card/60 backdrop-blur-sm border rounded-lg w-20"
           >
-              <h3 className="font-headline text-sm text-destructive mb-2 opacity-0 group-hover:opacity-100 transition-opacity">INFORMACIÓN</h3>
-
               {heroOptions.map(option => (
                   <Button
                       key={option.id}
                       variant="ghost"
                       className={cn(
-                          "w-full h-auto flex items-center justify-center group-hover:justify-start py-3 px-3 gap-4 transition-all duration-300 rounded-lg",
+                          "w-16 h-16 flex items-center justify-center transition-all duration-300 rounded-lg",
                           selectedView === option.id ? 'bg-destructive/20 text-destructive-foreground' : 'text-foreground'
                       )}
                       onClick={() => handleSelectView(option.id)}
                   >
-                      <option.icon style={{ width: '30px', height: '30px' }} className="flex-shrink-0" />
-                      <span className="text-base font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-100">
-                          {option.title}
-                      </span>
+                      <option.icon style={{ width: '48px', height: '48px' }} className="flex-shrink-0" />
                   </Button>
               ))}
           </motion.div>
