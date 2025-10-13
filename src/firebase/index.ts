@@ -14,8 +14,6 @@ export function initializeFirebase(): { firebaseApp: FirebaseApp; auth: Auth; fi
     return getSdks(app);
   }
 
-  // In a client-side environment, we can directly use the firebaseConfig.
-  // The previous logic was more suited for server environments and could fail locally.
   const app = initializeApp(firebaseConfig);
   initializeFirestore(app, {
     ignoreUndefinedProperties: true,
@@ -42,4 +40,3 @@ export * from './firestore/use-collection';
 export * from './firestore/use-doc';
 export * from './errors';
 export * from './error-emitter';
-export { useStorage } from './provider';
