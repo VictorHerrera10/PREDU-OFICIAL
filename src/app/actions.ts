@@ -355,6 +355,7 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
   const phone = formData.get('phone') as string;
   const gender = formData.get('gender') as string;
   const institutionId = formData.get('institutionId') as string;
+  const profilePictureUrl = formData.get('profilePictureUrl') as string | null;
 
   if (!userId || !firstName || !lastName || !dni || !age || !grade || !city || !phone || !gender) {
       return { success: false, message: 'Todos los campos son obligatorios, excepto el colegio.' };
@@ -374,6 +375,10 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
           gender,
           isProfileComplete: true,
       };
+
+      if (profilePictureUrl) {
+          dataToUpdate.profilePictureUrl = profilePictureUrl;
+      }
 
       if (institutionId) {
         // Optional: Validate institution code if provided, for now just save it

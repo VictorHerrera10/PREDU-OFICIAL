@@ -5,18 +5,21 @@ import { User } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { updateStudentProfile } from '@/app/actions';
 import { useRouter } from 'next/navigation';
+import { useStorage } from '@/firebase';
+import { uploadImage } from '@/lib/storage';
+import Image from 'next/image';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { SubmitButton } from '@/components/submit-button';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { GraduationCap, VenetianMask, X, User as UserIcon, CaseSensitive, Hash, Building, Phone, Calendar, Map, BookOpen, KeySquare } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { GraduationCap, VenetianMask, X, User as UserIcon, CaseSensitive, Hash, Building, Phone, Calendar, Map, BookOpen, KeySquare, Loader2, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
+import { Progress } from '@/components/ui/progress';
 
 
 type UserProfile = {
@@ -46,14 +49,56 @@ const initialState = {
 export function StudentProfileForm({ user, profileData }: Props) {
     const { toast } = useToast();
     const router = useRouter();
-    const [state, formAction] = useActionState(updateStudentProfile, initialState);
+    const storage = useStorage();
+    
     const isEditing = !!profileData?.firstName;
     const [selectedGender, setSelectedGender] = useState(profileData?.gender);
     const [institutionCode, setInstitutionCode] = useState(Array(6).fill(''));
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-    useEffect(() => {
-        if(state.success){
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(profileData?.profilePictureUrl || null);
+    const [uploadProgress, setUploadProgress] = useState(0);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            const previewUrl = URL.createObjectURL(file);
+            setImagePreview(previewUrl);
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        
+        const formData = new FormData(e.currentTarget);
+        let uploadedImageUrl: string | null = null;
+
+        if (imageFile && user && storage) {
+            try {
+                uploadedImageUrl = await uploadImage(storage, imageFile, user.uid, setUploadProgress);
+                formData.set('profilePictureUrl', uploadedImageUrl);
+            } catch (error) {
+                console.error("Image upload failed:", error);
+                toast({
+                    variant: 'destructive',
+                    title: 'Error de Carga',
+                    description: 'No se pudo subir la foto de perfil.',
+                });
+                setIsSubmitting(false);
+                return;
+            }
+        } else if (profileData?.profilePictureUrl) {
+            // Keep the existing URL if no new file is selected
+            formData.set('profilePictureUrl', profileData.profilePictureUrl);
+        }
+        
+        const result = await updateStudentProfile(null, formData);
+
+        if(result.success){
             toast({
                 title: '¡Perfil Actualizado! ✅',
                 description: 'Tus datos han sido guardados correctamente.',
@@ -61,14 +106,16 @@ export function StudentProfileForm({ user, profileData }: Props) {
             if (!isEditing) {
                 router.refresh(); 
             }
-        } else if (state.message) {
+        } else if (result.message) {
             toast({
                 variant: 'destructive',
                 title: 'Error al actualizar 😵',
-                description: state.message,
+                description: result.message,
             });
         }
-    }, [state, toast, isEditing, router]);
+        setIsSubmitting(false);
+    };
+
 
     const handleCodeChange = (index: number, value: string) => {
         const newCode = [...institutionCode];
@@ -115,12 +162,25 @@ export function StudentProfileForm({ user, profileData }: Props) {
                     </Button>
                 )}
                 <CardHeader className="text-center items-center">
-                    <div className="flex justify-center mb-4 pt-8">
+                    <div className="relative flex justify-center mb-4 pt-8">
                          <Avatar className="w-24 h-24 border-4 border-primary">
-                            <AvatarImage src={profileData?.profilePictureUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user?.displayName}`} alt={user?.displayName || 'Avatar'} />
+                            <AvatarImage src={imagePreview || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user?.displayName}`} alt={user?.displayName || 'Avatar'} />
                             <AvatarFallback><GraduationCap className="w-12 h-12" /></AvatarFallback>
                         </Avatar>
+                        <Button asChild size="icon" variant="secondary" className="absolute -bottom-2 -right-2 h-8 w-8 border-2 border-background">
+                            <Label htmlFor="photo-upload" className="cursor-pointer">
+                                <Upload className="w-4 h-4" />
+                                <span className="sr-only">Cambiar foto</span>
+                            </Label>
+                        </Button>
+                        <Input id="photo-upload" type="file" accept="image/*" className="sr-only" onChange={handleFileChange} disabled={isSubmitting} />
                     </div>
+                     {uploadProgress > 0 && uploadProgress < 100 && (
+                        <div className="w-full max-w-xs pt-2">
+                             <Progress value={uploadProgress} className="h-2" />
+                             <p className="text-xs text-muted-foreground mt-1">{`Subiendo... ${Math.round(uploadProgress)}%`}</p>
+                        </div>
+                    )}
                     <CardTitle className="text-3xl font-bold text-primary">
                          {isEditing ? 'Edita tu Perfil' : `¡Casi listo, ${user?.displayName || 'Estudiante'}!`}
                     </CardTitle>
@@ -129,7 +189,7 @@ export function StudentProfileForm({ user, profileData }: Props) {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form action={formAction} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         <input type="hidden" name="userId" value={user?.uid} />
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
@@ -217,9 +277,10 @@ export function StudentProfileForm({ user, profileData }: Props) {
                         </div>
 
                         <div className="text-center mt-6">
-                            <SubmitButton className="w-full max-w-xs mx-auto">
-                                Guardar Perfil
-                            </SubmitButton>
+                            <Button type="submit" className="w-full max-w-xs mx-auto" disabled={isSubmitting}>
+                                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                {isSubmitting ? 'Guardando...' : 'Guardar Perfil'}
+                            </Button>
                         </div>
                     </form>
                 </CardContent>

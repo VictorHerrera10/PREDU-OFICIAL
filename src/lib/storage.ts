@@ -16,8 +16,8 @@ export async function uploadImage(
   userId: string,
   onProgress?: (progress: number) => void
 ): Promise<string> {
-  // Use a more generic path for testing purposes
-  const storageRef = ref(storage, `test_uploads/${userId}/${file.name}`);
+  // Use a path that includes the user's ID for organization
+  const storageRef = ref(storage, `profile-pictures/${userId}/${file.name}`);
 
   return new Promise((resolve, reject) => {
     const uploadTask = uploadBytesResumable(storageRef, file);
@@ -26,6 +26,7 @@ export async function uploadImage(
       'state_changed',
       (snapshot) => {
         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log(`Progreso de carga: ${progress.toFixed(2)}%`);
         if (onProgress) {
           onProgress(progress);
         }
@@ -38,6 +39,7 @@ export async function uploadImage(
       () => {
         // Handle successful uploads on complete
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          console.log('¡Carga completada!', { url: downloadURL });
           resolve(downloadURL);
         }).catch(reject);
       }
