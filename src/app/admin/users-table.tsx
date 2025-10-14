@@ -87,12 +87,6 @@ const AddUserDialog = () => {
                 description: result.message,
             });
         }
-        if (result.success && result.username) {
-            toast({
-                title: "¡Usuario Creado Exitosamente! ✅",
-                description: `Se creó el usuario ${result.username}.`,
-            });
-        }
     };
     
     const handleOpenChange = (open: boolean) => {
@@ -121,7 +115,7 @@ const AddUserDialog = () => {
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2"><User className="text-primary"/> Agregar Nuevo Usuario</DialogTitle>
                         <DialogDescription>
-                            Completa los detalles para crear una nueva cuenta. Se generará una contraseña aleatoria.
+                             {state.success ? `¡Usuario creado! La contraseña temporal es:` : 'Completa los detalles para crear una nueva cuenta. Se generará una contraseña aleatoria.'}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
@@ -157,10 +151,10 @@ const AddUserDialog = () => {
                      <DialogFooter className="justify-center">
                         {state.generatedPassword ? (
                             <DialogClose asChild>
-                                <Button type="button" variant="outline">Cerrar</Button>
+                                <Button type="button" variant="outline" className="w-full">Cerrar</Button>
                             </DialogClose>
                         ) : (
-                            <SubmitButton disabled={isPending}>
+                            <SubmitButton disabled={isPending} className="w-full">
                                 {isPending ? 'Creando...' : 'Crear Usuario'}
                             </SubmitButton>
                         )}
@@ -200,7 +194,15 @@ export function UsersTable() {
     }
     try {
       const deleteUser = httpsCallable(functions, 'deleteUser');
-      await deleteUser({ uid });
+      const result = await deleteUser({ uid });
+      
+      // Check for errors returned from the function itself
+      // The `result.data` object is what the callable function returns.
+      const data = result.data as { message?: string, error?: any };
+      if (data.error) {
+        throw new Error(data.message || 'Ocurrió un error en el servidor.');
+      }
+
       toast({
         title: 'Usuario Eliminado ✅',
         description: 'El usuario ha sido eliminado de la plataforma.',
