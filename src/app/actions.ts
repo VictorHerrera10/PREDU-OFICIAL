@@ -29,6 +29,7 @@ type State = {
   success?: boolean;
   username?: string | null;
   dni?: string | null;
+  generatedPassword?: string | null;
 };
 
 async function getAuthenticatedAppForUser() {
@@ -714,5 +715,55 @@ export async function updateAdminProfile(prevState: any, formData: FormData) {
         return { success: false, message: 'No se pudo actualizar tu perfil. ' + error.message };
     }
 
+    revalidatePath('/admin');
     return { success: true, message: '¡Perfil Actualizado! ✅' };
+}
+
+export async function createUser(prevState: State, formData: FormData): Promise<State> {
+  const { auth, firestore } = await getAuthenticatedAppForUser();
+  const email = formData.get('email') as string;
+  const username = formData.get('username') as string;
+
+  if (!email || !username) {
+    return { message: 'El nombre y el email son obligatorios.' };
+  }
+  
+  // Generate a random password like "PREDU1234"
+  const password = 'PREDU' + Math.floor(1000 + Math.random() * 9000);
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    await updateProfile(user, { displayName: username });
+
+    const userProfileRef = doc(firestore, 'users', user.uid);
+    
+    const userProfileData = {
+      id: user.uid,
+      username: username,
+      email: user.email,
+      creationDate: serverTimestamp(),
+      lastLogin: serverTimestamp(),
+      isProfileComplete: false,
+      role: 'student', // Default role
+    };
+    
+    await setDoc(userProfileRef, userProfileData);
+
+    await addDoc(collection(firestore, 'notifications'), {
+        type: 'new_user_admin',
+        title: 'Usuario Creado por Admin',
+        description: `El usuario ${username} (${email}) fue creado.`,
+        emoji: '👤',
+        createdAt: serverTimestamp(),
+        read: false,
+    });
+
+    revalidatePath('/admin');
+    return { success: true, username: username, generatedPassword: password };
+
+  } catch (e: any) {
+    return { message: getFirebaseErrorMessage(e.code) };
+  }
 }

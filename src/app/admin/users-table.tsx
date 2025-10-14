@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useCollection, useFirestore, useFunctions } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
@@ -46,12 +46,14 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MoreHorizontal, PlusCircle, User, UserX, UserCheck, Edit, Calendar } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, User, UserX, UserCheck, Edit, Calendar, Copy } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { updateUser } from '@/app/actions';
+import { updateUser, createUser } from '@/app/actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
+import { useActionState } from 'react';
+import { SubmitButton } from '@/components/submit-button';
 
 type UserProfile = {
   id: string;
@@ -68,6 +70,7 @@ export function UsersTable() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
 
   const usersCollectionRef = useMemo(() => {
     if (!firestore) return null;
@@ -156,43 +159,76 @@ export function UsersTable() {
     const date = new Date(timestamp.seconds * 1000);
     return format(date, 'dd/MM/yyyy');
   };
-  
-  const AddUserDialog = () => (
-    <Dialog>
-        <DialogTrigger asChild>
-            <Button size="sm" className="h-8 gap-1">
-                <PlusCircle className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Agregar Usuario
-                </span>
-            </Button>
-        </DialogTrigger>
-        <DialogContent>
-            <DialogHeader>
-                <DialogTitle className="flex items-center gap-2"><User className="text-primary"/> Agregar Nuevo Usuario</DialogTitle>
-                <DialogDescription>
-                    Completa los detalles para crear una nueva cuenta. Se enviará una contraseña temporal al email proporcionado.
-                </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="name" className="text-right">Nombre</Label>
-                    <Input id="name" placeholder="Nombre completo" className="col-span-3" />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="email" className="text-right">Email</Label>
-                    <Input id="email" type="email" placeholder="usuario@email.com" className="col-span-3" />
-                </div>
-            </div>
-            <DialogFooter>
-                <DialogClose asChild>
-                    <Button variant="outline">Cancelar</Button>
-                </DialogClose>
-                <Button type="submit">Crear Usuario</Button>
-            </DialogFooter>
-        </DialogContent>
-    </Dialog>
-  );
+
+    const AddUserDialog = () => {
+        const [state, formAction] = useActionState(createUser, { message: null, success: false });
+
+        useEffect(() => {
+            if (state.message) {
+                 toast({
+                    variant: "destructive",
+                    title: "Error al crear usuario",
+                    description: state.message,
+                });
+            }
+             if (state.success) {
+                toast({
+                    title: "Usuario Creado ✅",
+                    description: `El usuario ${state.username} fue creado. Contraseña: ${state.generatedPassword}`,
+                     action: (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigator.clipboard.writeText(state.generatedPassword || '')}
+                        >
+                            <Copy className="mr-2 h-4 w-4" /> Copiar
+                        </Button>
+                    ),
+                    duration: 10000, // Keep toast longer
+                });
+                setIsAddUserOpen(false);
+            }
+        }, [state]);
+
+        return (
+            <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+                <DialogTrigger asChild>
+                    <Button size="sm" className="h-8 gap-1">
+                        <PlusCircle className="h-3.5 w-3.5" />
+                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                            Agregar Usuario
+                        </span>
+                    </Button>
+                </DialogTrigger>
+                <DialogContent>
+                    <form action={formAction}>
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2"><User className="text-primary"/> Agregar Nuevo Usuario</DialogTitle>
+                            <DialogDescription>
+                                Completa los detalles para crear una nueva cuenta. Se generará una contraseña aleatoria.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="username">Nombre</Label>
+                                <Input id="username" name="username" placeholder="Nombre completo del usuario" required />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="email">Email</Label>
+                                <Input id="email" name="email" type="email" placeholder="usuario@email.com" required />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button type="button" variant="outline">Cancelar</Button>
+                            </DialogClose>
+                            <SubmitButton>Crear Usuario</SubmitButton>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+        );
+    };
 
   const EditUserDialog = () => {
     if (!selectedUser) return null;
@@ -210,7 +246,7 @@ export function UsersTable() {
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="space-y-2">
-                            <Label htmlFor="username">🧑‍🎓 Nombre de Usuario</Label>
+                            <Label htmlFor="username">🧑‍🎓 Nombre</Label>
                             <Input
                                 id="username"
                                 name="username"
