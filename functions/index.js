@@ -22,12 +22,15 @@ exports.deleteUser = functions.https.onCall(async (data, context) => {
   }
 
   try {
-    // Delete from Firebase Authentication only
+    // Delete from Firebase Authentication
     await admin.auth().deleteUser(uid);
+    // Delete user profile from Firestore
+    await admin.firestore().collection('users').doc(uid).delete();
 
-    return { message: `Successfully deleted user ${uid} from Authentication.` };
+    return { message: `Successfully deleted user ${uid}.` };
+    
   } catch (error) {
-    console.error("Error deleting user from Authentication:", error);
+    console.error("Error deleting user:", error);
     // This is the most robust way to return the actual error message
     // to the client, regardless of its original format.
     throw new functions.https.HttpsError("internal", error.message, error.details);
