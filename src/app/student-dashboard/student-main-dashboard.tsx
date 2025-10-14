@@ -133,7 +133,7 @@ export function StudentMainDashboard({ user }: Props) {
 
 
 
-      <main className="flex-grow pt-20">
+      <main className={cn("flex-grow pt-20", userProfile?.isHero && "md:ml-24")}>
         <LayoutGroup>
           <AnimatePresence>
             {!selectedView && (
