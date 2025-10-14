@@ -139,9 +139,13 @@ export function AdminProfileForm({ user, profileData }: Props) {
                        </div>
 
                         <div className="text-center mt-6">
-                            <Button type="submit" className="w-full max-w-xs mx-auto" disabled={isSubmitting} variant="destructive">
-                                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                                {isSubmitting ? 'Guardando...' : 'Guardar Perfil'}
+                            <Button type="submit" className="w-full max-w-xs mx-auto btn-retro" disabled={isSubmitting}>
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Guardando...
+                                    </>
+                                ) : 'Guardar Perfil'}
                             </Button>
                         </div>
                     </form>
