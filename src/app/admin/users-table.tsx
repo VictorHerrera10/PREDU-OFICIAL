@@ -46,7 +46,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MoreHorizontal, PlusCircle, User, UserX, UserCheck, Edit, Calendar, Copy, Mail, KeySquare } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, User, UserX, UserCheck, Edit, Calendar, Copy, Mail, KeySquare, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { updateUser, createStudent } from '@/app/actions';
@@ -66,39 +66,44 @@ const AddUserDialog = () => {
     const [isOpen, setIsOpen] = useState(false);
     const { toast } = useToast();
     
-    const [state, formAction, isPending] = useActionState(createStudent, { 
-        message: null, 
+    // Using a local reducer to manage the form state within the component
+    const [state, setState] = useState({ 
+        message: null as string | null, 
         success: false, 
-        username: null, 
-        generatedPassword: null 
+        username: null as string | null, 
+        generatedPassword: null as string | null 
     });
+    const [isPending, setIsPending] = useState(false);
 
-    useEffect(() => {
-        if (state.message && !state.success) {
+    const handleFormAction = async (formData: FormData) => {
+        setIsPending(true);
+        const result = await createStudent({ message: null, success: false }, formData);
+        setState(result);
+        setIsPending(false);
+        if (result.message && !result.success) {
             toast({
                 variant: "destructive",
                 title: "Error al crear usuario",
-                description: state.message,
+                description: result.message,
             });
         }
-        if (state.success && state.username) {
+        if (result.success && result.username) {
             toast({
                 title: "¡Usuario Creado Exitosamente! ✅",
-                description: `Se creó el usuario ${state.username}.`,
+                description: `Se creó el usuario ${result.username}.`,
             });
         }
-    }, [state, toast]);
+    };
     
-    // Reset form state when dialog is closed
     const handleOpenChange = (open: boolean) => {
+        setIsOpen(open);
         if (!open) {
-            // A small delay to allow the dialog to close before resetting
+             // Reset state when closing
             setTimeout(() => {
-                 // Manually reset the state by calling the action with null form data
-                 formAction(new FormData());
+                setState({ message: null, success: false, username: null, generatedPassword: null });
+                setIsPending(false);
             }, 200);
         }
-        setIsOpen(open);
     };
 
     return (
@@ -112,7 +117,7 @@ const AddUserDialog = () => {
                 </Button>
             </DialogTrigger>
             <DialogContent>
-                <form action={formAction}>
+                <form action={handleFormAction}>
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2"><User className="text-primary"/> Agregar Nuevo Usuario</DialogTitle>
                         <DialogDescription>
@@ -419,7 +424,7 @@ export function UsersTable() {
                               <AlertDialogFooter>
                               <AlertDialogCancel>Cancelar</AlertDialogCancel>
                               <AlertDialogAction onClick={() => handleDeleteUser(user.id)} disabled={isDeleting}>
-                                  {isDeleting ? 'Eliminando...' : (<><UserCheck className="mr-2 h-4 w-4" /> Sí, eliminar</>)}
+                                  {isDeleting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Eliminando...</>) : 'Sí, eliminar'}
                               </AlertDialogAction>
                               </AlertDialogFooter>
                           </AlertDialogContent>
@@ -442,5 +447,3 @@ export function UsersTable() {
     </>
   );
 }
-
-    
