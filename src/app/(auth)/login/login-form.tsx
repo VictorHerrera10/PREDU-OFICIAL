@@ -19,9 +19,9 @@ function getFirebaseErrorMessage(errorCode: string): string {
   switch (errorCode) {
     case 'auth/invalid-credential':
       return 'Las credenciales no son correctas. Revisa tus apuntes y vuelve a intentarlo. 🤔';
-    case 'auth/user-not-found': // Although invalid-credential is more common now
+    case 'auth/user-not-found': // This is now often covered by invalid-credential
       return 'No encontramos a ningún estudiante con ese correo.';
-    case 'auth/wrong-password':
+    case 'auth/wrong-password': // This is also now often covered by invalid-credential
       return '¡Contraseña incorrecta! Inténtalo de nuevo. 🤫';
     case 'auth/email-already-in-use':
       return '¡Ese email ya está en uso! Parece que ya estás en la lista. Intenta iniciar sesión. 😉';
@@ -69,7 +69,6 @@ export default function LoginForm() {
         description: '¡Listo para empezar la lección!',
       });
       
-      // Welcome Notification
       setTimeout(() => {
         addNotification({
           type: 'welcome',
@@ -83,16 +82,27 @@ export default function LoginForm() {
        const errorCode = error.code;
        const errorMessage = getFirebaseErrorMessage(errorCode);
 
-      if (errorCode === 'auth/invalid-credential' || errorCode === 'auth/user-not-found') {
-        setError(errorMessage);
-        setShowRegisterSuggestion(true);
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Error al iniciar sesión 😵',
-          description: errorMessage,
-        });
-      }
+       // Firebase now uses 'auth/invalid-credential' for both wrong password and user not found.
+       // We can't reliably distinguish them on the client. 
+       // A common pattern is to check if the user *might* exist if they typed a password.
+       if (errorCode === 'auth/invalid-credential') {
+            if (password) { // User entered a password, likely a wrong password error
+                 toast({
+                    variant: 'destructive',
+                    title: 'Credenciales Incorrectas 😵',
+                    description: errorMessage,
+                });
+            } else { // User likely just typed email, could be a typo
+                setError(errorMessage);
+                setShowRegisterSuggestion(true);
+            }
+       } else {
+            toast({
+                variant: 'destructive',
+                title: 'Error al iniciar sesión 😵',
+                description: errorMessage,
+            });
+       }
     }
   };
   
