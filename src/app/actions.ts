@@ -56,6 +56,14 @@ function getFirebaseErrorMessage(errorCode: string): string {
   }
 }
 
+export async function checkIfUserExists(email: string): Promise<boolean> {
+  if (!email) return false;
+  const { firestore } = await getAuthenticatedAppForUser();
+  const q = query(collection(firestore, 'users'), where('email', '==', email), limit(1));
+  const querySnapshot = await getDocs(q);
+  return !querySnapshot.empty;
+}
+
 export async function register(prevState: State, formData: FormData): Promise<State> {
   const { auth, firestore } = await getAuthenticatedAppForUser();
   const email = formData.get('email') as string;

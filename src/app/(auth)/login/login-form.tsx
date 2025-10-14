@@ -13,6 +13,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import Link from 'next/link';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useNotifications } from '@/hooks/use-notifications';
+import { checkIfUserExists } from '@/app/actions';
 
 // Moved from actions.ts to avoid server-only export issues
 function getFirebaseErrorMessage(errorCode: string): string {
@@ -47,6 +48,7 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showRegisterDialog, setShowRegisterDialog] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const redirectUrl = searchParams.get('redirect') || '/dashboard';
@@ -57,12 +59,21 @@ export default function LoginForm() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth) return;
+    if (!auth || !email) return;
 
+    setIsProcessing(true);
     setError(null);
     setShowRegisterDialog(false);
 
     try {
+      const userExists = await checkIfUserExists(email);
+
+      if (!userExists) {
+        setShowRegisterDialog(true);
+        setIsProcessing(false);
+        return;
+      }
+      
       await signInWithEmailAndPassword(auth, email, password);
       toast({
         title: '¡Qué bueno verte de nuevo! 👋',
@@ -81,27 +92,14 @@ export default function LoginForm() {
     } catch (error: any) {
        const errorCode = error.code;
        const errorMessage = getFirebaseErrorMessage(errorCode);
-      
-       if (errorCode === 'auth/invalid-credential') {
-            // Heuristic: If password field is filled, it's likely a wrong password. 
-            // If it's empty, it's likely a user-not-found scenario.
-            if (password) {
-                 toast({
-                    variant: 'destructive',
-                    title: 'Credenciales Incorrectas 😵',
-                    description: errorMessage,
-                });
-            } else {
-                setError(errorMessage);
-                setShowRegisterDialog(true);
-            }
-       } else {
-            toast({
-                variant: 'destructive',
-                title: 'Error al iniciar sesión 😵',
-                description: errorMessage,
-            });
-       }
+       
+       toast({
+          variant: 'destructive',
+          title: 'Error al iniciar sesión 😵',
+          description: errorMessage,
+       });
+    } finally {
+        setIsProcessing(false);
     }
   };
   
@@ -155,6 +153,7 @@ export default function LoginForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
+          disabled={isProcessing}
           />
       </div>
       <div className="space-y-2">
@@ -168,6 +167,7 @@ export default function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
+              disabled={isProcessing}
           />
           <Button
               type="button"
@@ -175,13 +175,16 @@ export default function LoginForm() {
               size="icon"
               className="absolute top-1/2 right-2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-primary-foreground"
               onClick={togglePasswordVisibility}
+              disabled={isProcessing}
           >
               {showPassword ? <EyeOff /> : <Eye />}
               <span className="sr-only">{showPassword ? 'Ocultar' : 'Mostrar'} contraseña</span>
           </Button>
           </div>
       </div>
-      <Button type="submit" className="w-full">Entrar al Aula 🎒</Button>
+      <Button type="submit" className="w-full" disabled={isProcessing}>
+        {isProcessing ? 'Verificando...' : 'Entrar al Aula 🎒'}
+      </Button>
       </form>
 
       <div className="mt-4 text-center text-sm">
