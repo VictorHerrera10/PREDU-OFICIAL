@@ -134,7 +134,7 @@ export default function LoginForm() {
                     ¡Parece que eres nuevo por aquí! No encontramos tu nombre en la lista de la clase. ¿Listo para unirte a la aventura y crear tu cuenta?
                 </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter>
+            <AlertDialogFooter className="flex w-full justify-between">
                 <AlertDialogCancel asChild>
                     <Button variant="outline">Cancelar</Button>
                 </AlertDialogCancel>
