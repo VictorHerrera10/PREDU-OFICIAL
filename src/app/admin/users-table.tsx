@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useActionState } from 'react';
 import { useCollection, useFirestore, useFunctions } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
@@ -52,7 +52,6 @@ import { useToast } from '@/hooks/use-toast';
 import { updateUser, createStudent } from '@/app/actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
-import { useActionState } from 'react';
 import { SubmitButton } from '@/components/submit-button';
 
 type UserProfile = {
@@ -63,6 +62,94 @@ type UserProfile = {
   creationDate?: { seconds: number, nanoseconds: number };
 }
 
+const AddUserDialog = () => {
+    const [isOpen, setIsOpen] = useState(false);
+    const { toast } = useToast();
+    const [state, formAction, isPending] = useActionState(createStudent, { message: null, success: false, username: null, generatedPassword: null });
+
+    useEffect(() => {
+        if (state.message && !state.success) {
+            toast({
+                variant: "destructive",
+                title: "Error al crear usuario",
+                description: state.message,
+            });
+        }
+        if (state.success && state.username) {
+            toast({
+                title: "¡Usuario Creado Exitosamente! ✅",
+                description: `Se creó el usuario ${state.username}.`,
+            });
+        }
+    }, [state, toast]);
+
+    const handleClose = () => {
+        setIsOpen(false);
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+                <Button size="sm" className="h-8 gap-1">
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Agregar Usuario
+                    </span>
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <form action={formAction}>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2"><User className="text-primary"/> Agregar Nuevo Usuario</DialogTitle>
+                        <DialogDescription>
+                            Completa los detalles para crear una nueva cuenta. Se generará una contraseña aleatoria.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="username">Nombre</Label>
+                            <Input id="username" name="username" placeholder="Nombre completo del usuario" required />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Email</Label>
+                            <Input id="email" name="email" type="email" placeholder="usuario@email.com" required />
+                        </div>
+                         {state.generatedPassword && (
+                            <div className="space-y-2">
+                                <Label htmlFor="password">Contraseña Temporal</Label>
+                                <div className="relative">
+                                    <Input id="password" name="password" type="text" value={state.generatedPassword} readOnly className="pr-10" />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="absolute top-1/2 right-1 -translate-y-1/2 h-8 w-8"
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(state.generatedPassword || '');
+                                            toast({ title: "Copiado", description: "La contraseña ha sido copiada." });
+                                        }}
+                                    >
+                                        <Copy className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button type="button" variant="outline" onClick={handleClose}>
+                            Cerrar
+                        </Button>
+                        <SubmitButton disabled={isPending || !!state.generatedPassword}>
+                           {state.generatedPassword ? 'Usuario Creado' : 'Crear Usuario'}
+                        </SubmitButton>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
+
 export function UsersTable() {
   const firestore = useFirestore();
   const functions = useFunctions();
@@ -70,7 +157,6 @@ export function UsersTable() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
 
   const usersCollectionRef = useMemo(() => {
     if (!firestore) return null;
@@ -159,88 +245,6 @@ export function UsersTable() {
     const date = new Date(timestamp.seconds * 1000);
     return format(date, 'dd/MM/yyyy');
   };
-
-    const AddUserDialog = () => {
-        const [state, formAction, isPending] = useActionState(createStudent, { message: null, success: false, generatedPassword: null, username: null });
-
-        useEffect(() => {
-            if (state.message && !state.success) {
-                 toast({
-                    variant: "destructive",
-                    title: "Error al crear usuario",
-                    description: state.message,
-                });
-            }
-             if (state.success && state.username && state.generatedPassword) {
-                toast({
-                    title: "¡Usuario Creado Exitosamente! ✅",
-                    description: `Se creó el usuario ${state.username}.`,
-                });
-            }
-        }, [state]);
-
-        return (
-            <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
-                <DialogTrigger asChild>
-                    <Button size="sm" className="h-8 gap-1">
-                        <PlusCircle className="h-3.5 w-3.5" />
-                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                            Agregar Usuario
-                        </span>
-                    </Button>
-                </DialogTrigger>
-                <DialogContent>
-                    <form action={formAction}>
-                        <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2"><User className="text-primary"/> Agregar Nuevo Usuario</DialogTitle>
-                            <DialogDescription>
-                                Completa los detalles para crear una nueva cuenta. Se generará una contraseña aleatoria.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="username">Nombre</Label>
-                                <Input id="username" name="username" placeholder="Nombre completo del usuario" required />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input id="email" name="email" type="email" placeholder="usuario@email.com" required />
-                            </div>
-                             {state.generatedPassword && (
-                                <div className="space-y-2">
-                                    <Label htmlFor="password">Contraseña Temporal</Label>
-                                    <div className="relative">
-                                        <Input id="password" name="password" type="text" value={state.generatedPassword} readOnly className="pr-10" />
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="icon"
-                                            className="absolute top-1/2 right-1 -translate-y-1/2 h-8 w-8"
-                                            onClick={() => {
-                                                navigator.clipboard.writeText(state.generatedPassword || '');
-                                                toast({ title: "Copiado", description: "La contraseña ha sido copiada." });
-                                            }}
-                                        >
-                                            <Copy className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                        <DialogFooter>
-                            <DialogClose asChild>
-                                <Button type="button" variant="outline">Cerrar</Button>
-                            </DialogClose>
-                            <SubmitButton disabled={isPending || !!state.generatedPassword}>
-                               {state.generatedPassword ? 'Usuario Creado' : 'Crear Usuario'}
-                            </SubmitButton>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
-        );
-    };
-
 
   const EditUserDialog = () => {
     if (!selectedUser) return null;
