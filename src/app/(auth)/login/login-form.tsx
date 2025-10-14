@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CardTitle, CardDescription, CardHeader } from '@/components/ui/card';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import Link from 'next/link';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useNotifications } from '@/hooks/use-notifications';
@@ -46,7 +46,7 @@ export default function LoginForm() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showRegisterSuggestion, setShowRegisterSuggestion] = useState(false);
+  const [showRegisterDialog, setShowRegisterDialog] = useState(false);
 
   useEffect(() => {
     const redirectUrl = searchParams.get('redirect') || '/dashboard';
@@ -60,7 +60,7 @@ export default function LoginForm() {
     if (!auth) return;
 
     setError(null);
-    setShowRegisterSuggestion(false);
+    setShowRegisterDialog(false);
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
@@ -81,20 +81,19 @@ export default function LoginForm() {
     } catch (error: any) {
        const errorCode = error.code;
        const errorMessage = getFirebaseErrorMessage(errorCode);
-
-       // Firebase now uses 'auth/invalid-credential' for both wrong password and user not found.
-       // We can't reliably distinguish them on the client. 
-       // A common pattern is to check if the user *might* exist if they typed a password.
+      
        if (errorCode === 'auth/invalid-credential') {
-            if (password) { // User entered a password, likely a wrong password error
+            // Heuristic: If password field is filled, it's likely a wrong password. 
+            // If it's empty, it's likely a user-not-found scenario.
+            if (password) {
                  toast({
                     variant: 'destructive',
                     title: 'Credenciales Incorrectas 😵',
                     description: errorMessage,
                 });
-            } else { // User likely just typed email, could be a typo
+            } else {
                 setError(errorMessage);
-                setShowRegisterSuggestion(true);
+                setShowRegisterDialog(true);
             }
        } else {
             toast({
@@ -127,18 +126,22 @@ export default function LoginForm() {
           </CardDescription>
       </CardHeader>
       
-      {showRegisterSuggestion && error && (
-          <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Usuario no encontrado</AlertTitle>
-              <AlertDescription>
-                  {error}{' '}
-                  <Link href="/register" className="font-bold underline hover:text-destructive-foreground">
-                      ¿Quieres registrarte?
-                  </Link>
-              </AlertDescription>
-          </Alert>
-      )}
+      <AlertDialog open={showRegisterDialog} onOpenChange={setShowRegisterDialog}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2"><AlertCircle /> ¡Usuario no Encontrado!</AlertDialogTitle>
+            <AlertDialogDescription>
+                No encontramos una cuenta con el correo electrónico que ingresaste. ¿Te gustaría crear una cuenta nueva?
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => router.push('/register')}>
+                Registrarse Ahora
+            </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <form onSubmit={handleLogin} className="space-y-4">
       <div className="space-y-2">
