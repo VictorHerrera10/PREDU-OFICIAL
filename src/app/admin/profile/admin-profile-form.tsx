@@ -75,21 +75,18 @@ export function AdminProfileForm({ user, profileData }: Props) {
             formData.set('profilePictureUrl', profileData.profilePictureUrl);
         }
         
+        // Server action will handle redirection on success
         const result = await updateAdminProfile(null, formData);
 
-        if(result.success){
-            toast({
-                title: '¡Perfil Actualizado! ✅',
-                description: 'Tus datos han sido guardados correctamente.',
-            });
-            router.refresh(); 
-        } else if (result.message) {
+        // Only show toast on error, as success will redirect
+        if (result?.message) {
             toast({
                 variant: 'destructive',
                 title: 'Error al actualizar 😵',
                 description: result.message,
             });
         }
+        
         setIsSubmitting(false);
     };
 

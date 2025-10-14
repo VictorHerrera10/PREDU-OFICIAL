@@ -709,10 +709,10 @@ export async function updateAdminProfile(prevState: any, formData: FormData) {
         
         await updateDoc(userProfileRef, dataToUpdate);
 
-        revalidatePath('/admin/profile');
-        return { success: true };
     } catch (error: any) {
         console.error('Error updating admin profile:', error);
         return { success: false, message: 'No se pudo actualizar tu perfil. ' + error.message };
     }
+
+    redirect('/admin');
 }
