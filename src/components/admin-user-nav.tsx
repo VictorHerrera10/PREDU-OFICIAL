@@ -71,7 +71,7 @@ export function AdminUserNav() {
   const profilePicture = userProfile?.profilePictureUrl || user?.photoURL;
   const displayName = userProfile?.username || user?.displayName;
   const displayEmail = user?.email;
-  const profileLink = '/admin';
+  const profileLink = '/admin/profile';
 
   if (isLoading) {
     return (
@@ -125,7 +125,7 @@ export function AdminUserNav() {
                 <DropdownMenuItem asChild>
                     <Link href={profileLink}>
                     <UserIcon className="mr-2 h-4 w-4" />
-                    <span>Panel</span>
+                    <span>Mi Perfil</span>
                     </Link>
                 </DropdownMenuItem>
                 </DropdownMenuGroup>

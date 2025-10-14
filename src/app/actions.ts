@@ -680,3 +680,39 @@ export async function upgradeToHero(userId: string) {
     return { success: false, message: 'Could not upgrade to Hero. ' + error.message };
   }
 }
+
+export async function updateAdminProfile(prevState: any, formData: FormData) {
+    const { firestore } = await getAuthenticatedAppForUser();
+    
+    const userId = formData.get('userId') as string;
+    if (!userId) {
+        return { success: false, message: 'Usuario no encontrado.' };
+    }
+
+    const username = formData.get('username') as string;
+    const profilePictureUrl = formData.get('profilePictureUrl') as string | null;
+
+    if (!username) {
+        return { success: false, message: 'El nombre de usuario es obligatorio.' };
+    }
+
+    const userProfileRef = doc(firestore, 'users', userId);
+
+    try {
+        const dataToUpdate: any = {
+            username,
+        };
+
+        if (profilePictureUrl) {
+            dataToUpdate.profilePictureUrl = profilePictureUrl;
+        }
+        
+        await updateDoc(userProfileRef, dataToUpdate);
+
+        revalidatePath('/admin/profile');
+        return { success: true };
+    } catch (error: any) {
+        console.error('Error updating admin profile:', error);
+        return { success: false, message: 'No se pudo actualizar tu perfil. ' + error.message };
+    }
+}
