@@ -295,7 +295,7 @@ export function UsersTable() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Nombre de Estudiante</TableHead>
+            <TableHead>Nombre</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Rol</TableHead>
             <TableHead>Fecha Creación</TableHead>
