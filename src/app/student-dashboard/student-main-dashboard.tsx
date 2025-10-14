@@ -21,8 +21,6 @@ import UniversityInfoView from './views/UniversityInfoView';
 import ScholarshipInfoView from './views/ScholarshipInfoView';
 import { Button } from '@/components/ui/button';
 import RuiView from './views/RUI/RuiView';
-import { Dialog, DialogTrigger } from '@/components/ui/dialog';
-import { ImageUploadModal } from './views/ImageUploadModal';
 
 type View = 'inicio' | 'prediccionAcademica' | 'prediccionPsicologica' | 'infoCarreras' | 'infoUniversidades' | 'infoBecas' | 'rui';
 
@@ -222,7 +220,7 @@ export function StudentMainDashboard({ user }: Props) {
           </motion.div>
         </LayoutGroup>
 
-        {!selectedView && (
+        {!selectedView && userProfile?.isHero && (
           <motion.div
             className="w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mt-12 text-center"
             initial={{ opacity: 0, y: 20 }}
@@ -238,12 +236,6 @@ export function StudentMainDashboard({ user }: Props) {
                 <Route className="mr-2 h-5 w-5" />
                 Iniciar Ruta Universitaria Interactiva (RUI)
               </Button>
-              <Dialog>
-                <DialogTrigger asChild>
-                    <Button variant="secondary" size="lg">prueba</Button>
-                </DialogTrigger>
-                <ImageUploadModal />
-              </Dialog>
             </div>
           </motion.div>
         )}
