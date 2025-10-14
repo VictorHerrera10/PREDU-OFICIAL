@@ -161,7 +161,7 @@ export function UsersTable() {
   };
 
     const AddUserDialog = () => {
-        const [state, formAction] = useActionState(createStudent, { message: null, success: false });
+        const [state, formAction, isPending] = useActionState(createStudent, { message: null, success: false, generatedPassword: null, username: null });
 
         useEffect(() => {
             if (state.message && !state.success) {
@@ -231,7 +231,9 @@ export function UsersTable() {
                             <DialogClose asChild>
                                 <Button type="button" variant="outline">Cerrar</Button>
                             </DialogClose>
-                            <SubmitButton>Crear Usuario</SubmitButton>
+                            <SubmitButton disabled={isPending || !!state.generatedPassword}>
+                               {state.generatedPassword ? 'Usuario Creado' : 'Crear Usuario'}
+                            </SubmitButton>
                         </DialogFooter>
                     </form>
                 </DialogContent>
