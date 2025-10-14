@@ -46,7 +46,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MoreHorizontal, PlusCircle, User, UserX, UserCheck, Edit, Calendar, Copy } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, User, UserX, UserCheck, Edit, Calendar, Copy, Mail, KeySquare } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { updateUser, createStudent } from '@/app/actions';
@@ -65,7 +65,13 @@ type UserProfile = {
 const AddUserDialog = () => {
     const [isOpen, setIsOpen] = useState(false);
     const { toast } = useToast();
-    const [state, formAction, isPending] = useActionState(createStudent, { message: null, success: false, username: null, generatedPassword: null });
+    
+    const [state, formAction, isPending] = useActionState(createStudent, { 
+        message: null, 
+        success: false, 
+        username: null, 
+        generatedPassword: null 
+    });
 
     useEffect(() => {
         if (state.message && !state.success) {
@@ -82,13 +88,21 @@ const AddUserDialog = () => {
             });
         }
     }, [state, toast]);
-
-    const handleClose = () => {
-        setIsOpen(false);
+    
+    // Reset form state when dialog is closed
+    const handleOpenChange = (open: boolean) => {
+        if (!open) {
+            // A small delay to allow the dialog to close before resetting
+            setTimeout(() => {
+                 // Manually reset the state by calling the action with null form data
+                 formAction(new FormData());
+            }, 200);
+        }
+        setIsOpen(open);
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
                 <Button size="sm" className="h-8 gap-1">
                     <PlusCircle className="h-3.5 w-3.5" />
@@ -107,18 +121,18 @@ const AddUserDialog = () => {
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="space-y-2">
-                            <Label htmlFor="username">Nombre</Label>
-                            <Input id="username" name="username" placeholder="Nombre completo del usuario" required />
+                            <Label htmlFor="username" className="flex items-center gap-2"><UserCheck className="h-4 w-4"/>Nombre</Label>
+                            <Input id="username" name="username" placeholder="Nombre completo del usuario" required disabled={!!state.generatedPassword}/>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input id="email" name="email" type="email" placeholder="usuario@email.com" required />
+                            <Label htmlFor="email" className="flex items-center gap-2"><Mail className="h-4 w-4"/>Email</Label>
+                            <Input id="email" name="email" type="email" placeholder="usuario@email.com" required disabled={!!state.generatedPassword}/>
                         </div>
                          {state.generatedPassword && (
                             <div className="space-y-2">
-                                <Label htmlFor="password">Contraseña Temporal</Label>
+                                <Label htmlFor="password" className="flex items-center gap-2 text-primary"><KeySquare className="h-4 w-4"/>Contraseña Temporal</Label>
                                 <div className="relative">
-                                    <Input id="password" name="password" type="text" value={state.generatedPassword} readOnly className="pr-10" />
+                                    <Input id="password" name="password" type="text" value={state.generatedPassword} readOnly className="pr-10 font-mono tracking-widest" />
                                     <Button
                                         type="button"
                                         variant="ghost"
@@ -135,13 +149,16 @@ const AddUserDialog = () => {
                             </div>
                         )}
                     </div>
-                    <DialogFooter>
-                        <Button type="button" variant="outline" onClick={handleClose}>
-                            Cerrar
-                        </Button>
-                        <SubmitButton disabled={isPending || !!state.generatedPassword}>
-                           {state.generatedPassword ? 'Usuario Creado' : 'Crear Usuario'}
-                        </SubmitButton>
+                     <DialogFooter className="justify-center">
+                        {state.generatedPassword ? (
+                            <DialogClose asChild>
+                                <Button type="button" variant="outline">Cerrar</Button>
+                            </DialogClose>
+                        ) : (
+                            <SubmitButton disabled={isPending}>
+                                {isPending ? 'Creando...' : 'Crear Usuario'}
+                            </SubmitButton>
+                        )}
                     </DialogFooter>
                 </form>
             </DialogContent>
@@ -425,3 +442,5 @@ export function UsersTable() {
     </>
   );
 }
+
+    
