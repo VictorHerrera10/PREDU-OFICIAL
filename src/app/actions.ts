@@ -714,5 +714,5 @@ export async function updateAdminProfile(prevState: any, formData: FormData) {
         return { success: false, message: 'No se pudo actualizar tu perfil. ' + error.message };
     }
 
-    redirect('/admin');
+    return { success: true, message: '¡Perfil Actualizado! ✅' };
 }
