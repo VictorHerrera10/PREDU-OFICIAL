@@ -71,6 +71,10 @@ export function UsersTable() {
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+  
+  const [lastCreatedUser, setLastCreatedUser] = useState<{username: string, password: string} | null>(null);
+  const [isSuccessAlertOpen, setIsSuccessAlertOpen] = useState(false);
+
 
   const usersCollectionRef = useMemo(() => {
     if (!firestore) return null;
@@ -164,30 +168,19 @@ export function UsersTable() {
         const [state, formAction] = useActionState(createUser, { message: null, success: false });
 
         useEffect(() => {
-            if (state.message) {
+            if (state.message && !state.success) {
                  toast({
                     variant: "destructive",
                     title: "Error al crear usuario",
                     description: state.message,
                 });
             }
-             if (state.success) {
-                toast({
-                    title: "Usuario Creado ✅",
-                    description: `El usuario ${state.username} fue creado. Contraseña: ${state.generatedPassword}`,
-                     action: (
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigator.clipboard.writeText(state.generatedPassword || '')}
-                        >
-                            <Copy className="mr-2 h-4 w-4" /> Copiar
-                        </Button>
-                    ),
-                    duration: 10000, // Keep toast longer
-                });
-                setIsAddUserOpen(false);
+             if (state.success && state.username && state.generatedPassword) {
+                setLastCreatedUser({ username: state.username, password: state.generatedPassword });
+                setIsAddUserOpen(false); // Close the creation form
+                setIsSuccessAlertOpen(true); // Open the success alert
             }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         }, [state]);
 
         return (
@@ -229,6 +222,41 @@ export function UsersTable() {
             </Dialog>
         );
     };
+
+    const SuccessAlertDialog = () => {
+        if (!lastCreatedUser) return null;
+        
+        return (
+            <AlertDialog open={isSuccessAlertOpen} onOpenChange={setIsSuccessAlertOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¡Usuario Creado Exitosamente! ✅</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            El usuario <span className="font-bold text-primary">{lastCreatedUser.username}</span> ha sido creado. Su contraseña temporal es:
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <div className="relative p-4 bg-muted border border-dashed rounded-lg">
+                        <code className="text-lg font-mono font-bold text-foreground">{lastCreatedUser.password}</code>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-1/2 right-2 -translate-y-1/2 h-8 w-8"
+                            onClick={() => {
+                                navigator.clipboard.writeText(lastCreatedUser.password);
+                                toast({ title: "Copiado", description: "La contraseña ha sido copiada." });
+                            }}
+                        >
+                            <Copy className="h-4 w-4"/>
+                        </Button>
+                    </div>
+                    <AlertDialogFooter>
+                        <AlertDialogAction onClick={() => setIsSuccessAlertOpen(false)}>Entendido</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        );
+    };
+
 
   const EditUserDialog = () => {
     if (!selectedUser) return null;
@@ -406,6 +434,7 @@ export function UsersTable() {
         </TableBody>
       </Table>
       <EditUserDialog />
+      <SuccessAlertDialog />
     </>
   );
 }
