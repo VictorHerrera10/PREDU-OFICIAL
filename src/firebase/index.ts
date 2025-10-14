@@ -2,14 +2,11 @@
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth } from 'firebase/auth';
-import { getFirestore, Firestore, initializeFirestore } from 'firebase/firestore';
-import { getFunctions, Functions } from 'firebase/functions';
-// Importamos el tipo FirebaseStorage, no solo Storage.
-import { getStorage, FirebaseStorage } from 'firebase/storage';
+import { getAuth, Auth, connectAuthEmulator } from 'firebase/auth';
+import { getFirestore, Firestore, initializeFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getFunctions, Functions, connectFunctionsEmulator } from 'firebase/functions';
+import { getStorage, FirebaseStorage, connectStorageEmulator } from 'firebase/storage';
 
-// Esta función maneja de forma robusta la inicialización tanto para desarrollo como para producción.
-// Usamos FirebaseStorage como el tipo correcto para 'storage'.
 export function initializeFirebase(): { firebaseApp: FirebaseApp; auth: Auth; firestore: Firestore, functions: Functions, storage: FirebaseStorage } {
   if (getApps().length) {
     const app = getApp();
@@ -24,17 +21,26 @@ export function initializeFirebase(): { firebaseApp: FirebaseApp; auth: Auth; fi
 }
 
 export function getSdks(firebaseApp: FirebaseApp) {
+  const auth = getAuth(firebaseApp);
   const firestore = getFirestore(firebaseApp);
   const functions = getFunctions(firebaseApp);
-  // getStorage devuelve el objeto FirebaseStorage
   const storage = getStorage(firebaseApp);
+
+  if (process.env.NODE_ENV === 'development') {
+    // Point to the emulators running on localhost.
+    // IMPORTANT: Make sure you have the emulators running!
+    // connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+    // connectFirestoreEmulator(firestore, '127.0.0.1', 8080);
+    // connectFunctionsEmulator(functions, '127.0.0.1', 5001);
+    // connectStorageEmulator(storage, '127.0.0.1', 9199);
+  }
 
   return {
     firebaseApp,
-    auth: getAuth(firebaseApp),
-    firestore: firestore,
-    functions: functions,
-    storage: storage,
+    auth,
+    firestore,
+    functions,
+    storage,
   };
 }
 
