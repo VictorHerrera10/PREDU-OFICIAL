@@ -715,11 +715,11 @@ export async function updateAdminProfile(prevState: any, formData: FormData) {
         return { success: false, message: 'No se pudo actualizar tu perfil. ' + error.message };
     }
 
-    revalidatePath('/admin');
+    // Don't redirect, return success message
     return { success: true, message: '¡Perfil Actualizado! ✅' };
 }
 
-export async function createUser(prevState: State, formData: FormData): Promise<State> {
+export async function createStudent(prevState: State, formData: FormData): Promise<State> {
   const { auth, firestore } = await getAuthenticatedAppForUser();
   const email = formData.get('email') as string;
   const username = formData.get('username') as string;
@@ -728,7 +728,6 @@ export async function createUser(prevState: State, formData: FormData): Promise<
     return { message: 'El nombre y el email son obligatorios.' };
   }
   
-  // Generate a random password like "PREDU1234"
   const password = 'PREDU' + Math.floor(1000 + Math.random() * 9000);
 
   try {

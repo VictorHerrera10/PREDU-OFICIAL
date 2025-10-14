@@ -49,7 +49,7 @@ import { Label } from '@/components/ui/label';
 import { MoreHorizontal, PlusCircle, User, UserX, UserCheck, Edit, Calendar, Copy } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { updateUser, createUser } from '@/app/actions';
+import { updateUser, createStudent } from '@/app/actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
 import { useActionState } from 'react';
@@ -71,10 +71,6 @@ export function UsersTable() {
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
-  
-  const [lastCreatedUser, setLastCreatedUser] = useState<{username: string, password: string} | null>(null);
-  const [isSuccessAlertOpen, setIsSuccessAlertOpen] = useState(false);
-
 
   const usersCollectionRef = useMemo(() => {
     if (!firestore) return null;
@@ -165,7 +161,7 @@ export function UsersTable() {
   };
 
     const AddUserDialog = () => {
-        const [state, formAction] = useActionState(createUser, { message: null, success: false });
+        const [state, formAction] = useActionState(createStudent, { message: null, success: false });
 
         useEffect(() => {
             if (state.message && !state.success) {
@@ -176,11 +172,11 @@ export function UsersTable() {
                 });
             }
              if (state.success && state.username && state.generatedPassword) {
-                setLastCreatedUser({ username: state.username, password: state.generatedPassword });
-                setIsAddUserOpen(false); // Close the creation form
-                setIsSuccessAlertOpen(true); // Open the success alert
+                toast({
+                    title: "¡Usuario Creado Exitosamente! ✅",
+                    description: `Se creó el usuario ${state.username}.`,
+                });
             }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         }, [state]);
 
         return (
@@ -210,50 +206,36 @@ export function UsersTable() {
                                 <Label htmlFor="email">Email</Label>
                                 <Input id="email" name="email" type="email" placeholder="usuario@email.com" required />
                             </div>
+                             {state.generatedPassword && (
+                                <div className="space-y-2">
+                                    <Label htmlFor="password">Contraseña Temporal</Label>
+                                    <div className="relative">
+                                        <Input id="password" name="password" type="text" value={state.generatedPassword} readOnly className="pr-10" />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="absolute top-1/2 right-1 -translate-y-1/2 h-8 w-8"
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(state.generatedPassword || '');
+                                                toast({ title: "Copiado", description: "La contraseña ha sido copiada." });
+                                            }}
+                                        >
+                                            <Copy className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         <DialogFooter>
                             <DialogClose asChild>
-                                <Button type="button" variant="outline">Cancelar</Button>
+                                <Button type="button" variant="outline">Cerrar</Button>
                             </DialogClose>
                             <SubmitButton>Crear Usuario</SubmitButton>
                         </DialogFooter>
                     </form>
                 </DialogContent>
             </Dialog>
-        );
-    };
-
-    const SuccessAlertDialog = () => {
-        if (!lastCreatedUser) return null;
-        
-        return (
-            <AlertDialog open={isSuccessAlertOpen} onOpenChange={setIsSuccessAlertOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>¡Usuario Creado Exitosamente! ✅</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            El usuario <span className="font-bold text-primary">{lastCreatedUser.username}</span> ha sido creado. Su contraseña temporal es:
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <div className="relative p-4 bg-muted border border-dashed rounded-lg">
-                        <code className="text-lg font-mono font-bold text-foreground">{lastCreatedUser.password}</code>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-1/2 right-2 -translate-y-1/2 h-8 w-8"
-                            onClick={() => {
-                                navigator.clipboard.writeText(lastCreatedUser.password);
-                                toast({ title: "Copiado", description: "La contraseña ha sido copiada." });
-                            }}
-                        >
-                            <Copy className="h-4 w-4"/>
-                        </Button>
-                    </div>
-                    <AlertDialogFooter>
-                        <AlertDialogAction onClick={() => setIsSuccessAlertOpen(false)}>Entendido</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
         );
     };
 
@@ -434,7 +416,6 @@ export function UsersTable() {
         </TableBody>
       </Table>
       <EditUserDialog />
-      <SuccessAlertDialog />
     </>
   );
 }
