@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseProvider } from '@/firebase/provider';
 import { NotificationsProvider } from '@/hooks/use-notifications';
+import { VersionBadge } from '@/components/version-badge';
 
 export const metadata: Metadata = {
   title: 'Predu',
@@ -37,6 +38,7 @@ export default function RootLayout({
           <NotificationsProvider>
             {children}
             <Toaster />
+            <VersionBadge />
           </NotificationsProvider>
         </FirebaseProvider>
       </body>
