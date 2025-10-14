@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser, useAuth } from '@/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CardTitle, CardDescription, CardHeader } from '@/components/ui/card';
@@ -14,6 +14,8 @@ import Link from 'next/link';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useNotifications } from '@/hooks/use-notifications';
 import { checkIfUserExists } from '@/app/actions';
+import { cn } from '@/lib/utils';
+
 
 // Moved from actions.ts to avoid server-only export issues
 function getFirebaseErrorMessage(errorCode: string): string {
@@ -126,17 +128,19 @@ export default function LoginForm() {
       
       <AlertDialog open={showRegisterDialog} onOpenChange={setShowRegisterDialog}>
         <AlertDialogContent>
-            <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2"><AlertCircle /> ¡Usuario no Encontrado!</AlertDialogTitle>
-            <AlertDialogDescription>
-                No encontramos una cuenta con el correo electrónico que ingresaste. ¿Te gustaría crear una cuenta nueva?
-            </AlertDialogDescription>
+            <AlertDialogHeader className="items-center">
+                <AlertDialogTitle className="flex items-center gap-2 text-2xl font-bold text-primary">¡Aventura a la Vista! 🚀</AlertDialogTitle>
+                <AlertDialogDescription>
+                    ¡Parece que eres nuevo por aquí! No encontramos tu nombre en la lista de la clase. ¿Listo para unirte a la aventura y crear tu cuenta?
+                </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={() => router.push('/register')}>
-                Registrarse Ahora
-            </AlertDialogAction>
+            <AlertDialogFooter className="flex-row justify-center gap-4 pt-4">
+                <AlertDialogCancel asChild>
+                    <Button variant="outline">Cancelar</Button>
+                </AlertDialogCancel>
+                <AlertDialogAction onClick={() => router.push('/register')} className={cn(buttonVariants({ variant: 'default' }), 'btn-retro !text-sm')}>
+                    ¡Crear mi Cuenta Ahora! 📝
+                </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
