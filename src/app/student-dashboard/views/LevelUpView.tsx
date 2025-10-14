@@ -134,7 +134,7 @@ export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
               <DialogTrigger asChild>
                 <motion.button
                   className={cn(
-                    "fixed bottom-6 right-6 z-30 rounded-full bg-destructive text-destructive-foreground shadow-lg flex items-center justify-center animate-[pulse-glow_4s_ease-in-out_infinite] transition-all duration-300",
+                    "fixed bottom-24 right-6 z-30 rounded-full bg-destructive text-destructive-foreground shadow-lg flex items-center justify-center animate-[pulse-glow_4s_ease-in-out_infinite] transition-all duration-300",
                     isViewSelected ? 'h-12 w-12' : 'h-16 w-16'
                   )}
                   whileHover={{ scale: 1.1 }}
@@ -156,7 +156,7 @@ export function LevelUpView({ isViewSelected }: LevelUpViewProps) {
             <X className="h-5 w-5" />
             <span className="sr-only">Cerrar</span>
           </DialogClose>
-          <DialogHeader className="text-center my-1">
+          <DialogHeader className="text-center my-1 sm:text-center">
             <DialogTitleComponent className="text-lg font-bold text-destructive font-headline">
               ¡Elige tu Destino!
             </DialogTitleComponent>
