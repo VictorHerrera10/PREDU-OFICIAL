@@ -363,36 +363,54 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
   const city = formData.get('city') as string;
   const phone = formData.get('phone') as string;
   const gender = formData.get('gender') as string;
-  const institutionId = formData.get('institutionId') as string;
+  const institutionCode = formData.get('institutionCode') as string;
   const profilePictureUrl = formData.get('profilePictureUrl') as string | null;
 
   if (!userId || !firstName || !lastName || !dni || !age || !grade || !city || !phone || !gender) {
-      return { success: false, message: 'Todos los campos son obligatorios, excepto el colegio.' };
+      return { success: false, message: 'Todos los campos son obligatorios, excepto el código de colegio.' };
   }
 
   const userProfileRef = doc(firestore, 'users', userId);
+  const dataToUpdate: any = {
+      firstName,
+      lastName,
+      dni,
+      age: Number(age),
+      grade,
+      city,
+      phone,
+      gender,
+      isProfileComplete: true,
+  };
+
+  if (profilePictureUrl) {
+      dataToUpdate.profilePictureUrl = profilePictureUrl;
+  }
 
   try {
-      const dataToUpdate: any = {
-          firstName,
-          lastName,
-          dni,
-          age: Number(age),
-          grade,
-          city,
-          phone,
-          gender,
-          isProfileComplete: true,
-      };
+    if (institutionCode) {
+        const institutionsQuery = query(collection(firestore, 'institutions'), where('uniqueCode', '==', institutionCode), limit(1));
+        const institutionSnap = await getDocs(institutionsQuery);
 
-      if (profilePictureUrl) {
-          dataToUpdate.profilePictureUrl = profilePictureUrl;
-      }
+        if (institutionSnap.empty) {
+            return { success: false, message: 'El código de institución no es válido.' };
+        }
+        
+        const institutionDoc = institutionSnap.docs[0];
+        const institutionData = institutionDoc.data();
+        const institutionId = institutionDoc.id;
 
-      if (institutionId) {
-        // Optional: Validate institution code if provided, for now just save it
+        const studentsQuery = query(collection(firestore, 'users'), where('institutionId', '==', institutionId));
+        const studentsSnap = await getDocs(studentsQuery);
+        const currentStudentCount = studentsSnap.size;
+
+        if (currentStudentCount >= institutionData.studentLimit) {
+            return { success: false, message: 'El límite de estudiantes para esta institución ha sido alcanzado. Contacta a tu tutor. 🚫' };
+        }
+        
         dataToUpdate.institutionId = institutionId;
-      }
+        dataToUpdate.isHero = true; // Grant Hero features
+    }
       
       await updateDoc(userProfileRef, dataToUpdate);
 

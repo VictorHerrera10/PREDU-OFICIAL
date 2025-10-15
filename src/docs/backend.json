@@ -59,6 +59,10 @@
           "type": "boolean",
           "description": "Flag to indicate if the user has unlocked the Hero level."
         },
+        "hasSeenInitialReport": {
+            "type": "boolean",
+            "description": "Flag to check if the user has seen the initial combined report."
+        },
         "email": {
           "type": "string",
           "description": "The user's email address.",

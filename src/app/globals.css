@@ -69,6 +69,12 @@
     --primary-foreground: 210 40% 98%;
     --ring: 0 70% 60%;
   }
+
+  .theme-institutional {
+    --primary: 210 90% 65%;
+    --primary-foreground: 220 13% 10%;
+    --ring: 210 90% 65%;
+  }
 }
 
 @layer base {

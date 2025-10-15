@@ -258,7 +258,7 @@ export function StudentProfileForm({ user, profileData }: Props) {
                         
                         <div className="pt-6 flex flex-col items-center">
                             <Label className="flex items-center gap-2 mb-2 text-center"><KeySquare className="w-4 h-4"/> Código de Colegio (Opcional)</Label>
-                             <input type="hidden" name="institutionId" value={institutionCode.join('')} />
+                            <input type="hidden" name="institutionCode" value={institutionCode.join('')} />
                             <div className="flex gap-2">
                                 {institutionCode.map((digit, index) => (
                                     <Input
@@ -271,9 +271,13 @@ export function StudentProfileForm({ user, profileData }: Props) {
                                         onKeyDown={(e) => handleKeyDown(index, e)}
                                         onPaste={handlePaste}
                                         className="w-12 h-12 text-center text-lg font-mono uppercase"
+                                        disabled={!!profileData?.institutionId}
                                     />
                                 ))}
                             </div>
+                            {profileData?.institutionId && (
+                                <p className="text-xs text-green-400 mt-2">Ya estás vinculado a una institución.</p>
+                            )}
                         </div>
 
                         <div className="text-center mt-6">

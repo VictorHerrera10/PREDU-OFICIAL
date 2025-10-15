@@ -21,6 +21,7 @@ import UniversityInfoView from './views/UniversityInfoView';
 import ScholarshipInfoView from './views/ScholarshipInfoView';
 import { Button } from '@/components/ui/button';
 import RuiView from './views/RUI/RuiView';
+import { InstitutionHeader } from './institution-header';
 
 type View = 'inicio' | 'prediccionAcademica' | 'prediccionPsicologica' | 'infoCarreras' | 'infoUniversidades' | 'infoBecas' | 'rui';
 
@@ -46,6 +47,7 @@ const heroOptions: Option[] = [
 
 type UserProfile = {
   isHero?: boolean;
+  institutionId?: string;
 };
 
 type Props = {
@@ -62,6 +64,9 @@ export function StudentMainDashboard({ user }: Props) {
   }, [user, firestore]);
 
   const { data: userProfile, isLoading } = useDoc<UserProfile>(userProfileRef);
+
+  const isInstitutional = !!userProfile?.institutionId;
+  const themeClass = isInstitutional ? 'theme-institutional' : userProfile?.isHero ? 'theme-hero' : '';
 
   const renderContent = () => {
     switch (selectedView) {
@@ -97,43 +102,44 @@ export function StudentMainDashboard({ user }: Props) {
   }
 
   return (
-    <div className={cn("flex flex-col min-h-screen", userProfile?.isHero && 'theme-hero')}>
-      <header className="fixed top-0 left-0 right-0 p-4 flex justify-between items-center z-20 bg-background/80 backdrop-blur-sm border-b">
-        <Logo />
-        <UserNav />
-      </header>
-
-      {userProfile?.isHero && (
-  <div className="group fixed top-1/2 left-4 -translate-y-1/2 z-10 flex flex-col items-center gap-4 p-2 bg-card/60 backdrop-blur-sm border rounded-lg w-20 hover:w-48 transition-all duration-300">
-    {heroOptions.map(option => (
-  <Button
-    key={option.id}
-    variant="ghost"
-    className={cn(
-      "w-full h-16 flex items-center justify-start transition-all duration-300 rounded-lg",
-      selectedView === option.id ? 'bg-destructive/20' : ''
-    )}
-    onClick={() => handleSelectView(option.id)}
-  >
-    <div className="flex items-center gap-3 w-full">
-      <div className="flex items-center justify-center w-10">
-        <option.icon
-          style={{ width: '30px', height: '30px' }}
-          className="text-foreground flex-shrink-0"
-        />
+    <div className={cn("flex flex-col min-h-screen", themeClass)}>
+      <div className="fixed top-0 left-0 right-0 z-20">
+        <header className="p-4 flex justify-between items-center bg-background/80 backdrop-blur-sm border-b">
+          <Logo />
+          <UserNav />
+        </header>
+        {isInstitutional && <InstitutionHeader />}
       </div>
-      <span className="font-semibold text-foreground whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-150">
-        {option.title}
-      </span>
-    </div>
-  </Button>
-))}
-  </div>
-)}
 
+      {(userProfile?.isHero || isInstitutional) && (
+        <div className="group fixed top-1/2 left-4 -translate-y-1/2 z-10 flex flex-col items-center gap-4 p-2 bg-card/60 backdrop-blur-sm border rounded-lg w-20 hover:w-48 transition-all duration-300">
+          {heroOptions.map(option => (
+            <Button
+              key={option.id}
+              variant="ghost"
+              className={cn(
+                "w-full h-16 flex items-center justify-start transition-all duration-300 rounded-lg",
+                selectedView === option.id ? (isInstitutional ? 'bg-blue-600/20' : 'bg-destructive/20') : ''
+              )}
+              onClick={() => handleSelectView(option.id)}
+            >
+              <div className="flex items-center gap-3 w-full">
+                <div className="flex items-center justify-center w-10">
+                  <option.icon
+                    style={{ width: '30px', height: '30px' }}
+                    className="text-foreground flex-shrink-0"
+                  />
+                </div>
+                <span className="font-semibold text-foreground whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-150">
+                  {option.title}
+                </span>
+              </div>
+            </Button>
+          ))}
+        </div>
+      )}
 
-
-      <main className={cn("flex-grow pt-20", userProfile?.isHero && "md:ml-24")}>
+      <main className={cn("flex-grow", (userProfile?.isHero || isInstitutional) ? "md:ml-24" : "", isInstitutional ? "pt-32" : "pt-20")}>
         <LayoutGroup>
           <AnimatePresence>
             {!selectedView && (
@@ -179,7 +185,7 @@ export function StudentMainDashboard({ user }: Props) {
               >
                 <AnimatePresence>
                   {selectedView === option.id ? (
-                    <motion.div className="bg-primary text-primary-foreground rounded-lg p-3 flex items-center justify-center gap-2">
+                    <motion.div className={cn("text-primary-foreground rounded-lg p-3 flex items-center justify-center gap-2", isInstitutional ? "bg-blue-600" : "bg-primary")}>
                       <motion.div layout="position">
                         <option.icon className="w-5 h-5" />
                       </motion.div>
@@ -198,7 +204,7 @@ export function StudentMainDashboard({ user }: Props) {
                   ) : (
                     <div className="card-content flex flex-col items-center text-center gap-4 p-6">
                       <motion.div layout="position">
-                        <option.icon className={cn("w-10 h-10", option.isHero ? "text-destructive" : "text-primary")} />
+                        <option.icon className={cn("w-10 h-10", isInstitutional ? "text-blue-500" : "text-primary")} />
                       </motion.div>
                       <div className="flex flex-col">
                         <motion.h2 layout="position" className="font-bold text-2xl">{option.title}</motion.h2>
@@ -220,7 +226,7 @@ export function StudentMainDashboard({ user }: Props) {
           </motion.div>
         </LayoutGroup>
 
-        {!selectedView && userProfile?.isHero && (
+        {!selectedView && (userProfile?.isHero || isInstitutional) && (
           <motion.div
             className="w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mt-12 text-center"
             initial={{ opacity: 0, y: 20 }}
@@ -255,7 +261,7 @@ export function StudentMainDashboard({ user }: Props) {
         </div>
       </main>
 
-      {!userProfile?.isHero && <LevelUpView isViewSelected={!!selectedView} />}
+      {!userProfile?.isHero && !isInstitutional && <LevelUpView isViewSelected={!!selectedView} />}
       <HeroChatButton />
     </div>
   );
