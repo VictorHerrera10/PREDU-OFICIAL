@@ -224,7 +224,7 @@ export default function InstitutionDetailsPage() {
       });
       setImageFile(null); // Clear the file input after successful upload
       setUploadProgress(0);
-      router.refresh();
+      router.push('/admin/institutions');
     } else {
       toast({
         variant: 'destructive',
