@@ -174,7 +174,7 @@ export default function InstitutionDetailsPage() {
     return doc(firestore, 'institutions', institutionId);
   }, [firestore, institutionId]);
 
-  const { data: institution, isLoading, refetch } = useDoc<Institution>(institutionRef);
+  const { data: institution, isLoading } = useDoc<Institution>(institutionRef);
   
    useEffect(() => {
     if (institution?.logoUrl) {
@@ -224,7 +224,7 @@ export default function InstitutionDetailsPage() {
       });
       setImageFile(null); // Clear the file input after successful upload
       setUploadProgress(0);
-      refetch();
+      router.refresh();
     } else {
       toast({
         variant: 'destructive',
