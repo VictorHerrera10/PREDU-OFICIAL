@@ -21,7 +21,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Building, Save, Users, Mail, Phone, Briefcase, Copy } from 'lucide-react';
+import { ArrowLeft, Building, Save, Users, Mail, Phone, Briefcase, Copy, GraduationCap } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -61,7 +61,11 @@ function TutorsList({ institutionId }: { institutionId: string }) {
 
     const tutorsQuery = useMemo(() => {
         if (!firestore) return null;
-        return query(collection(firestore, 'users'), where('institutionId', '==', institutionId));
+        return query(
+            collection(firestore, 'users'), 
+            where('institutionId', '==', institutionId),
+            where('role', '==', 'tutor')
+        );
     }, [firestore, institutionId]);
 
     const { data: tutors, isLoading } = useCollection<UserProfile>(tutorsQuery);
@@ -97,6 +101,51 @@ function TutorsList({ institutionId }: { institutionId: string }) {
                             {tutor.tutorDetails.roleInInstitution}
                         </Badge>
                     )}
+                </div>
+            ))}
+        </div>
+    );
+}
+
+function StudentsList({ institutionId }: { institutionId: string }) {
+    const firestore = useFirestore();
+
+    const studentsQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(
+            collection(firestore, 'users'), 
+            where('institutionId', '==', institutionId),
+            where('role', '==', 'student')
+        );
+    }, [firestore, institutionId]);
+
+    const { data: students, isLoading } = useCollection<UserProfile>(studentsQuery);
+
+    if (isLoading) {
+        return (
+            <div className="space-y-3">
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
+            </div>
+        );
+    }
+    
+    if (!students || students.length === 0) {
+        return <p className="text-sm text-muted-foreground text-center py-4">No hay estudiantes registrados para esta institución.</p>
+    }
+
+    return (
+        <div className="space-y-3">
+            {students.map(student => (
+                <div key={student.id} className="flex items-center gap-4 p-3 border rounded-lg bg-background/50">
+                    <Avatar>
+                        <AvatarImage src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${student.username}`} />
+                        <AvatarFallback>{student.username.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-grow">
+                        <p className="font-semibold">{student.username}</p>
+                        <p className="text-sm text-muted-foreground flex items-center gap-1.5"><Mail className="h-3 w-3" /> {student.email}</p>
+                    </div>
                 </div>
             ))}
         </div>
@@ -302,12 +351,20 @@ export default function InstitutionDetailsPage() {
                     </div>
                 </div>
 
-                 {/* Tutors List */}
-                <div className="space-y-4 p-4 border rounded-lg bg-background/50">
-                    <h3 className="font-semibold text-lg text-primary flex items-center gap-2">
-                        <Users /> Tutores Registrados
-                    </h3>
-                    <TutorsList institutionId={institutionId} />
+                 {/* Users List */}
+                <div className="space-y-6 p-4 border rounded-lg bg-background/50">
+                    <div>
+                        <h3 className="font-semibold text-lg text-primary flex items-center gap-2 mb-4">
+                            <Users /> Tutores Registrados
+                        </h3>
+                        <TutorsList institutionId={institutionId} />
+                    </div>
+                    <div className="border-t pt-6">
+                        <h3 className="font-semibold text-lg text-primary flex items-center gap-2 mb-4">
+                           <GraduationCap /> Estudiantes Registrados
+                        </h3>
+                        <StudentsList institutionId={institutionId} />
+                    </div>
                 </div>
 
                 </div>
