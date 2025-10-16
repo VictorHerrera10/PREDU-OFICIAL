@@ -54,6 +54,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MoreHorizontal, PlusCircle, Trash2, School, Eye } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 type Institution = {
   id: string;
@@ -284,7 +285,17 @@ export function InstitutionsTable() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
               >
-                <TableCell className="font-medium">{institution.name}</TableCell>
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-9 w-9 border">
+                      <AvatarImage src={institution.logoUrl} alt={institution.name} />
+                      <AvatarFallback>
+                        <School className="h-4 w-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="truncate">{institution.name}</span>
+                  </div>
+                </TableCell>
                 <TableCell>{institution.region}</TableCell>
                 <TableCell>{institution.directorName}</TableCell>
                 <TableCell><code className="bg-muted px-2 py-1 rounded text-primary">{institution.uniqueCode}</code></TableCell>
