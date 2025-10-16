@@ -273,9 +273,10 @@ export default function InstitutionDetailsPage() {
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[65vh]">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-1">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-1">
                 
-                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Columna Izquierda: Información de la Institución */}
+                <div className="flex flex-col gap-6">
                     {/* General Info */}
                     <div className="space-y-4 p-4 border rounded-lg bg-background/50">
                         <h3 className="font-semibold text-lg text-primary">Información General</h3>
@@ -300,41 +301,43 @@ export default function InstitutionDetailsPage() {
                     {/* Academic Info */}
                     <div className="space-y-4 p-4 border rounded-lg bg-background/50">
                         <h3 className="font-semibold text-lg text-primary">Información Académica</h3>
-                        <div className="space-y-2">
-                            <Label htmlFor="region">📍 Región</Label>
-                            <Select name="region" defaultValue={institution.region}>
-                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                <SelectContent><SelectItem value="norte">Norte</SelectItem><SelectItem value="centro">Centro</SelectItem><SelectItem value="sur">Sur</SelectItem></SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="level">📚 Nivel</Label>
-                            <Select name="level" defaultValue={institution.level}>
-                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                <SelectContent><SelectItem value="primaria">Primaria</SelectItem><SelectItem value="secundaria">Secundaria</SelectItem><SelectItem value="superior">Superior</SelectItem></SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="teachingModality">👨‍🏫 Modalidad de Enseñanza</Label>
-                            <Select name="teachingModality" defaultValue={institution.teachingModality}>
-                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                <SelectContent><SelectItem value="presencial">Presencial</SelectItem><SelectItem value="virtual">Virtual</SelectItem><SelectItem value="hibrida">Híbrida</SelectItem></SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="studentLimit">🧑‍🎓 Límite de Estudiantes</Label>
-                            <Input id="studentLimit" name="studentLimit" type="number" defaultValue={institution.studentLimit || 0} required />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="tutorLimit">🧑‍🏫 Límite de Tutores</Label>
-                            <Input id="tutorLimit" name="tutorLimit" type="number" defaultValue={institution.tutorLimit || 0} required />
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="region">📍 Región</Label>
+                                <Select name="region" defaultValue={institution.region}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent><SelectItem value="norte">Norte</SelectItem><SelectItem value="centro">Centro</SelectItem><SelectItem value="sur">Sur</SelectItem></SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="level">📚 Nivel</Label>
+                                <Select name="level" defaultValue={institution.level}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent><SelectItem value="primaria">Primaria</SelectItem><SelectItem value="secundaria">Secundaria</SelectItem><SelectItem value="superior">Superior</SelectItem></SelectContent>
+                                </Select>
+                            </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="teachingModality">👨‍🏫 Modalidad de Enseñanza</Label>
+                                <Select name="teachingModality" defaultValue={institution.teachingModality}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent><SelectItem value="presencial">Presencial</SelectItem><SelectItem value="virtual">Virtual</SelectItem><SelectItem value="hibrida">Híbrida</SelectItem></SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="studentLimit">🧑‍🎓 Límite de Estudiantes</Label>
+                                <Input id="studentLimit" name="studentLimit" type="number" defaultValue={institution.studentLimit || 0} required />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="tutorLimit">🧑‍🏫 Límite de Tutores</Label>
+                                <Input id="tutorLimit" name="tutorLimit" type="number" defaultValue={institution.tutorLimit || 0} required />
+                            </div>
                         </div>
                     </div>
 
                     {/* Director Info */}
-                    <div className="space-y-4 p-4 border rounded-lg bg-background/50 md:col-span-2">
+                    <div className="space-y-4 p-4 border rounded-lg bg-background/50">
                         <h3 className="font-semibold text-lg text-primary">Información del Director</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <Label htmlFor="directorName">👤 Nombre del Director</Label>
                                 <Input id="directorName" name="directorName" defaultValue={institution.directorName || ''} required />
@@ -343,7 +346,7 @@ export default function InstitutionDetailsPage() {
                                 <Label htmlFor="directorEmail">✉️ Email del Director</Label>
                                 <Input id="directorEmail" name="directorEmail" type="email" defaultValue={institution.directorEmail || ''} required />
                             </div>
-                            <div className="space-y-2">
+                            <div className="space-y-2 md:col-span-2">
                                 <Label htmlFor="directorPhone">📞 Teléfono del Director (Opcional)</Label>
                                 <Input id="directorPhone" name="directorPhone" defaultValue={institution.directorPhone || ''} />
                             </div>
@@ -351,7 +354,7 @@ export default function InstitutionDetailsPage() {
                     </div>
                 </div>
 
-                 {/* Users List */}
+                {/* Columna Derecha: Listas de Usuarios */}
                 <div className="space-y-6 p-4 border rounded-lg bg-background/50">
                     <div>
                         <h3 className="font-semibold text-lg text-primary flex items-center gap-2 mb-4">
@@ -424,5 +427,3 @@ function InstitutionDetailsSkeleton() {
         </div>
     )
 }
-
-    
