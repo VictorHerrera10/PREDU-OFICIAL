@@ -103,8 +103,10 @@ export function StudentProfileForm({ user, profileData }: Props) {
                 title: '¡Perfil Actualizado! ✅',
                 description: 'Tus datos han sido guardados correctamente.',
             });
+            // Redirect if it's the first time completing the profile
             if (!isEditing) {
-                router.refresh(); 
+                router.push('/student-dashboard'); 
+                router.refresh();
             }
         } else if (result.message) {
             toast({
@@ -258,25 +260,27 @@ export function StudentProfileForm({ user, profileData }: Props) {
                         
                         <div className="pt-6 flex flex-col items-center">
                             <Label className="flex items-center gap-2 mb-2 text-center"><KeySquare className="w-4 h-4"/> Código de Colegio (Opcional)</Label>
-                            <input type="hidden" name="institutionCode" value={institutionCode.join('')} />
-                            <div className="flex gap-2">
-                                {institutionCode.map((digit, index) => (
-                                    <Input
-                                        key={index}
-                                        ref={el => inputRefs.current[index] = el}
-                                        type="text"
-                                        maxLength={1}
-                                        value={digit}
-                                        onChange={(e) => handleCodeChange(index, e.target.value)}
-                                        onKeyDown={(e) => handleKeyDown(index, e)}
-                                        onPaste={handlePaste}
-                                        className="w-12 h-12 text-center text-lg font-mono uppercase"
-                                        disabled={!!profileData?.institutionId}
-                                    />
-                                ))}
-                            </div>
-                            {profileData?.institutionId && (
-                                <p className="text-xs text-green-400 mt-2">Ya estás vinculado a una institución.</p>
+                            {profileData?.institutionId ? (
+                                 <p className="text-sm text-green-400 mt-2 p-2 bg-green-900/20 border border-green-500/30 rounded-md">Ya estás vinculado a una institución.</p>
+                            ) : (
+                                <>
+                                    <input type="hidden" name="institutionCode" value={institutionCode.join('')} />
+                                    <div className="flex gap-2">
+                                        {institutionCode.map((digit, index) => (
+                                            <Input
+                                                key={index}
+                                                ref={el => inputRefs.current[index] = el}
+                                                type="text"
+                                                maxLength={1}
+                                                value={digit}
+                                                onChange={(e) => handleCodeChange(index, e.target.value)}
+                                                onKeyDown={(e) => handleKeyDown(index, e)}
+                                                onPaste={handlePaste}
+                                                className="w-12 h-12 text-center text-lg font-mono uppercase"
+                                            />
+                                        ))}
+                                    </div>
+                                </>
                             )}
                         </div>
 
