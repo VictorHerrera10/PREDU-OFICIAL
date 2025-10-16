@@ -2,10 +2,12 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useCollection, useDoc, useFirestore } from '@/firebase';
+import { useCollection, useDoc, useFirestore, useStorage } from '@/firebase';
 import { collection, doc, query, where } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { updateInstitution } from '@/app/actions';
+import Image from 'next/image';
+import { uploadImage } from '@/lib/storage';
 
 import {
   Card,
@@ -21,12 +23,13 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Building, Save, Users, Mail, Phone, Briefcase, Copy, GraduationCap } from 'lucide-react';
+import { ArrowLeft, Building, Save, Users, Mail, Phone, Briefcase, Copy, GraduationCap, Upload, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { Progress } from '@/components/ui/progress';
 
 type Institution = {
   id: string;
@@ -157,27 +160,71 @@ export default function InstitutionDetailsPage() {
   const router = useRouter();
   const { toast } = useToast();
   const firestore = useFirestore();
+  const storage = useStorage();
 
   const institutionId = params.institutionId as string;
 
   const [isProcessing, setIsProcessing] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const institutionRef = useMemo(() => {
     if (!firestore || !institutionId) return null;
     return doc(firestore, 'institutions', institutionId);
   }, [firestore, institutionId]);
 
-  const { data: institution, isLoading } = useDoc<Institution>(institutionRef);
+  const { data: institution, isLoading, refetch } = useDoc<Institution>(institutionRef);
+  
+   useEffect(() => {
+    if (institution?.logoUrl) {
+      setImagePreview(institution.logoUrl);
+    }
+  }, [institution?.logoUrl]);
+
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+    }
+  };
+
 
   const handleUpdate = async (formData: FormData) => {
     if (!institution) return;
     setIsProcessing(true);
+    let uploadedImageUrl = institution.logoUrl || null;
+
+    if (imageFile && storage) {
+      try {
+        uploadedImageUrl = await uploadImage(storage, imageFile, institution.id, setUploadProgress);
+        formData.set('logoUrl', uploadedImageUrl);
+      } catch (error) {
+        console.error("Image upload failed:", error);
+        toast({
+          variant: 'destructive',
+          title: 'Error de Carga',
+          description: 'No se pudo subir el logo.',
+        });
+        setIsProcessing(false);
+        return;
+      }
+    } else if (uploadedImageUrl) {
+        formData.set('logoUrl', uploadedImageUrl);
+    }
+
     const result = await updateInstitution(institution.id, formData);
     if (result.success) {
       toast({
         title: 'Institución Actualizada ✅',
         description: `Los datos de "${result.name}" han sido actualizados.`,
       });
+      setImageFile(null); // Clear the file input after successful upload
+      setUploadProgress(0);
+      refetch();
     } else {
       toast({
         variant: 'destructive',
@@ -275,6 +322,30 @@ export default function InstitutionDetailsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                 <div className="space-y-4 p-4 border rounded-lg bg-background/50 h-fit">
                     <h3 className="font-semibold text-lg text-primary">Información General</h3>
+                    
+                    <div className="space-y-2">
+                        <Label>Logo de la Institución</Label>
+                        <div className="relative flex justify-center mb-4">
+                            <Avatar className="w-24 h-24 border-4 border-primary">
+                                <AvatarImage src={imagePreview || undefined} alt={institution.name || 'Logo'} />
+                                <AvatarFallback><Building className="w-12 h-12" /></AvatarFallback>
+                            </Avatar>
+                            <Button asChild size="icon" variant="secondary" className="absolute -bottom-2 -right-2 h-8 w-8 border-2 border-background">
+                                <Label htmlFor="logo-upload" className="cursor-pointer">
+                                    <Upload className="w-4 h-4" />
+                                    <span className="sr-only">Cambiar logo</span>
+                                </Label>
+                            </Button>
+                            <Input id="logo-upload" type="file" accept="image/*" className="sr-only" onChange={handleFileChange} disabled={isProcessing} />
+                        </div>
+                         {uploadProgress > 0 && uploadProgress < 100 && (
+                            <div className="w-full max-w-xs pt-2 mx-auto">
+                                <Progress value={uploadProgress} className="h-2" />
+                                <p className="text-xs text-muted-foreground mt-1 text-center">{`Subiendo... ${Math.round(uploadProgress)}%`}</p>
+                            </div>
+                        )}
+                    </div>
+                    
                     <div className="space-y-2">
                         <Label htmlFor="name">🏫 Nombre de la Institución</Label>
                         <Input id="name" name="name" defaultValue={institution.name || ''} required />
@@ -286,10 +357,6 @@ export default function InstitutionDetailsPage() {
                     <div className="space-y-2">
                         <Label htmlFor="contactEmail">📧 Email de Contacto General</Label>
                         <Input id="contactEmail" name="contactEmail" type="email" defaultValue={institution.contactEmail || ''} required />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="logoUrl">🖼️ URL del Logo (Opcional)</Label>
-                        <Input id="logoUrl" name="logoUrl" defaultValue={institution.logoUrl || ''} />
                     </div>
                 </div>
 
@@ -364,7 +431,7 @@ export default function InstitutionDetailsPage() {
           </CardContent>
           <CardFooter className="flex justify-end pt-6">
             <Button type="submit" disabled={isProcessing}>
-              <Save className="mr-2 h-4 w-4" />
+              {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
               {isProcessing ? 'Guardando...' : 'Guardar Cambios'}
             </Button>
           </CardFooter>
