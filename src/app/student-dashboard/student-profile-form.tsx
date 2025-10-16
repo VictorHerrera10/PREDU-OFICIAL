@@ -103,11 +103,9 @@ export function StudentProfileForm({ user, profileData }: Props) {
                 title: '¡Perfil Actualizado! ✅',
                 description: 'Tus datos han sido guardados correctamente.',
             });
-            // Redirect if it's the first time completing the profile
-            if (!isEditing) {
-                router.push('/student-dashboard'); 
-                router.refresh();
-            }
+            // Redirect after success, both for initial completion and editing
+            router.push('/student-dashboard'); 
+            router.refresh();
         } else if (result.message) {
             toast({
                 variant: 'destructive',
