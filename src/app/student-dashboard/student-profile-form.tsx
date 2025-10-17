@@ -214,7 +214,7 @@ export function StudentProfileForm({ user, profileData }: Props) {
                             </div>
                              <div className="space-y-2">
                                 <Label htmlFor="grade" className="flex items-center gap-2"><BookOpen className="w-4 h-4"/> Grado</Label>
-                                <Select name="grade" defaultValue={profileData?.grade} required>
+                                <Select name="grade" defaultValue={profileData?.grade || ''} required>
                                     <SelectTrigger><SelectValue placeholder="Selecciona tu grado" /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="1ro Secundaria">1ro Secundaria</SelectItem>
@@ -235,7 +235,7 @@ export function StudentProfileForm({ user, profileData }: Props) {
                             </div>
                              <div className="space-y-2 text-center">
                                 <Label className="flex items-center gap-2 mb-2.5 justify-center"><VenetianMask className="w-4 h-4"/> Género</Label>
-                                <RadioGroup name="gender" defaultValue={profileData?.gender} required className="flex gap-2 justify-center" onValueChange={setSelectedGender}>
+                                <RadioGroup name="gender" defaultValue={profileData?.gender || ''} required className="flex gap-2 justify-center" onValueChange={setSelectedGender}>
                                      <Label htmlFor="g-male" className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all w-full", selectedGender === 'masculino' && 'border-primary ring-2 ring-primary/50' )}>
                                         <RadioGroupItem value="masculino" id="g-male" className="sr-only" />
                                         <span className="text-xl text-[#60a5fa]" aria-hidden="true">♂</span>
@@ -294,3 +294,5 @@ export function StudentProfileForm({ user, profileData }: Props) {
         </main>
     );
 }
+
+    

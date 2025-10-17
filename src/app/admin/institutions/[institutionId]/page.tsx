@@ -364,7 +364,7 @@ export default function InstitutionDetailsPage() {
                     <h3 className="font-semibold text-lg text-primary">Información Académica</h3>
                     <div className="space-y-2">
                         <Label htmlFor="region">📍 Región</Label>
-                        <Select name="region" defaultValue={institution.region}>
+                        <Select name="region" defaultValue={institution.region || ''}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="Amazonas">Amazonas</SelectItem>
@@ -397,14 +397,14 @@ export default function InstitutionDetailsPage() {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="level">📚 Nivel</Label>
-                        <Select name="level" defaultValue={institution.level}>
+                        <Select name="level" defaultValue={institution.level || ''}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent><SelectItem value="primaria">Primaria</SelectItem><SelectItem value="secundaria">Secundaria</SelectItem><SelectItem value="superior">Superior</SelectItem></SelectContent>
                         </Select>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="teachingModality">👨‍🏫 Modalidad de Enseñanza</Label>
-                        <Select name="teachingModality" defaultValue={institution.teachingModality}>
+                        <Select name="teachingModality" defaultValue={institution.teachingModality || ''}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent><SelectItem value="presencial">Presencial</SelectItem><SelectItem value="virtual">Virtual</SelectItem><SelectItem value="hibrida">Híbrida</SelectItem></SelectContent>
                         </Select>
@@ -509,3 +509,5 @@ function InstitutionDetailsSkeleton() {
         </div>
     )
 }
+
+    
