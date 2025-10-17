@@ -493,6 +493,19 @@ export async function createIndependentTutorGroup(formData: FormData) {
   }
 }
 
+export async function deleteIndependentTutorGroup(groupId: string) {
+  const { firestore } = await getAuthenticatedAppForUser();
+  const groupRef = doc(firestore, 'independentTutorGroups', groupId);
+
+  try {
+    await deleteDoc(groupRef);
+    revalidatePath('/admin/independent-tutors');
+  } catch (error: any) {
+    return { success: false, message: 'No se pudo eliminar el grupo. ' + error.message };
+  }
+  // No redirect here, the table will re-render.
+}
+
 export async function registerHeroTutor(prevState: State, formData: FormData): Promise<State> {
     const { firestore } = await getAuthenticatedAppForUser();
 

@@ -2,12 +2,13 @@
 
 import { useMemo, useState } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
-import { createIndependentTutorGroup } from '@/app/actions';
+import { createIndependentTutorGroup, deleteIndependentTutorGroup } from '@/app/actions';
 
 import {
   Table,
@@ -19,6 +20,14 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -28,10 +37,21 @@ import {
   DialogTrigger,
   DialogClose,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PlusCircle, UserCheck } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, UserCheck, Eye, Trash2, Loader2 } from 'lucide-react';
 
 type IndependentTutorGroup = {
   id: string;
@@ -53,7 +73,7 @@ export function IndependentTutorsTable() {
     return collection(firestore, 'independentTutorGroups');
   }, [firestore]);
 
-  const { data: groups, isLoading } = useCollection(groupsCollectionRef);
+  const { data: groups, isLoading } = useCollection<IndependentTutorGroup>(groupsCollectionRef);
 
   const formatDate = (timestamp: any) => {
     if (!timestamp || typeof timestamp.seconds !== 'number') {
@@ -89,6 +109,24 @@ export function IndependentTutorsTable() {
     } finally {
         setIsProcessing(false);
     }
+  };
+
+   const handleDelete = async (groupId: string) => {
+    setIsProcessing(true);
+    const result = await deleteIndependentTutorGroup(groupId);
+    if (result && result.success === false) {
+      toast({
+        variant: 'destructive',
+        title: 'Error al Eliminar 😵',
+        description: result.message,
+      });
+    } else {
+      toast({
+        title: 'Grupo Eliminado 🗑️',
+        description: 'El grupo ha sido eliminado permanentemente.',
+      });
+    }
+    setIsProcessing(false);
   };
 
   const AddGroupDialog = () => (
@@ -153,6 +191,9 @@ export function IndependentTutorsTable() {
             <TableHead>Tutor a Cargo</TableHead>
             <TableHead>Código Único</TableHead>
             <TableHead>Fecha Creación</TableHead>
+            <TableHead>
+              <span className="sr-only">Acciones</span>
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -169,11 +210,54 @@ export function IndependentTutorsTable() {
                 <TableCell>{group.tutorName}</TableCell>
                 <TableCell><code className="bg-muted px-2 py-1 rounded text-primary">{group.uniqueCode}</code></TableCell>
                 <TableCell>{formatDate(group.createdAt)}</TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button aria-haspopup="true" size="icon" variant="ghost">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Toggle menu</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                      <DropdownMenuItem asChild>
+                        <Link href={`/admin/independent-tutors/${group.id}`}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          Ver Detalles
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                       <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Eliminar
+                              </DropdownMenuItem>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                              <AlertDialogHeader>
+                              <AlertDialogTitle>¿Estás seguro de eliminar este grupo?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                  Esta acción no se puede deshacer y es permanente. 💀
+                              </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(group.id)} disabled={isProcessing}>
+                                  {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                                  {isProcessing ? 'Eliminando...' : 'Sí, eliminar'}
+                              </AlertDialogAction>
+                              </AlertDialogFooter>
+                          </AlertDialogContent>
+                      </AlertDialog>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
               </motion.tr>
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={4} className="h-24 text-center">
+              <TableCell colSpan={5} className="h-24 text-center">
                 No hay grupos de tutores independientes. ¡Crea el primero! 🚀
               </TableCell>
             </TableRow>
