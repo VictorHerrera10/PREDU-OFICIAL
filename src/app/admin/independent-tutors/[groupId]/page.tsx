@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, UserCheck, Users, Mail, GraduationCap, Copy, Save, Loader2, Briefcase } from 'lucide-react';
+import { ArrowLeft, UserCheck, Users, Mail, GraduationCap, Copy, Save, Loader2, Briefcase, Phone, Hash, MapPin, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
@@ -33,6 +33,8 @@ type IndependentTutorGroup = {
   uniqueCode: string;
   studentLimit?: number;
   tutorLimit?: number;
+  region?: string;
+  reasonForUse?: string;
   createdAt?: { seconds: number; nanoseconds: number };
 };
 
@@ -40,6 +42,8 @@ type UserProfile = {
     id: string;
     username: string;
     email: string;
+    dni?: string;
+    phone?: string;
     profilePictureUrl?: string;
 };
 
@@ -101,18 +105,24 @@ function TutorDetails({ tutorId }: { tutorId: string }) {
 
     const { data: tutor, isLoading } = useDoc<UserProfile>(tutorRef);
 
-    if (isLoading) return <Skeleton className="h-20 w-full" />;
+    if (isLoading) return <Skeleton className="h-28 w-full" />;
     if (!tutor) return <p className="text-sm text-muted-foreground">Tutor no encontrado.</p>;
 
     return (
-        <div className="flex items-center gap-4 p-3 border rounded-lg bg-background/50">
-            <Avatar className="w-12 h-12">
-                <AvatarImage src={tutor.profilePictureUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${tutor.username}`} />
-                <AvatarFallback>{tutor.username.charAt(0).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <div>
-                <p className="font-bold text-lg">{tutor.username}</p>
-                <p className="text-sm text-muted-foreground flex items-center gap-1.5"><Mail className="h-3 w-3" /> {tutor.email}</p>
+        <div className="flex flex-col gap-4 p-3 border rounded-lg bg-background/50">
+            <div className="flex items-center gap-4">
+                <Avatar className="w-12 h-12">
+                    <AvatarImage src={tutor.profilePictureUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${tutor.username}`} />
+                    <AvatarFallback>{tutor.username.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div>
+                    <p className="font-bold text-lg">{tutor.username}</p>
+                    <p className="text-sm text-muted-foreground flex items-center gap-1.5"><Mail className="h-3 w-3" /> {tutor.email}</p>
+                </div>
+            </div>
+            <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2"><Hash className="h-4 w-4 text-muted-foreground"/> DNI: <span className="font-mono text-foreground">{tutor.dni || 'N/A'}</span></div>
+                <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground"/> Teléfono: <span className="font-mono text-foreground">{tutor.phone || 'N/A'}</span></div>
             </div>
         </div>
     );
@@ -204,29 +214,35 @@ export default function GroupDetailsPage() {
                   {group.name}
                 </CardTitle>
                 <CardDescription>
-                  Detalles del grupo y estudiantes registrados.
+                  Detalles del grupo, tutor creador y estudiantes registrados.
                 </CardDescription>
-                 <div className="flex items-center gap-2 mt-2">
-                    <span className="text-sm text-muted-foreground">Código Único:</span>
-                    <code className="bg-muted px-2 py-1 rounded text-primary font-bold">{group.uniqueCode}</code>
-                     <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button 
-                            type="button" 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-6 w-6" 
-                            onClick={() => handleCopyCode(group.uniqueCode)}
-                          >
-                            <Copy className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Copiar código</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                 <div className="flex items-center gap-4 mt-2">
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-sm text-muted-foreground">Código:</span>
+                        <code className="bg-muted px-2 py-1 rounded text-primary font-bold">{group.uniqueCode}</code>
+                        <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                            <Button 
+                                type="button" 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-6 w-6" 
+                                onClick={() => handleCopyCode(group.uniqueCode)}
+                            >
+                                <Copy className="h-4 w-4" />
+                            </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                            <p>Copiar código</p>
+                            </TooltipContent>
+                        </Tooltip>
+                        </TooltipProvider>
+                    </div>
+                     <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <MapPin className="h-4 w-4"/>
+                        Región: <span className="font-semibold text-foreground">{group.region || 'N/A'}</span>
+                    </div>
                   </div>
               </div>
               <Button variant="ghost" size="sm" asChild>
@@ -239,28 +255,40 @@ export default function GroupDetailsPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                <Card className="lg:col-span-1 p-4 border rounded-lg bg-background/50 h-fit space-y-4">
-                     <h3 className="font-semibold text-lg text-primary flex items-center gap-2"><Briefcase />Tutor a Cargo</h3>
-                     <TutorDetails tutorId={group.tutorId} />
-                     
-                     <h3 className="font-semibold text-lg text-primary pt-4">Límites</h3>
-                     <div className="space-y-3 text-sm">
-                        <div className="space-y-2">
-                            <Label htmlFor="studentLimit" className="flex items-center gap-2"><GraduationCap className="h-5 w-5 text-muted-foreground" />Límite de Estudiantes</Label>
-                            <Input id="studentLimit" name="studentLimit" type="number" defaultValue={group.studentLimit || 0} required />
+                <div className="lg:col-span-1 space-y-4 h-fit">
+                    <Card className="p-4 border rounded-lg bg-background/50 space-y-4">
+                        <h3 className="font-semibold text-lg text-primary flex items-center gap-2"><Briefcase />Tutor Creador</h3>
+                        <TutorDetails tutorId={group.tutorId} />
+                    </Card>
+                    
+                     <Card className="p-4 border rounded-lg bg-background/50 space-y-4">
+                        <h3 className="font-semibold text-lg text-primary">Límites y Configuración</h3>
+                        <div className="space-y-3 text-sm">
+                            <div className="space-y-2">
+                                <Label htmlFor="studentLimit" className="flex items-center gap-2"><GraduationCap className="h-5 w-5 text-muted-foreground" />Límite de Estudiantes</Label>
+                                <Input id="studentLimit" name="studentLimit" type="number" defaultValue={group.studentLimit || 0} required />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="tutorLimit" className="flex items-center gap-2"><Users className="h-5 w-5 text-muted-foreground" />Límite de Tutores</Label>
+                                <Input id="tutorLimit" name="tutorLimit" type="number" defaultValue={group.tutorLimit || 0} required />
+                            </div>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="tutorLimit" className="flex items-center gap-2"><Users className="h-5 w-5 text-muted-foreground" />Límite de Tutores</Label>
-                            <Input id="tutorLimit" name="tutorLimit" type="number" defaultValue={group.tutorLimit || 0} required />
-                        </div>
-                     </div>
-                </Card>
+                    </Card>
+                    
+                    {group.reasonForUse && (
+                        <Card className="p-4 border rounded-lg bg-background/50 space-y-2">
+                             <h3 className="font-semibold text-lg text-primary flex items-center gap-2"><FileText />Motivo de Uso</h3>
+                             <p className="text-sm text-muted-foreground">{group.reasonForUse}</p>
+                        </Card>
+                    )}
+
+                </div>
 
                 <Card className="lg:col-span-2 space-y-4 p-4 border rounded-lg bg-background/50">
                     <h3 className="font-semibold text-lg text-primary flex items-center gap-2">
                         <Users /> Estudiantes Registrados
                     </h3>
-                    <ScrollArea className="h-[26rem]">
+                    <ScrollArea className="h-[34rem]">
                         <StudentsList groupId={groupId} />
                     </ScrollArea>
                 </Card>
