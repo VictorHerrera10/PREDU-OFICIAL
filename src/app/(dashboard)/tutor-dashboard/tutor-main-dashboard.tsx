@@ -82,6 +82,7 @@ export function TutorMainDashboard({ user }: Props) {
          <header className="p-4 flex justify-between items-start bg-background/80 backdrop-blur-sm border-b">
             <div className="flex flex-col gap-2">
               <Logo />
+              <div className="border-t border-border/50 w-full my-1" />
               {isIndependentTutor ? <GroupHeader /> : <InstitutionHeader />}
             </div>
             <UserNav />
