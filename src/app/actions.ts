@@ -493,6 +493,28 @@ export async function createIndependentTutorGroup(formData: FormData) {
   }
 }
 
+export async function updateIndependentTutorGroup(groupId: string, formData: FormData) {
+  const { firestore } = await getAuthenticatedAppForUser();
+  
+  const data: { [key: string]: any } = {
+    studentLimit: Number(formData.get('studentLimit')),
+    tutorLimit: Number(formData.get('tutorLimit')),
+  };
+  
+  const groupRef = doc(firestore, 'independentTutorGroups', groupId);
+  const groupSnap = await getDoc(groupRef);
+  const groupName = groupSnap.data()?.name || 'el grupo';
+
+  try {
+    await updateDoc(groupRef, data);
+    revalidatePath(`/admin/independent-tutors/${groupId}`);
+    return { success: true, name: groupName };
+  } catch (error: any) {
+    return { success: false, message: 'No se pudo actualizar el grupo. ' + error.message };
+  }
+}
+
+
 export async function deleteIndependentTutorGroup(groupId: string) {
   const { firestore } = await getAuthenticatedAppForUser();
   const groupRef = doc(firestore, 'independentTutorGroups', groupId);

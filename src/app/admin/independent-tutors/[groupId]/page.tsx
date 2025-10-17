@@ -1,25 +1,29 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useCollection, useDoc, useFirestore } from '@/firebase';
 import { collection, doc, query, where } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
+import { updateIndependentTutorGroup } from '@/app/actions';
+
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, UserCheck, Users, Mail, GraduationCap, Copy } from 'lucide-react';
+import { ArrowLeft, UserCheck, Users, Mail, GraduationCap, Copy, Save, Loader2, Briefcase } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 type IndependentTutorGroup = {
   id: string;
@@ -27,8 +31,8 @@ type IndependentTutorGroup = {
   tutorName: string;
   tutorId: string;
   uniqueCode: string;
-  studentLimit: number;
-  tutorLimit: number;
+  studentLimit?: number;
+  tutorLimit?: number;
   createdAt?: { seconds: number; nanoseconds: number };
 };
 
@@ -36,23 +40,26 @@ type UserProfile = {
     id: string;
     username: string;
     email: string;
+    profilePictureUrl?: string;
 };
+
+type StudentProfile = UserProfile; // Alias for clarity
 
 
 function StudentsList({ groupId }: { groupId: string }) {
     const firestore = useFirestore();
 
-    // Students join an independent group by using its unique code.
-    // We assume this code links them via 'institutionId' field on their user profile.
     const studentsQuery = useMemo(() => {
         if (!firestore) return null;
+        // The groupId from URL corresponds to the document ID of the independentTutorGroups
+        // which students are linked to via their `institutionId` field.
         return query(
             collection(firestore, 'users'), 
             where('institutionId', '==', groupId)
         );
     }, [firestore, groupId]);
 
-    const { data: students, isLoading } = useCollection<UserProfile>(studentsQuery);
+    const { data: students, isLoading } = useCollection<StudentProfile>(studentsQuery);
 
     if (isLoading) {
         return (
@@ -72,7 +79,7 @@ function StudentsList({ groupId }: { groupId: string }) {
             {students.map(student => (
                 <div key={student.id} className="flex items-center gap-4 p-3 border rounded-lg bg-background/50">
                     <Avatar>
-                        <AvatarImage src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${student.username}`} />
+                        <AvatarImage src={student.profilePictureUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${student.username}`} />
                         <AvatarFallback>{student.username.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <div className="flex-grow">
@@ -85,11 +92,38 @@ function StudentsList({ groupId }: { groupId: string }) {
     );
 }
 
+function TutorDetails({ tutorId }: { tutorId: string }) {
+    const firestore = useFirestore();
+    const tutorRef = useMemo(() => {
+        if (!firestore || !tutorId) return null;
+        return doc(firestore, 'users', tutorId);
+    }, [firestore, tutorId]);
+
+    const { data: tutor, isLoading } = useDoc<UserProfile>(tutorRef);
+
+    if (isLoading) return <Skeleton className="h-20 w-full" />;
+    if (!tutor) return <p className="text-sm text-muted-foreground">Tutor no encontrado.</p>;
+
+    return (
+        <div className="flex items-center gap-4 p-3 border rounded-lg bg-background/50">
+            <Avatar className="w-12 h-12">
+                <AvatarImage src={tutor.profilePictureUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${tutor.username}`} />
+                <AvatarFallback>{tutor.username.charAt(0).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <div>
+                <p className="font-bold text-lg">{tutor.username}</p>
+                <p className="text-sm text-muted-foreground flex items-center gap-1.5"><Mail className="h-3 w-3" /> {tutor.email}</p>
+            </div>
+        </div>
+    );
+}
+
 export default function GroupDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
   const firestore = useFirestore();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const groupId = params.groupId as string;
 
@@ -116,6 +150,26 @@ export default function GroupDetailsPage() {
     });
   };
 
+  const handleUpdate = async (formData: FormData) => {
+    if (!group) return;
+    setIsProcessing(true);
+    const result = await updateIndependentTutorGroup(group.id, formData);
+
+    if (result.success) {
+      toast({
+        title: 'Grupo Actualizado ✅',
+        description: `Los límites del grupo "${result.name}" han sido actualizados.`,
+      });
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Error al Actualizar 😵',
+        description: result.message,
+      });
+    }
+    setIsProcessing(false);
+  };
+
   if (isLoading) {
     return <GroupDetailsSkeleton />;
   }
@@ -140,6 +194,7 @@ export default function GroupDetailsPage() {
 
   return (
     <div className="w-full mx-auto max-w-7xl p-4 sm:p-6 md:p-8">
+      <form action={handleUpdate}>
         <Card className="bg-card/80 backdrop-blur-sm border-border/50">
           <CardHeader>
             <div className="flex justify-between items-start">
@@ -149,7 +204,7 @@ export default function GroupDetailsPage() {
                   {group.name}
                 </CardTitle>
                 <CardDescription>
-                  Tutor a cargo: {group.tutorName}
+                  Detalles del grupo y estudiantes registrados.
                 </CardDescription>
                  <div className="flex items-center gap-2 mt-2">
                     <span className="text-sm text-muted-foreground">Código Único:</span>
@@ -184,16 +239,19 @@ export default function GroupDetailsPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                <Card className="lg:col-span-1 p-4 border rounded-lg bg-background/50 h-fit">
-                     <h3 className="font-semibold text-lg text-primary mb-4">Límites</h3>
+                <Card className="lg:col-span-1 p-4 border rounded-lg bg-background/50 h-fit space-y-4">
+                     <h3 className="font-semibold text-lg text-primary flex items-center gap-2"><Briefcase />Tutor a Cargo</h3>
+                     <TutorDetails tutorId={group.tutorId} />
+                     
+                     <h3 className="font-semibold text-lg text-primary pt-4">Límites</h3>
                      <div className="space-y-3 text-sm">
-                        <div className="flex items-center gap-3">
-                            <GraduationCap className="h-5 w-5 text-muted-foreground" />
-                            <span className="text-foreground">Límite de Estudiantes: <strong>{group.studentLimit}</strong></span>
+                        <div className="space-y-2">
+                            <Label htmlFor="studentLimit" className="flex items-center gap-2"><GraduationCap className="h-5 w-5 text-muted-foreground" />Límite de Estudiantes</Label>
+                            <Input id="studentLimit" name="studentLimit" type="number" defaultValue={group.studentLimit || 0} required />
                         </div>
-                        <div className="flex items-center gap-3">
-                            <Users className="h-5 w-5 text-muted-foreground" />
-                            <span className="text-foreground">Límite de Tutores: <strong>{group.tutorLimit}</strong></span>
+                        <div className="space-y-2">
+                            <Label htmlFor="tutorLimit" className="flex items-center gap-2"><Users className="h-5 w-5 text-muted-foreground" />Límite de Tutores</Label>
+                            <Input id="tutorLimit" name="tutorLimit" type="number" defaultValue={group.tutorLimit || 0} required />
                         </div>
                      </div>
                 </Card>
@@ -202,13 +260,20 @@ export default function GroupDetailsPage() {
                     <h3 className="font-semibold text-lg text-primary flex items-center gap-2">
                         <Users /> Estudiantes Registrados
                     </h3>
-                    <ScrollArea className="h-64">
+                    <ScrollArea className="h-[26rem]">
                         <StudentsList groupId={groupId} />
                     </ScrollArea>
                 </Card>
             </div>
           </CardContent>
+          <CardFooter className="flex justify-end pt-6">
+             <Button type="submit" disabled={isProcessing}>
+              {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+              {isProcessing ? 'Guardando...' : 'Guardar Cambios'}
+            </Button>
+          </CardFooter>
         </Card>
+      </form>
     </div>
   );
 }
