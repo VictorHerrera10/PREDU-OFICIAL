@@ -79,16 +79,17 @@ export function TutorMainDashboard({ user }: Props) {
   return (
     <div className="flex flex-col min-h-screen">
        <div className="fixed top-0 left-0 right-0 z-20">
-         <header className="p-4 flex justify-between items-start bg-background/80 backdrop-blur-sm border-b">
-            <div className="flex flex-col gap-4 items-start">
-              <Logo />
-              {isIndependentTutor ? <GroupHeader /> : <InstitutionHeader />}
-            </div>
+         <header className="p-4 flex justify-between items-center bg-background/80 backdrop-blur-sm border-b">
+            <Logo />
             <UserNav />
         </header>
        </div>
+       
+       <div className="pt-20 px-4">
+        {isIndependentTutor ? <GroupHeader /> : <InstitutionHeader />}
+       </div>
       
-      <main className="flex-grow pt-32">
+      <main className="flex-grow pt-8">
         <LayoutGroup>
           <AnimatePresence>
             {!selectedView && (
@@ -98,7 +99,7 @@ export function TutorMainDashboard({ user }: Props) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5 }}
-                className="text-center px-4 mb-8 pt-8"
+                className="text-center px-4 mb-8"
               >
                 <CardHeader>
                   <CardTitle className="text-3xl md:text-4xl font-bold text-foreground">

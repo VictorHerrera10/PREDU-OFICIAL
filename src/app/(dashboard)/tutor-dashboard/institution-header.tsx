@@ -46,7 +46,7 @@ export function InstitutionHeader() {
     if (!institution) return null;
 
     return (
-         <div className="flex items-center gap-2 text-sm text-muted-foreground">
+         <div className="flex items-center gap-2 text-sm text-muted-foreground p-2 bg-muted/50 border rounded-lg">
             <Avatar className="h-5 w-5 border">
                 <AvatarImage src={institution.logoUrl} alt={institution.name} />
                 <AvatarFallback>
