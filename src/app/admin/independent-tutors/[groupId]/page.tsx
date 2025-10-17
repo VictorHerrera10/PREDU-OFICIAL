@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, UserCheck, Users, Mail, GraduationCap, Copy, Save, Loader2, Briefcase, Phone, Hash, MapPin, FileText } from 'lucide-react';
+import { ArrowLeft, UserCheck, Users, Mail, GraduationCap, Copy, Save, Loader2, Briefcase, Phone, Hash, MapPin, FileText, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
@@ -282,13 +282,18 @@ export default function GroupDetailsPage() {
                         </Card>
                     )}
 
+                    <Card className="p-4 border rounded-lg bg-background/50 space-y-2">
+                        <h3 className="font-semibold text-lg text-primary flex items-center gap-2"><UserPlus />Tutores Adicionales</h3>
+                        <p className="text-sm text-muted-foreground text-center py-4">Próximamente: Podrás agregar y gestionar más tutores para este grupo.</p>
+                    </Card>
+
                 </div>
 
                 <Card className="lg:col-span-2 space-y-4 p-4 border rounded-lg bg-background/50">
                     <h3 className="font-semibold text-lg text-primary flex items-center gap-2">
                         <Users /> Estudiantes Registrados
                     </h3>
-                    <ScrollArea className="h-[34rem]">
+                    <ScrollArea className="h-[46rem]">
                         <StudentsList groupId={groupId} />
                     </ScrollArea>
                 </Card>
