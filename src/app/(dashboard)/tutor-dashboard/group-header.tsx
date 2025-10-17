@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useUser, useFirestore, useCollection } from '@/firebase';
 import { collection, query, where, limit } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, Key } from 'lucide-react';
+import { Users, Copy } from 'lucide-react';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -55,13 +55,12 @@ export function GroupHeader() {
              <span>{group.name}</span>
              <span className="text-muted-foreground/50">|</span>
              <div className="flex items-center gap-1">
-                <Key className="h-4 w-4 text-primary" />
                 <code className="font-bold text-primary">{group.uniqueCode}</code>
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleCopyCode}>
-                                <Key className="h-3 w-3" />
+                                <Copy className="h-3 w-3" />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
