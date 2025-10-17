@@ -44,13 +44,13 @@ export function GroupHeader() {
     };
     
     if (isLoading) {
-        return <Skeleton className="h-5 w-48" />;
+        return <Skeleton className="h-8 w-48" />;
     }
 
     if (!group) return null;
 
     return (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground p-2 bg-muted/50 border rounded-lg">
              <Users className="h-4 w-4" />
              <span>{group.name}</span>
              <span className="text-muted-foreground/50">|</span>
