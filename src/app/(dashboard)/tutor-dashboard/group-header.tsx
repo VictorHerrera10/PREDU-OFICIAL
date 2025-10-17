@@ -50,7 +50,7 @@ export function GroupHeader() {
     if (!group) return null;
 
     return (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground p-2 bg-muted/50 border rounded-lg">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground p-2 bg-muted border rounded-lg w-fit">
              <Users className="h-4 w-4" />
              <span>{group.name}</span>
              <span className="text-muted-foreground/50">|</span>
