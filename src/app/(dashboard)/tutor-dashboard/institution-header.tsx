@@ -39,29 +39,21 @@ export function InstitutionHeader() {
 
     if (!userProfile?.institutionId && !isLoading) return null;
 
+    if (isLoading) {
+        return <Skeleton className="h-5 w-48" />;
+    }
+
+    if (!institution) return null;
+
     return (
-        <div className="w-full bg-background/80 backdrop-blur-sm border-b py-2">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-                {isLoading ? (
-                    <div className="flex items-center gap-3">
-                        <Skeleton className="h-8 w-8 rounded-full" />
-                        <Skeleton className="h-6 w-48" />
-                    </div>
-                ) : institution ? (
-                    <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8 border">
-                            <AvatarImage src={institution.logoUrl} alt={institution.name} />
-                            <AvatarFallback>
-                                <Building className="h-4 w-4 text-muted-foreground" />
-                            </AvatarFallback>
-                        </Avatar>
-                        <h2 className="font-semibold text-foreground text-lg">
-                            <span className="text-muted-foreground font-normal text-base mr-2">🏫 Estás en</span>
-                            {institution.name}
-                        </h2>
-                    </div>
-                ) : null}
-            </div>
+         <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Avatar className="h-5 w-5 border">
+                <AvatarImage src={institution.logoUrl} alt={institution.name} />
+                <AvatarFallback>
+                    <Building className="h-3 w-3" />
+                </AvatarFallback>
+            </Avatar>
+            <span>{institution.name}</span>
         </div>
     );
 }

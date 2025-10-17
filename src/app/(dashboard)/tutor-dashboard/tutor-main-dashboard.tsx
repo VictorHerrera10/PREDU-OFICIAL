@@ -1,17 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Logo } from '@/components/logo';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { UserNav } from '@/components/user-nav';
-import { Home, School } from 'lucide-react';
+import { Home, School, Users } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
+import { useUser, useFirestore, useDoc } from '@/firebase';
+import { doc } from 'firebase/firestore';
+
 import HomeView from './views/HomeView';
 import InstitutionView from './views/InstitutionView';
 import { InstitutionHeader } from './institution-header';
+import { GroupHeader } from './group-header';
+import GroupView from './views/GroupView';
 
-type View = 'inicio' | 'colegio';
+type View = 'inicio' | 'colegio' | 'grupo';
 
 type Option = {
   id: View;
@@ -20,10 +25,9 @@ type Option = {
   description: string;
 };
 
-const options: Option[] = [
-  { id: 'inicio', icon: Home, title: 'Inicio', description: 'Tu resumen, notificaciones y próximos pasos.' },
-  { id: 'colegio', icon: School, title: 'Colegio', description: 'Información y estadísticas de tu institución.' },
-];
+type UserProfile = {
+  institutionId?: string;
+};
 
 type Props = {
     user: User | null;
@@ -31,6 +35,33 @@ type Props = {
 
 export function TutorMainDashboard({ user }: Props) {
   const [selectedView, setSelectedView] = useState<View | null>(null);
+  const firestore = useFirestore();
+
+  const userProfileRef = useMemo(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [user, firestore]);
+
+  const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
+
+  const isIndependentTutor = !userProfile?.institutionId;
+
+  const options: Option[] = useMemo(() => {
+    const baseOptions = [
+      { id: 'inicio', icon: Home, title: 'Inicio', description: 'Tu resumen, notificaciones y próximos pasos.' },
+    ];
+    if (isIndependentTutor) {
+      return [
+        ...baseOptions,
+        { id: 'grupo', icon: Users, title: 'Mi Grupo', description: 'Información y estadísticas de tu grupo.' },
+      ];
+    }
+    return [
+      ...baseOptions,
+      { id: 'colegio', icon: School, title: 'Colegio', description: 'Información y estadísticas de tu institución.' },
+    ];
+  }, [isIndependentTutor]);
+
 
   const renderContent = () => {
     switch (selectedView) {
@@ -38,6 +69,8 @@ export function TutorMainDashboard({ user }: Props) {
         return <HomeView />;
       case 'colegio':
         return <InstitutionView />;
+      case 'grupo':
+        return <GroupView />;
       default:
         return null;
     }
@@ -47,10 +80,12 @@ export function TutorMainDashboard({ user }: Props) {
     <div className="flex flex-col min-h-screen">
        <div className="fixed top-0 left-0 right-0 z-20">
          <header className="p-4 flex justify-between items-center bg-background/80 backdrop-blur-sm border-b">
-            <Logo />
+            <div className="flex flex-col gap-1">
+              <Logo />
+              {isIndependentTutor ? <GroupHeader /> : <InstitutionHeader />}
+            </div>
             <UserNav />
         </header>
-        <InstitutionHeader />
        </div>
       
       <main className="flex-grow pt-32">

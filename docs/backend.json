@@ -55,6 +55,14 @@
           "type": "boolean",
           "description": "Flag to indicate if the user has completed their profile setup."
         },
+        "isHero": {
+          "type": "boolean",
+          "description": "Flag to indicate if the user has unlocked the Hero level."
+        },
+        "hasSeenInitialReport": {
+            "type": "boolean",
+            "description": "Flag to check if the user has seen the initial combined report."
+        },
         "email": {
           "type": "string",
           "description": "The user's email address.",
@@ -229,6 +237,14 @@
         "reasonForUse": {
             "type": "string",
             "description": "The reason provided by the tutor for using the platform."
+        },
+        "studentLimit": {
+            "type": "number",
+            "description": "The maximum number of students that can be registered for this group."
+        },
+        "tutorLimit": {
+            "type": "number",
+            "description": "The maximum number of tutors that can be registered for this group (usually 1)."
         }
       },
       "required": [

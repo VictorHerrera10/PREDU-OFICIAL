@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
@@ -106,7 +106,7 @@ export function IndependentTutorsTable() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><UserCheck className="text-primary"/> Crear Nuevo Grupo de Tutor</DialogTitle>
             <DialogDescription>
-              Completa los detalles para crear un nuevo grupo. Se generará un código único para que el tutor y sus estudiantes se registren.
+              Completa los detalles para crear un nuevo grupo para un tutor que no pertenece a una institución. Se generará un código único y se asignarán límites por defecto.
             </DialogDescription>
           </DialogHeader>
            <div className="grid gap-4 py-4">

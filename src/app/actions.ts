@@ -299,7 +299,7 @@ export async function createInstitution(formData: FormData) {
 export async function updateInstitution(institutionId: string, formData: FormData) {
   const { firestore } = await getAuthenticatedAppForUser();
   
-  const data = {
+  const data: { [key: string]: any } = {
     name: formData.get('name') as string,
     address: formData.get('address') as string,
     contactEmail: formData.get('contactEmail') as string,
@@ -311,16 +311,20 @@ export async function updateInstitution(institutionId: string, formData: FormDat
     directorEmail: formData.get('directorEmail') as string,
     directorPhone: formData.get('directorPhone') as string,
     teachingModality: formData.get('teachingModality') as string,
-    logoUrl: formData.get('logoUrl') as string,
   };
 
-  const requiredFields: (keyof Omit<typeof data, 'directorPhone' | 'logoUrl'>)[] = [
+  // Only add logoUrl if it's present in the form data
+  const logoUrl = formData.get('logoUrl') as string | null;
+    if (logoUrl) {
+        data.logoUrl = logoUrl;
+    }
+
+  const requiredFields = [
     'name', 'address', 'contactEmail', 'region', 'level', 'studentLimit', 'tutorLimit',
     'directorName', 'directorEmail', 'teachingModality'
   ];
 
-  const missingFields = requiredFields.filter(field => data[field as keyof typeof data] === '' || data[field as keyof typeof data] === null || data[field as keyof typeof data] === undefined);
-
+  const missingFields = requiredFields.filter(field => data[field] === '' || data[field] === null || data[field] === undefined);
 
   if (missingFields.length > 0) {
     return { success: false, message: `Todos los campos son obligatorios. Faltan: ${missingFields.join(', ')}` };
@@ -332,7 +336,7 @@ export async function updateInstitution(institutionId: string, formData: FormDat
     await updateDoc(institutionRef, data);
     revalidatePath(`/admin/institutions/${institutionId}`);
     revalidatePath('/admin/institutions');
-    return { success: true, name: data.name };
+    return { success: true, name: data.name as string };
   } catch (error: any) {
     return { success: false, message: 'No se pudo actualizar la institución. ' + error.message };
   }
@@ -414,7 +418,6 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
       
       await updateDoc(userProfileRef, dataToUpdate);
 
-      revalidatePath('/student-dashboard');
       return { success: true };
   } catch (error: any) {
       console.error('Error updating student profile:', error);
@@ -478,6 +481,8 @@ export async function createIndependentTutorGroup(formData: FormData) {
   try {
     const docRef = await addDoc(collection(firestore, 'independentTutorGroups'), {
       ...data,
+      studentLimit: 5, // Default limit
+      tutorLimit: 1,  // Default limit
       createdAt: serverTimestamp(),
     });
     
@@ -616,6 +621,8 @@ export async function approveTutorRequest(requestId: string) {
             region: requestData.region,
             reasonForUse: requestData.reasonForUse,
             uniqueCode: generateUniqueCode(),
+            studentLimit: 5, // Default limit
+            tutorLimit: 1,   // Default limit
             createdAt: serverTimestamp(),
         };
         await addDoc(collection(firestore, 'independentTutorGroups'), groupData);
