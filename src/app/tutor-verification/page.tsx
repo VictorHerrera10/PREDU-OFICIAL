@@ -100,7 +100,7 @@ export default function TutorVerificationPage() {
             </CardHeader>
             
             <form action={formAction} className="space-y-6">
-                <input type="hidden" name="userId" value={user?.uid} />
+                <input type="hidden" name="userId" value={user?.uid || ''} />
                 <input type="hidden" name="uniqueCode" value={uniqueCode} />
                 
                 <div className="space-y-2">

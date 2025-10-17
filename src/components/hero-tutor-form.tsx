@@ -100,7 +100,7 @@ export function HeroTutorForm({ children }: { children: React.ReactNode }) {
                     </DialogHeader>
                     <ScrollArea className="h-96">
                         <div className="space-y-4 py-4 pr-6">
-                             <input type="hidden" name="userId" value={user?.uid} />
+                             <input type="hidden" name="userId" value={user?.uid || ''} />
                              <input type="hidden" name="username" value={user?.displayName || ''} />
                              <input type="hidden" name="email" value={user?.email || ''} />
                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

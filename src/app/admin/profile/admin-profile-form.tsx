@@ -127,7 +127,7 @@ export function AdminProfileForm({ user, profileData }: Props) {
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <input type="hidden" name="userId" value={user?.uid} />
+                        <input type="hidden" name="userId" value={user?.uid || ''} />
                         
                         <div className="space-y-2">
                             <Label htmlFor="username" className="flex items-center gap-2"><UserIcon className="w-4 h-4"/> Nombre de Usuario</Label>
