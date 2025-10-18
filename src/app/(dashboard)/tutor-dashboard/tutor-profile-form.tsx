@@ -96,7 +96,7 @@ export function TutorProfileForm({ user, profileData }: Props) {
                     <form action={formAction} className="space-y-6">
                         <input type="hidden" name="userId" value={user?.uid} />
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <Label htmlFor="firstName" className="flex items-center gap-2"><UserIcon className="w-4 h-4"/> Nombres</Label>
                                 <Input id="firstName" name="firstName" placeholder="Tus nombres" defaultValue={profileData?.firstName} required />
@@ -107,7 +107,7 @@ export function TutorProfileForm({ user, profileData }: Props) {
                             </div>
                         </div>
 
-                         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
+                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
                             <div className="space-y-2">
                                 <Label htmlFor="dni" className="flex items-center gap-2"><Hash className="w-4 h-4"/> DNI</Label>
                                 <Input id="dni" name="dni" type="text" placeholder="Tu número de DNI" defaultValue={profileData?.dni} required />
@@ -135,30 +135,30 @@ export function TutorProfileForm({ user, profileData }: Props) {
                             </div>
                         </div>
                         
-                        <div className="space-y-2">
-                           <Label htmlFor="email" className="flex items-center gap-2"><Mail className="w-4 h-4"/> Email (no editable)</Label>
-                           <Input id="email" name="email" type="email" value={user?.email || ''} readOnly disabled />
-                       </div>
-
-                       <div className="space-y-2">
-                            <Label htmlFor="workArea" className="flex items-center gap-2"><GraduationCap className="w-4 h-4"/> Área de Trabajo</Label>
-                             <Select name="workArea" defaultValue={profileData?.tutorDetails?.workArea} required>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Selecciona tu área de trabajo" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Municipalidad">Municipalidad</SelectItem>
-                                    <SelectItem value="Unidad de Gestion Educativa Local">Unidad de Gestión Educativa Local</SelectItem>
-                                    <SelectItem value="Dirección y Gestión Institucional">Dirección y Gestión Institucional</SelectItem>
-                                    <SelectItem value="Académica o Pedagógica">Académica o Pedagógica</SelectItem>
-                                    <SelectItem value="Psicopedagógica">Psicopedagógica</SelectItem>
-                                    <SelectItem value="Administrativa">Administrativa</SelectItem>
-                                </SelectContent>
-                            </Select>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="email" className="flex items-center gap-2"><Mail className="w-4 h-4"/> Email (no editable)</Label>
+                                <Input id="email" name="email" type="email" value={user?.email || ''} readOnly disabled />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="workArea" className="flex items-center gap-2"><GraduationCap className="w-4 h-4"/> Área de Trabajo</Label>
+                                <Select name="workArea" defaultValue={profileData?.tutorDetails?.workArea} required>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecciona tu área de trabajo" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Municipalidad">Municipalidad</SelectItem>
+                                        <SelectItem value="Unidad de Gestion Educativa Local">Unidad de Gestión Educativa Local</SelectItem>
+                                        <SelectItem value="Dirección y Gestión Institucional">Dirección y Gestión Institucional</SelectItem>
+                                        <SelectItem value="Académica o Pedagógica">Académica o Pedagógica</SelectItem>
+                                        <SelectItem value="Psicopedagógica">Psicopedagógica</SelectItem>
+                                        <SelectItem value="Administrativa">Administrativa</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
 
-
-                        <div className="md:col-span-2 text-center mt-4">
+                        <div className="md:col-span-2 text-center pt-4">
                             <SubmitButton className="w-full max-w-xs mx-auto">
                                 Guardar Perfil
                             </SubmitButton>
