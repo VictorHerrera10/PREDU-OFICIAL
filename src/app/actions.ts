@@ -18,6 +18,7 @@ import {
   getDocs,
   getDoc,
   limit,
+  orderBy,
 } from 'firebase/firestore';
 import { redirect } from 'next/navigation';
 import { initializeServerApp } from '@/firebase/server-init';
@@ -522,10 +523,10 @@ export async function deleteIndependentTutorGroup(groupId: string) {
   try {
     await deleteDoc(groupRef);
     revalidatePath('/admin/independent-tutors');
+    return { success: true };
   } catch (error: any) {
     return { success: false, message: 'No se pudo eliminar el grupo. ' + error.message };
   }
-  // No redirect here, the table will re-render.
 }
 
 export async function registerHeroTutor(prevState: State, formData: FormData): Promise<State> {
@@ -833,4 +834,23 @@ export async function createStudent(prevState: State, formData: FormData): Promi
   } catch (e: any) {
     return { message: getFirebaseErrorMessage(e.code) };
   }
+}
+
+export async function sendMessage(chatId: string, messageData: { text: string, senderId: string, receiverId: string }) {
+    const { firestore } = await getAuthenticatedAppForUser();
+    
+    const messagesColRef = collection(firestore, 'chats', chatId, 'messages');
+
+    try {
+        await addDoc(messagesColRef, {
+            ...messageData,
+            timestamp: serverTimestamp(),
+            isRead: false,
+        });
+        // No need to revalidate paths for a real-time chat, client will update via snapshots
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error sending message:", error);
+        return { success: false, message: "Could not send message. " + error.message };
+    }
 }

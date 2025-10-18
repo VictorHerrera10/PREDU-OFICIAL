@@ -1,12 +1,14 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useUser, useFirestore, useCollection, useDoc } from '@/firebase';
 import { collection, query, where, doc } from 'firebase/firestore';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Users, Mail } from 'lucide-react';
+import { Mail, MessageSquare } from 'lucide-react';
+import { ChatModal } from '@/components/chat/ChatModal';
+import { Button } from '@/components/ui/button';
+import { User as FirebaseUser } from 'firebase/auth';
 
 type UserProfile = {
   id: string;
@@ -19,6 +21,7 @@ type UserProfile = {
 export default function StudentsList() {
     const { user } = useUser();
     const firestore = useFirestore();
+    const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
 
     const userProfileRef = useMemo(() => {
         if (!user || !firestore) return null;
@@ -69,6 +72,9 @@ export default function StudentsList() {
                                 <p className="font-semibold">{student.username}</p>
                                 <p className="text-sm text-muted-foreground flex items-center gap-1.5"><Mail className="h-3 w-3" /> {student.email}</p>
                             </div>
+                            <Button variant="ghost" size="icon" onClick={() => setSelectedUser(student)}>
+                                <MessageSquare className="h-5 w-5 text-primary"/>
+                            </Button>
                         </div>
                     ))}
                 </div>
@@ -76,6 +82,14 @@ export default function StudentsList() {
                  <p className="text-muted-foreground text-center py-8">
                     Aún no hay estudiantes registrados en tu institución.
                 </p>
+            )}
+            {selectedUser && user && (
+                <ChatModal 
+                    currentUser={user as FirebaseUser}
+                    recipientUser={selectedUser}
+                    isOpen={!!selectedUser}
+                    onClose={() => setSelectedUser(null)}
+                />
             )}
         </>
     );

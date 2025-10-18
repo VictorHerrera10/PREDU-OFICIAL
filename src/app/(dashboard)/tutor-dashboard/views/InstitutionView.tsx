@@ -1,14 +1,16 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useUser, useFirestore, useDoc, useCollection } from '@/firebase';
 import { doc, collection, query, where } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Skeleton } from '@/components/ui/skeleton';
-import { Building, Users, Mail, MapPin, Briefcase, GraduationCap } from 'lucide-react';
+import { Building, Users, Mail, MapPin, Briefcase, GraduationCap, MessageSquare } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import StudentsList from './StudentsView'; // Import the new component
+import { ChatModal } from '@/components/chat/ChatModal';
+import { Button } from '@/components/ui/button';
 
 type Institution = {
   id: string;
@@ -33,6 +35,8 @@ type UserProfile = {
 
 function TutorsList({ institutionId }: { institutionId: string }) {
     const firestore = useFirestore();
+    const { user } = useUser();
+    const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
 
     const tutorsQuery = useMemo(() => {
         if (!firestore) return null;
@@ -59,26 +63,39 @@ function TutorsList({ institutionId }: { institutionId: string }) {
     }
 
     return (
-        <div className="space-y-3">
-            {tutors.map(tutor => (
-                <div key={tutor.id} className="flex items-center gap-4 p-3 border rounded-lg bg-background/50">
-                    <Avatar>
-                        <AvatarImage src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${tutor.username}`} />
-                        <AvatarFallback>{tutor.username.charAt(0).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-grow">
-                        <p className="font-semibold">{tutor.username}</p>
-                        <p className="text-sm text-muted-foreground flex items-center gap-1.5"><Mail className="h-3 w-3" /> {tutor.email}</p>
+        <>
+            <div className="space-y-3">
+                {tutors.filter(tutor => tutor.id !== user?.uid).map(tutor => (
+                    <div key={tutor.id} className="flex items-center gap-4 p-3 border rounded-lg bg-background/50">
+                        <Avatar>
+                            <AvatarImage src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${tutor.username}`} />
+                            <AvatarFallback>{tutor.username.charAt(0).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-grow">
+                            <p className="font-semibold">{tutor.username}</p>
+                            <p className="text-sm text-muted-foreground flex items-center gap-1.5"><Mail className="h-3 w-3" /> {tutor.email}</p>
+                        </div>
+                        {tutor.tutorDetails?.roleInInstitution && (
+                            <Badge variant="secondary" className="flex items-center gap-1.5">
+                                <Briefcase className="h-3 w-3"/>
+                                {tutor.tutorDetails.roleInInstitution}
+                            </Badge>
+                        )}
+                        <Button variant="ghost" size="icon" onClick={() => setSelectedUser(tutor)}>
+                            <MessageSquare className="h-5 w-5 text-primary"/>
+                        </Button>
                     </div>
-                    {tutor.tutorDetails?.roleInInstitution && (
-                         <Badge variant="secondary" className="flex items-center gap-1.5">
-                            <Briefcase className="h-3 w-3"/>
-                            {tutor.tutorDetails.roleInInstitution}
-                        </Badge>
-                    )}
-                </div>
-            ))}
-        </div>
+                ))}
+            </div>
+            {selectedUser && user && (
+                <ChatModal 
+                    currentUser={user}
+                    recipientUser={selectedUser}
+                    isOpen={!!selectedUser}
+                    onClose={() => setSelectedUser(null)}
+                />
+            )}
+        </>
     );
 }
 

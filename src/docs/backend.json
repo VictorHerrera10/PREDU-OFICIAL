@@ -237,6 +237,14 @@
         "reasonForUse": {
             "type": "string",
             "description": "The reason provided by the tutor for using the platform."
+        },
+        "studentLimit": {
+            "type": "number",
+            "description": "The maximum number of students that can be registered for this group."
+        },
+        "tutorLimit": {
+            "type": "number",
+            "description": "The maximum number of tutors that can be registered for this group (usually 1)."
         }
       },
       "required": [
@@ -377,6 +385,21 @@
             }
         },
         "required": ["userId", "grades", "prediction"]
+    },
+    "ChatMessage": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ChatMessage",
+      "type": "object",
+      "description": "Represents a single message in a chat.",
+      "properties": {
+        "id": { "type": "string" },
+        "text": { "type": "string" },
+        "senderId": { "type": "string" },
+        "receiverId": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "isRead": { "type": "boolean" }
+      },
+      "required": ["text", "senderId", "receiverId", "timestamp"]
     }
   },
   "auth": {
@@ -478,8 +501,28 @@
                 "description": "The unique identifier for the user, corresponding to their Firebase Auth UID."
             }]
         }
+      },
+      {
+        "path": "/chats/{chatId}/messages/{messageId}",
+        "definition": {
+          "entityName": "ChatMessage",
+          "schema": {
+            "$ref": "#/backend/entities/ChatMessage"
+          },
+          "description": "Stores messages for a specific chat. Access should be restricted to the participants of the chat.",
+          "params": [
+            {
+              "name": "chatId",
+              "description": "The unique identifier for the chat session, typically a combination of the two user IDs."
+            },
+            {
+              "name": "messageId",
+              "description": "The unique identifier for the message."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure secure user authentication and profile management for the Pixel Vault application. The core principle is Authorization Independence, achieved through denormalization where necessary, though in this simplified scenario, it primarily relies on path-based ownership. The structure supports straightforward security rules and efficient data retrieval.\n\n- User Profiles: User profiles are stored in `/users/{userId}` using path-based ownership. This provides simple security rules based on `request.auth.uid == userId`. This approach provides Authorization Independence since access control depends only on the path and the authenticated user's ID.\n- Institutions: A collection to manage educational institutions. Access control should be strict, likely limited to admin users for write operations.\n\nThis structure supports the required QAPs (Rules are not Filters) because list operations can be securely implemented at the `/users` collection group level based on user ID."
+    "reasoning": "The Firestore structure is designed to ensure secure user authentication and profile management for the Pixel Vault application. The core principle is Authorization Independence, achieved through denormalization where necessary, though in this simplified scenario, it primarily relies on path-based ownership. The structure supports straightforward security rules and efficient data retrieval.\n\n- User Profiles: User profiles are stored in `/users/{userId}` using path-based ownership. This provides simple security rules based on `request.auth.uid == userId`. This approach provides Authorization Independence since access control depends only on the path and the authenticated user's ID.\n- Institutions: A collection to manage educational institutions. Access control should be strict, likely limited to admin users for write operations.\n- Chats: A new collection to store chat messages between users. Each document in `/chats` represents a conversation, with a subcollection `messages` for the actual messages, allowing for real-time updates and queries scoped to a specific chat."
   }
 }
