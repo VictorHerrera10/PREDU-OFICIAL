@@ -5,7 +5,7 @@ import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Skeleton } from '@/components/ui/skeleton';
-import { Building, Users, Mail, Phone, MapPin } from 'lucide-react';
+import { Building, Users, Mail, MapPin } from 'lucide-react';
 
 type Institution = {
   id: string;

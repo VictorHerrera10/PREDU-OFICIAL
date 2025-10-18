@@ -15,8 +15,10 @@ import InstitutionView from './views/InstitutionView';
 import { InstitutionHeader } from './institution-header';
 import { GroupHeader } from './group-header';
 import GroupView from './views/GroupView';
+import StudentsView from './views/StudentsView';
 
-type View = 'inicio' | 'colegio' | 'grupo';
+
+type View = 'inicio' | 'colegio' | 'grupo' | 'estudiantes';
 
 type Option = {
   id: View;
@@ -58,7 +60,8 @@ export function TutorMainDashboard({ user }: Props) {
     }
     return [
       ...baseOptions,
-      { id: 'colegio', icon: School, title: 'Colegio', description: 'Información y estadísticas de tu institución.' },
+      { id: 'colegio', icon: School, title: 'Información del Colegio', description: 'Datos y estadísticas de tu institución.' },
+      { id: 'estudiantes', icon: Users, title: 'Estudiantes del Colegio', description: 'Lista y progreso de tus estudiantes.' },
     ];
   }, [isIndependentTutor]);
 
@@ -69,6 +72,8 @@ export function TutorMainDashboard({ user }: Props) {
         return <HomeView />;
       case 'colegio':
         return <InstitutionView />;
+       case 'estudiantes':
+        return <StudentsView />;
       case 'grupo':
         return <GroupView />;
       default:
@@ -116,7 +121,7 @@ export function TutorMainDashboard({ user }: Props) {
           <motion.div
             layout
             key="options-container"
-            className={`grid gap-8 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 ${selectedView ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-2'}`}
+            className={`grid gap-8 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 ${selectedView ? `grid-cols-${options.length}` : 'grid-cols-1 md:grid-cols-2'}`}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
             {options.map((option) => (
