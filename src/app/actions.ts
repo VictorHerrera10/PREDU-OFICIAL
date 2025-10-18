@@ -185,7 +185,7 @@ export async function registerTutor(prevState: any, formData: FormData) {
     }
 
     // 2. Check tutor limit
-    const tutorsQuery = query(collection(firestore, 'users'), where('institutionId', '==', institutionId));
+    const tutorsQuery = query(collection(firestore, 'users'), where('institutionId', '==', institutionId), where('role', '==', 'tutor'));
     const tutorsSnap = await getDocs(tutorsQuery);
     const currentTutorCount = tutorsSnap.size;
 
