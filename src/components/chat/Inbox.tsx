@@ -14,6 +14,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ChatModal } from './ChatModal';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import { markChatAsRead } from '@/app/actions';
 
 type UserProfile = {
     id: string;
@@ -28,6 +30,7 @@ type Chat = {
         text: string;
         senderId: string;
         timestamp: { seconds: number };
+        isRead: boolean;
     };
 };
 
@@ -43,7 +46,9 @@ function ConversationItem({ chat, currentUser, onClick }: { chat: Chat; currentU
     const { data: userProfile, isLoading } = useDoc<UserProfile>(userProfileRef);
 
     const getInitials = (name?: string) => name ? name.split(' ').map(n => n[0]).join('') : '?';
-    const isUnread = chat.lastMessage.senderId !== currentUser.uid; // Simple unread logic
+    
+    // An unread message is one where the last message was not sent by the current user and isRead is false
+    const isUnread = chat.lastMessage.senderId !== currentUser.uid && !chat.lastMessage.isRead;
 
     if (isLoading || !userProfile) {
         return (
@@ -67,7 +72,7 @@ function ConversationItem({ chat, currentUser, onClick }: { chat: Chat; currentU
                 {isUnread && <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-blue-500 ring-2 ring-background" />}
             </div>
             <div className="flex-grow overflow-hidden">
-                <p className="font-semibold truncate">{userProfile.username}</p>
+                <p className={cn("font-semibold truncate", isUnread && "text-primary")}>{userProfile.username}</p>
                 <p className="text-sm text-muted-foreground truncate">{chat.lastMessage.text}</p>
             </div>
             <div className="text-xs text-muted-foreground whitespace-nowrap">
@@ -88,8 +93,16 @@ export function Inbox({ user }: { user: User }) {
 
     const { data: chats, isLoading } = useCollection<Chat>(chatsQuery);
 
+    const unreadCount = useMemo(() => {
+        if (!chats) return 0;
+        return chats.filter(chat => chat.lastMessage.senderId !== user.uid && !chat.lastMessage.isRead).length;
+    }, [chats, user.uid]);
+
     const handleConversationClick = (recipient: UserProfile) => {
         setSelectedUser(recipient);
+        // Mark chat as read when opening it
+        const chatId = recipient.id < user.uid ? `chat_${recipient.id}_${user.uid}` : `chat_${user.uid}_${recipient.id}`;
+        markChatAsRead(chatId);
     };
     
     const handleCloseModal = () => {
@@ -107,6 +120,7 @@ export function Inbox({ user }: { user: User }) {
                                     initial={{ scale: 0, y: 50 }}
                                     animate={{ scale: 1, y: 0 }}
                                     transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.3 }}
+                                    className="relative"
                                 >
                                     <Button
                                         variant="secondary"
@@ -116,6 +130,17 @@ export function Inbox({ user }: { user: User }) {
                                         <MessagesSquare style={{ width: '32px', height: '32px' }} />
                                         <span className="sr-only">Bandeja de Entrada</span>
                                     </Button>
+                                    {unreadCount > 0 && (
+                                        <motion.div
+                                            initial={{ scale: 0, opacity: 0 }}
+                                            animate={{ scale: 1, opacity: 1 }}
+                                            className="absolute -top-1 -right-1"
+                                        >
+                                            <Badge variant="destructive" className="rounded-full h-6 w-6 flex items-center justify-center p-0 text-xs">
+                                                {unreadCount}
+                                            </Badge>
+                                        </motion.div>
+                                    )}
                                 </motion.div>
                             </SheetTrigger>
                         </TooltipTrigger>
