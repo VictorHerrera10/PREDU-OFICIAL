@@ -96,6 +96,13 @@ export function Inbox({ user }: { user: User }) {
 
     const { data: chats, isLoading } = useCollection<Chat>(chatsQuery);
 
+    const currentUserProfileRef = useMemo(() => {
+        if (!firestore || !user) return null;
+        return doc(firestore, 'users', user.uid);
+    }, [firestore, user]);
+
+    const { data: currentUserProfile } = useDoc<UserProfile>(currentUserProfileRef);
+
     const unreadCount = useMemo(() => {
         if (!chats) return 0;
         return chats.filter(chat => chat.lastMessage.senderId !== user.uid && !chat.lastMessage.isRead).length;
@@ -132,11 +139,15 @@ export function Inbox({ user }: { user: User }) {
                                         <MessagesSquare style={{ width: '32px', height: '32px' }} />
                                         <span className="sr-only">Bandeja de Entrada</span>
                                     </Button>
+                                    <span className={cn(
+                                        "absolute top-1 right-1 block h-3 w-3 rounded-full ring-2 ring-background",
+                                        currentUserProfile?.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
+                                    )} />
                                     {unreadCount > 0 && (
                                         <motion.div
                                             initial={{ scale: 0, opacity: 0 }}
                                             animate={{ scale: 1, opacity: 1 }}
-                                            className="absolute -top-1 -right-1"
+                                            className="absolute -top-1 left-0"
                                         >
                                             <Badge variant="destructive" className="rounded-full h-6 w-6 flex items-center justify-center p-0 text-xs">
                                                 {unreadCount}
@@ -191,5 +202,3 @@ export function Inbox({ user }: { user: User }) {
         </>
     );
 }
-
-    
