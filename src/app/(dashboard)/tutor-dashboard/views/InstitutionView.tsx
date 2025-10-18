@@ -1,11 +1,13 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useUser, useFirestore, useDoc } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useCollection } from '@/firebase';
+import { doc, collection, query, where } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Skeleton } from '@/components/ui/skeleton';
-import { Building, Users, Mail, MapPin } from 'lucide-react';
+import { Building, Users, Mail, MapPin, Briefcase } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 
 type Institution = {
   id: string;
@@ -19,8 +21,65 @@ type Institution = {
 };
 
 type UserProfile = {
+    id: string;
+    username: string;
+    email: string;
+    tutorDetails?: {
+        roleInInstitution: string;
+    };
     institutionId?: string;
 };
+
+function TutorsList({ institutionId }: { institutionId: string }) {
+    const firestore = useFirestore();
+
+    const tutorsQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(
+            collection(firestore, 'users'), 
+            where('institutionId', '==', institutionId),
+            where('role', '==', 'tutor')
+        );
+    }, [firestore, institutionId]);
+
+    const { data: tutors, isLoading } = useCollection<UserProfile>(tutorsQuery);
+
+    if (isLoading) {
+        return (
+            <div className="space-y-3">
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
+            </div>
+        );
+    }
+    
+    if (!tutors || tutors.length === 0) {
+        return <p className="text-sm text-muted-foreground text-center py-4">No hay tutores registrados para esta institución.</p>
+    }
+
+    return (
+        <div className="space-y-3">
+            {tutors.map(tutor => (
+                <div key={tutor.id} className="flex items-center gap-4 p-3 border rounded-lg bg-background/50">
+                    <Avatar>
+                        <AvatarImage src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${tutor.username}`} />
+                        <AvatarFallback>{tutor.username.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-grow">
+                        <p className="font-semibold">{tutor.username}</p>
+                        <p className="text-sm text-muted-foreground flex items-center gap-1.5"><Mail className="h-3 w-3" /> {tutor.email}</p>
+                    </div>
+                    {tutor.tutorDetails?.roleInInstitution && (
+                         <Badge variant="secondary" className="flex items-center gap-1.5">
+                            <Briefcase className="h-3 w-3"/>
+                            {tutor.tutorDetails.roleInInstitution}
+                        </Badge>
+                    )}
+                </div>
+            ))}
+        </div>
+    );
+}
 
 export default function InstitutionView() {
     const { user } = useUser();
@@ -75,31 +134,41 @@ export default function InstitutionView() {
     }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2"><Building className="text-primary"/> {institution.name}</CardTitle>
-        <CardDescription>
-          Información clave sobre tu institución educativa.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center gap-3">
-            <MapPin className="h-5 w-5 text-muted-foreground" />
-            <span className="text-foreground">{institution.address}</span>
-        </div>
-        <div className="flex items-center gap-3">
-            <Mail className="h-5 w-5 text-muted-foreground" />
-            <span className="text-foreground">{institution.contactEmail}</span>
-        </div>
-         <div className="flex items-center gap-3">
-            <Users className="h-5 w-5 text-muted-foreground" />
-            <span className="text-foreground">Director: {institution.directorName}</span>
-        </div>
-        <div className="flex items-center gap-3">
-            <Users className="h-5 w-5 text-muted-foreground" />
-            <span className="text-foreground">Límites: {institution.studentLimit} Estudiantes / {institution.tutorLimit} Tutores</span>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+        <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Building className="text-primary"/> {institution.name}</CardTitle>
+            <CardDescription>
+            Información clave sobre tu institución educativa.
+            </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+            <div className="flex items-center gap-3">
+                <MapPin className="h-5 w-5 text-muted-foreground" />
+                <span className="text-foreground">{institution.address}</span>
+            </div>
+            <div className="flex items-center gap-3">
+                <Mail className="h-5 w-5 text-muted-foreground" />
+                <span className="text-foreground">{institution.contactEmail}</span>
+            </div>
+            <div className="flex items-center gap-3">
+                <Users className="h-5 w-5 text-muted-foreground" />
+                <span className="text-foreground">Director: {institution.directorName}</span>
+            </div>
+        </CardContent>
+        </Card>
+
+         <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Users className="text-primary"/> Tutores</CardTitle>
+                <CardDescription>
+                    Colegas registrados en tu misma institución.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <TutorsList institutionId={institution.id} />
+            </CardContent>
+        </Card>
+    </div>
   );
 }

@@ -15,10 +15,8 @@ import InstitutionView from './views/InstitutionView';
 import { InstitutionHeader } from './institution-header';
 import { GroupHeader } from './group-header';
 import GroupView from './views/GroupView';
-import StudentsView from './views/StudentsView';
 
-
-type View = 'inicio' | 'colegio' | 'grupo' | 'estudiantes';
+type View = 'inicio' | 'colegio' | 'grupo';
 
 type Option = {
   id: View;
@@ -61,7 +59,6 @@ export function TutorMainDashboard({ user }: Props) {
     return [
       ...baseOptions,
       { id: 'colegio', icon: School, title: 'Información del Colegio', description: 'Datos y estadísticas de tu institución.' },
-      { id: 'estudiantes', icon: Users, title: 'Estudiantes del Colegio', description: 'Lista y progreso de tus estudiantes.' },
     ];
   }, [isIndependentTutor]);
 
@@ -72,8 +69,6 @@ export function TutorMainDashboard({ user }: Props) {
         return <HomeView />;
       case 'colegio':
         return <InstitutionView />;
-       case 'estudiantes':
-        return <StudentsView />;
       case 'grupo':
         return <GroupView />;
       default:
@@ -88,13 +83,16 @@ export function TutorMainDashboard({ user }: Props) {
             <Logo />
             <UserNav />
         </header>
+        <div className="bg-background/80 backdrop-blur-sm border-b">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+                {isIndependentTutor ? <GroupHeader /> : <InstitutionHeader />}
+            </div>
+        </div>
        </div>
        
-       <div className="pt-20 px-4">
-        {isIndependentTutor ? <GroupHeader /> : <InstitutionHeader />}
-       </div>
+       <div className="pt-32">
       
-      <main className="flex-grow pt-8">
+      <main className="flex-grow">
         <LayoutGroup>
           <AnimatePresence>
             {!selectedView && (
@@ -179,6 +177,7 @@ export function TutorMainDashboard({ user }: Props) {
             </AnimatePresence>
         </div>
       </main>
+       </div>
     </div>
   );
 }
