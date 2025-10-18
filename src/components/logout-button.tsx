@@ -8,10 +8,15 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import React from 'react';
+import { getDatabase, goOffline } from 'firebase/database';
 
 // This function can be exported and called from anywhere, making it more reusable.
 export const handleLogout = async (auth: any, router: any, toast: any) => {
   if (!auth) return;
+
+  const db = getDatabase(auth.app);
+  goOffline(db);
+
   try {
     await signOut(auth);
     setTimeout(() => {
