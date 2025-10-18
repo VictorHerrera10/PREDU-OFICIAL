@@ -9,6 +9,7 @@ import {
   DocumentReference,
   SetOptions,
 } from 'firebase/firestore';
+import { ref as dbRef, set, Database } from 'firebase/database';
 import { errorEmitter } from '@/firebase/error-emitter';
 import {FirestorePermissionError} from '@/firebase/errors';
 
@@ -16,13 +17,14 @@ import {FirestorePermissionError} from '@/firebase/errors';
  * Initiates a setDoc operation for a document reference.
  * Does NOT await the write operation internally.
  */
-export function setDocumentNonBlocking(docRef: DocumentReference, data: any, options: SetOptions) {
-  setDoc(docRef, data, options).catch(error => {
+export function setDocumentNonBlocking(docRef: DocumentReference, data: any, options?: SetOptions) {
+  const operation = options && 'merge' in options ? 'update' : 'create';
+  setDoc(docRef, data, options || {}).catch(error => {
     errorEmitter.emit(
       'permission-error',
       new FirestorePermissionError({
         path: docRef.path,
-        operation: 'write', // or 'create'/'update' based on options
+        operation: operation,
         requestResourceData: data,
       })
     )
@@ -85,5 +87,19 @@ export function deleteDocumentNonBlocking(docRef: DocumentReference) {
           operation: 'delete',
         })
       )
+    });
+}
+
+
+/**
+ * Initiates a set operation for a Realtime Database reference.
+ * Does NOT await the write operation internally.
+ */
+export function setRealtimeDatabaseNonBlocking(db: Database, path: string, data: any) {
+    const reference = dbRef(db, path);
+    set(reference, data).catch(error => {
+        // Realtime Database does not have the same error structure, so we log a simpler error.
+        // In a real app, you might want a different error handling strategy for RTDB.
+        console.error(`Realtime Database permission error at path: ${path}`, error);
     });
 }

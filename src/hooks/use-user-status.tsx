@@ -2,8 +2,9 @@
 
 import { useEffect } from 'react';
 import { useDatabase, useFirestore } from '@/firebase';
-import { ref as dbRef, onValue, goOnline, goOffline, onDisconnect, serverTimestamp, set } from 'firebase/database';
-import { doc, updateDoc } from 'firebase/firestore';
+import { ref as dbRef, onValue, goOffline, onDisconnect, serverTimestamp } from 'firebase/database';
+import { doc } from 'firebase/firestore';
+import { setRealtimeDatabaseNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 export function useUserStatus(userId?: string) {
     const db = useDatabase();
@@ -14,7 +15,7 @@ export function useUserStatus(userId?: string) {
             return;
         }
 
-        const userStatusDatabaseRef = dbRef(db, `/status/${userId}`);
+        const userStatusDatabasePath = `/status/${userId}`;
         const userStatusFirestoreRef = doc(firestore, `/users/${userId}`);
 
         const isOfflineForDatabase = {
@@ -40,24 +41,20 @@ export function useUserStatus(userId?: string) {
 
         const unsubscribe = onValue(connectedRef, (snapshot) => {
             if (snapshot.val() === false) {
-                // If not connected, update Firestore directly
-                 updateDoc(userStatusFirestoreRef, isOfflineForFirestore);
+                updateDocumentNonBlocking(userStatusFirestoreRef, isOfflineForFirestore);
                 return;
             }
             
-            // If we are connected
-            onDisconnect(userStatusDatabaseRef).set(isOfflineForDatabase).then(() => {
-                set(userStatusDatabaseRef, isOnlineForDatabase);
-                updateDoc(userStatusFirestoreRef, isOnlineForFirestore);
+            const con = dbRef(db, userStatusDatabasePath);
+            onDisconnect(con).set(isOfflineForDatabase).then(() => {
+                setRealtimeDatabaseNonBlocking(db, userStatusDatabasePath, isOnlineForDatabase);
+                updateDocumentNonBlocking(userStatusFirestoreRef, isOnlineForFirestore);
             });
         });
         
         return () => {
             unsubscribe();
-             // Go offline before component unmounts
             goOffline(db);
         };
     }, [userId, db, firestore]);
 }
-
-    
