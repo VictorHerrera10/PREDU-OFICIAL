@@ -3,19 +3,23 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { User } from 'firebase/auth';
 import { useCollection, useDoc, useFirestore } from '@/firebase';
-import { collection, query, orderBy, serverTimestamp, addDoc, doc } from 'firebase/firestore';
+import { collection, query, orderBy, doc } from 'firebase/firestore';
 import { sendMessage } from '@/app/actions';
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Send } from 'lucide-react';
+import { Loader2, Send, Smile, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { WindowControls } from '../window-controls';
+import { Logo } from '../logo';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+
 
 type RecipientUser = { 
     id: string, 
@@ -26,10 +30,9 @@ type RecipientUser = {
 };
 
 
-type ChatModalProps = {
+type ChatWindowProps = {
     currentUser: User;
     recipientUser: RecipientUser;
-    isOpen: boolean;
     onClose: () => void;
 };
 
@@ -44,7 +47,11 @@ const getChatId = (uid1: string, uid2: string) => {
     return uid1 < uid2 ? `chat_${uid1}_${uid2}` : `chat_${uid2}_${uid1}`;
 };
 
-export function ChatModal({ currentUser, recipientUser: initialRecipientUser, isOpen, onClose }: ChatModalProps) {
+
+const EMOJIS = ['👍', '😂', '❤️', '🙏', '🔥', '🚀', '🤔'];
+
+
+export function ChatWindow({ currentUser, recipientUser: initialRecipientUser, onClose }: ChatWindowProps) {
     const firestore = useFirestore();
     const [input, setInput] = useState('');
     const [isSending, setIsSending] = useState(false);
@@ -89,42 +96,49 @@ export function ChatModal({ currentUser, recipientUser: initialRecipientUser, is
         };
 
         setInput('');
-
         await sendMessage(chatId, messageData);
-        
         setIsSending(false);
     };
+
+    const handleEmojiClick = (emoji: string) => {
+        setInput(prev => prev + emoji);
+    };
+
 
     const getInitials = (name?: string | null) => {
         if (!name) return '?';
         return name.split(' ').map((n) => n[0]).slice(0, 2).join('');
     };
 
-    const lastSeenText = recipientUser?.status === 'offline' && recipientUser.lastSeen
-        ? `Últ. vez: ${formatDistanceToNow(new Date(recipientUser.lastSeen.seconds * 1000), { addSuffix: true, locale: es })}`
-        : 'En línea';
-
     return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-lg h-[70vh] flex flex-col p-0 gap-0">
-                <DialogHeader className="p-4 border-b flex-row items-center gap-4 space-y-0">
-                    <div className="relative">
-                        <Avatar>
+        <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="fixed bottom-4 right-24 z-50"
+        >
+            <Card className="w-[400px] h-[500px] flex flex-col bg-card/80 backdrop-blur-lg border-border/50 overflow-hidden shadow-2xl">
+                 <header className="relative flex items-center justify-center h-10 px-4 bg-muted/30 border-b border-border/50">
+                    <div className="flex items-center gap-2">
+                        <Avatar className="h-6 w-6">
                             <AvatarImage src={recipientUser?.profilePictureUrl} />
                             <AvatarFallback>{getInitials(recipientUser?.username)}</AvatarFallback>
                         </Avatar>
+                        <span className="text-sm font-bold text-foreground">{recipientUser?.username}</span>
                         <span className={cn(
-                            "absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-background",
-                            recipientUser?.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
+                            "h-2 w-2 rounded-full",
+                            recipientUser?.status === 'online' ? 'bg-green-500' : 'bg-gray-500'
                         )} />
                     </div>
-                    <div>
-                        <DialogTitle>{recipientUser?.username}</DialogTitle>
-                         <DialogDescription className="text-xs">
-                             {lastSeenText}
-                        </DialogDescription>
+                    <div className="absolute right-4 flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-secondary/50" />
+                        <div className="w-3 h-3 rounded-full bg-secondary/50" />
+                        <button onClick={onClose} className="w-3 h-3 rounded-full bg-destructive/50 hover:bg-destructive/80 transition-colors flex items-center justify-center">
+                            <X className="h-2 w-2 text-destructive-foreground/70" />
+                        </button>
                     </div>
-                </DialogHeader>
+                </header>
 
                 <div className="flex-grow overflow-hidden p-4">
                     <ScrollArea className="h-full pr-4" viewportRef={scrollAreaRef}>
@@ -141,19 +155,26 @@ export function ChatModal({ currentUser, recipientUser: initialRecipientUser, is
                                         <motion.div
                                             key={message.id}
                                             layout
-                                            initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            initial={{ opacity: 0, y: 10, x: isCurrentUser ? 20 : -20 }}
+                                            animate={{ opacity: 1, y: 0, x: 0 }}
+                                            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                                             className={cn('flex items-end gap-2', isCurrentUser && 'justify-end')}
                                         >
                                             <div className={cn(
-                                                "relative max-w-xs md:max-w-sm px-4 py-2 text-sm rounded-lg shadow-md",
+                                                "relative max-w-xs md:max-w-sm px-3 py-2 text-sm rounded-lg shadow-md",
                                                 isCurrentUser 
-                                                    ? "bg-primary text-primary-foreground rounded-br-none" 
-                                                    : "bg-secondary text-secondary-foreground rounded-bl-none"
-                                            )}>
+                                                    ? "bg-primary text-primary-foreground" 
+                                                    : "bg-secondary text-secondary-foreground"
+                                            )}
+                                            style={{
+                                                clipPath: isCurrentUser
+                                                    ? 'polygon(0% 0%, 100% 0%, 100% 100%, 15% 100%, 0 85%)'
+                                                    : 'polygon(0% 0%, 100% 0%, 100% 85%, 85% 100%, 0 100%)',
+                                            }}
+                                            >
                                                 <p>{message.text}</p>
-                                                 {message.timestamp && (
-                                                    <p className={cn("text-xs mt-1", isCurrentUser ? "text-primary-foreground/70" : "text-secondary-foreground/70")}>
+                                                {message.timestamp && (
+                                                    <p className={cn("text-xs mt-1 text-right", isCurrentUser ? "text-primary-foreground/70" : "text-secondary-foreground/70")}>
                                                         {format(new Date(message.timestamp.seconds * 1000), 'p', { locale: es })}
                                                     </p>
                                                 )}
@@ -166,23 +187,44 @@ export function ChatModal({ currentUser, recipientUser: initialRecipientUser, is
                     </ScrollArea>
                 </div>
 
-                <DialogFooter className="p-4 border-t">
+                <CardFooter className="p-2 border-t">
                     <form onSubmit={handleSendMessage} className="flex w-full items-center space-x-2">
+                         <Popover>
+                            <PopoverTrigger asChild>
+                                <Button type="button" variant="ghost" size="icon" className="flex-shrink-0">
+                                    <Smile className="h-5 w-5" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-2">
+                                <div className="grid grid-cols-4 gap-2">
+                                    {EMOJIS.map(emoji => (
+                                        <Button
+                                            key={emoji}
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => handleEmojiClick(emoji)}
+                                            className="text-xl"
+                                        >
+                                            {emoji}
+                                        </Button>
+                                    ))}
+                                </div>
+                            </PopoverContent>
+                        </Popover>
                         <Input
                             placeholder="Escribe un mensaje..."
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             disabled={isSending}
                             autoComplete="off"
+                            className="bg-background/50"
                         />
-                        <Button type="submit" size="icon" disabled={!input.trim() || isSending}>
+                        <Button type="submit" size="icon" disabled={!input.trim() || isSending} className="flex-shrink-0">
                             {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                         </Button>
                     </form>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                </CardFooter>
+            </Card>
+        </motion.div>
     );
 }
-
-    

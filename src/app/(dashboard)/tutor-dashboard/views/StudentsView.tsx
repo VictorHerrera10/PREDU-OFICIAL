@@ -6,7 +6,7 @@ import { collection, query, where, doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Mail, MessageSquare } from 'lucide-react';
-import { ChatModal } from '@/components/chat/ChatModal';
+import { ChatWindow } from '@/components/chat/ChatModal';
 import { Button } from '@/components/ui/button';
 import { User as FirebaseUser } from 'firebase/auth';
 
@@ -84,10 +84,9 @@ export default function StudentsList() {
                 </p>
             )}
             {selectedUser && user && (
-                <ChatModal 
+                <ChatWindow 
                     currentUser={user as FirebaseUser}
                     recipientUser={selectedUser}
-                    isOpen={!!selectedUser}
                     onClose={() => setSelectedUser(null)}
                 />
             )}

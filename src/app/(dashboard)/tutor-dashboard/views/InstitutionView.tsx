@@ -9,8 +9,10 @@ import { Building, Users, Mail, MapPin, Briefcase, GraduationCap, MessageSquare 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import StudentsList from './StudentsView'; // Import the new component
-import { ChatModal } from '@/components/chat/ChatModal';
+import { ChatWindow } from '@/components/chat/ChatModal';
 import { Button } from '@/components/ui/button';
+import { User as FirebaseUser } from 'firebase/auth';
+
 
 type Institution = {
   id: string;
@@ -88,10 +90,9 @@ function TutorsList({ institutionId }: { institutionId: string }) {
                 ))}
             </div>
             {selectedUser && user && (
-                <ChatModal 
-                    currentUser={user}
+                <ChatWindow 
+                    currentUser={user as FirebaseUser}
                     recipientUser={selectedUser}
-                    isOpen={!!selectedUser}
                     onClose={() => setSelectedUser(null)}
                 />
             )}

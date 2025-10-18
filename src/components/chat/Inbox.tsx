@@ -12,7 +12,7 @@ import { MessagesSquare, Loader2, Inbox as InboxIcon } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ChatModal } from './ChatModal';
+import { ChatWindow } from './ChatModal';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { markChatAsRead } from '@/app/actions';
@@ -88,6 +88,7 @@ function ConversationItem({ chat, currentUser, onClick }: { chat: Chat; currentU
 export function Inbox({ user }: { user: User }) {
     const firestore = useFirestore();
     const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+    const [isInboxOpen, setIsInboxOpen] = useState(false);
 
     const chatsQuery = useMemo(() => {
         if (!firestore || !user) return null;
@@ -110,17 +111,18 @@ export function Inbox({ user }: { user: User }) {
 
     const handleConversationClick = (recipient: UserProfile) => {
         setSelectedUser(recipient);
+        setIsInboxOpen(false); // Close inbox when a chat is opened
         const chatId = recipient.id < user.uid ? `chat_${recipient.id}_${user.uid}` : `chat_${user.uid}_${recipient.id}`;
         markChatAsRead(chatId);
     };
     
-    const handleCloseModal = () => {
+    const handleCloseChat = () => {
         setSelectedUser(null);
     };
 
     return (
         <>
-            <Sheet>
+            <Sheet open={isInboxOpen} onOpenChange={setIsInboxOpen}>
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -192,11 +194,10 @@ export function Inbox({ user }: { user: User }) {
             </Sheet>
 
             {selectedUser && (
-                <ChatModal
+                <ChatWindow
                     currentUser={user}
                     recipientUser={selectedUser}
-                    isOpen={!!selectedUser}
-                    onClose={handleCloseModal}
+                    onClose={handleCloseChat}
                 />
             )}
         </>
