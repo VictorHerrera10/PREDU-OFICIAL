@@ -16,7 +16,7 @@ type UserProfile = {
   institutionId?: string;
 };
 
-export default function StudentsView() {
+export default function StudentsList() {
     const { user } = useUser();
     const firestore = useFirestore();
 
@@ -25,10 +25,8 @@ export default function StudentsView() {
         return doc(firestore, 'users', user.uid);
     }, [user, firestore]);
     
-    // We need the tutor's profile to find their institutionId
     const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
-    // Now query for students in that institution
     const studentsQuery = useMemo(() => {
         if (!userProfile?.institutionId || !firestore) return null;
         return query(
@@ -49,50 +47,36 @@ export default function StudentsView() {
 
     if (isLoading) {
         return (
-            <Card>
-                <CardHeader>
-                    <Skeleton className="h-8 w-2/3" />
-                    <Skeleton className="h-5 w-1/3" />
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <Skeleton className="h-16 w-full" />
-                    <Skeleton className="h-16 w-full" />
-                    <Skeleton className="h-16 w-full" />
-                </CardContent>
-            </Card>
+            <div className="space-y-4">
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
+            </div>
         );
     }
     
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Users className="text-primary" /> Estudiantes</CardTitle>
-                <CardDescription>
-                    Lista de estudiantes registrados en tu institución.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                {students && students.length > 0 ? (
-                    <div className="space-y-3">
-                        {students.map(student => (
-                            <div key={student.id} className="flex items-center gap-4 p-3 border rounded-lg bg-background/50">
-                                <Avatar>
-                                    <AvatarImage src={student.profilePictureUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${student.username}`} />
-                                    <AvatarFallback>{getInitials(student.username)}</AvatarFallback>
-                                </Avatar>
-                                <div className="flex-grow">
-                                    <p className="font-semibold">{student.username}</p>
-                                    <p className="text-sm text-muted-foreground flex items-center gap-1.5"><Mail className="h-3 w-3" /> {student.email}</p>
-                                </div>
+        <>
+            {students && students.length > 0 ? (
+                <div className="space-y-3">
+                    {students.map(student => (
+                        <div key={student.id} className="flex items-center gap-4 p-3 border rounded-lg bg-background/50">
+                            <Avatar>
+                                <AvatarImage src={student.profilePictureUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${student.username}`} />
+                                <AvatarFallback>{getInitials(student.username)}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-grow">
+                                <p className="font-semibold">{student.username}</p>
+                                <p className="text-sm text-muted-foreground flex items-center gap-1.5"><Mail className="h-3 w-3" /> {student.email}</p>
                             </div>
-                        ))}
-                    </div>
-                ) : (
-                     <p className="text-muted-foreground text-center py-8">
-                        Aún no hay estudiantes registrados en tu institución.
-                    </p>
-                )}
-            </CardContent>
-        </Card>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                 <p className="text-muted-foreground text-center py-8">
+                    Aún no hay estudiantes registrados en tu institución.
+                </p>
+            )}
+        </>
     );
 }

@@ -119,7 +119,7 @@ export function TutorMainDashboard({ user }: Props) {
           <motion.div
             layout
             key="options-container"
-            className={`grid gap-8 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 ${selectedView ? `grid-cols-${options.length}` : 'grid-cols-1 md:grid-cols-2'}`}
+            className={`grid gap-8 w-full max-w-4xl mx-auto px-4 sm:px-6 md:px-8 ${selectedView ? `grid-cols-${options.length}` : 'grid-cols-1 md:grid-cols-2'}`}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
             {options.map((option) => (

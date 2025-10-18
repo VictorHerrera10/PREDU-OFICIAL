@@ -5,9 +5,10 @@ import { useUser, useFirestore, useDoc, useCollection } from '@/firebase';
 import { doc, collection, query, where } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Skeleton } from '@/components/ui/skeleton';
-import { Building, Users, Mail, MapPin, Briefcase } from 'lucide-react';
+import { Building, Users, Mail, MapPin, Briefcase, GraduationCap } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import StudentsList from './StudentsView'; // Import the new component
 
 type Institution = {
   id: string;
@@ -101,17 +102,38 @@ export default function InstitutionView() {
 
     if (isProfileLoading || isInstitutionLoading) {
         return (
-            <Card>
-                <CardHeader>
-                    <Skeleton className="h-8 w-2/3" />
-                    <Skeleton className="h-5 w-1/3" />
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <Skeleton className="h-6 w-full" />
-                    <Skeleton className="h-6 w-3/4" />
-                    <Skeleton className="h-6 w-full" />
-                </CardContent>
-            </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                    <CardHeader>
+                        <Skeleton className="h-8 w-2/3" />
+                        <Skeleton className="h-5 w-1/3" />
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <Skeleton className="h-6 w-full" />
+                        <Skeleton className="h-6 w-3/4" />
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <Skeleton className="h-8 w-1/2" />
+                        <Skeleton className="h-5 w-1/4" />
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <Skeleton className="h-16 w-full" />
+                        <Skeleton className="h-16 w-full" />
+                    </CardContent>
+                </Card>
+                 <Card className="lg:col-span-2">
+                    <CardHeader>
+                        <Skeleton className="h-8 w-1/2" />
+                        <Skeleton className="h-5 w-1/4" />
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <Skeleton className="h-16 w-full" />
+                        <Skeleton className="h-16 w-full" />
+                    </CardContent>
+                </Card>
+            </div>
         )
     }
 
@@ -134,28 +156,28 @@ export default function InstitutionView() {
     }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-        <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Building className="text-primary"/> {institution.name}</CardTitle>
-            <CardDescription>
-            Información clave sobre tu institución educativa.
-            </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-            <div className="flex items-center gap-3">
-                <MapPin className="h-5 w-5 text-muted-foreground" />
-                <span className="text-foreground">{institution.address}</span>
-            </div>
-            <div className="flex items-center gap-3">
-                <Mail className="h-5 w-5 text-muted-foreground" />
-                <span className="text-foreground">{institution.contactEmail}</span>
-            </div>
-            <div className="flex items-center gap-3">
-                <Users className="h-5 w-5 text-muted-foreground" />
-                <span className="text-foreground">Director: {institution.directorName}</span>
-            </div>
-        </CardContent>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="lg:col-span-2">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Building className="text-primary"/> {institution.name}</CardTitle>
+                <CardDescription>
+                Información clave sobre tu institución educativa.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-center gap-3">
+                    <MapPin className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-foreground">{institution.address}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                    <Mail className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-foreground">{institution.contactEmail}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                    <Users className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-foreground">Director: {institution.directorName}</span>
+                </div>
+            </CardContent>
         </Card>
 
          <Card>
@@ -167,6 +189,18 @@ export default function InstitutionView() {
             </CardHeader>
             <CardContent>
                 <TutorsList institutionId={institution.id} />
+            </CardContent>
+        </Card>
+        
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><GraduationCap className="text-primary"/> Estudiantes</CardTitle>
+                <CardDescription>
+                    Estudiantes registrados en la institución.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <StudentsList />
             </CardContent>
         </Card>
     </div>
