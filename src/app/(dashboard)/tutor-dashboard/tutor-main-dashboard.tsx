@@ -179,7 +179,9 @@ export function TutorMainDashboard({ user }: Props) {
         </div>
       </main>
        </div>
-       {user && <Inbox user={user} />}
+       <div className="fixed bottom-24 right-6 z-30 flex flex-col gap-4">
+        {user && <Inbox user={user} />}
+       </div>
     </div>
   );
 }
