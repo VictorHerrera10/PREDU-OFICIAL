@@ -4,11 +4,12 @@ import { useState, useMemo } from 'react';
 import { Logo } from '@/components/logo';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { UserNav } from '@/components/user-nav';
-import { Home, School, Users } from 'lucide-react';
+import { Home, School, Users, MessagesSquare } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
+import { Inbox } from '@/components/chat/Inbox';
 
 import HomeView from './views/HomeView';
 import InstitutionView from './views/InstitutionView';
@@ -178,6 +179,7 @@ export function TutorMainDashboard({ user }: Props) {
         </div>
       </main>
        </div>
+       {user && <Inbox user={user} />}
     </div>
   );
 }

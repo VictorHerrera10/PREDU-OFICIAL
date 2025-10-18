@@ -6,7 +6,7 @@ import { doc } from 'firebase/firestore';
 import { Logo } from '@/components/logo';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { UserNav } from '@/components/user-nav';
-import { BrainCircuit, Compass, Home, Award, BookOpen, Building, Route } from 'lucide-react';
+import { BrainCircuit, Compass, Home, Award, BookOpen, Building, Route, MessagesSquare } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import HomeView from './views/HomeView';
@@ -22,6 +22,7 @@ import ScholarshipInfoView from './views/ScholarshipInfoView';
 import { Button } from '@/components/ui/button';
 import RuiView from './views/RUI/RuiView';
 import { InstitutionHeader } from './institution-header';
+import { Inbox } from '@/components/chat/Inbox';
 
 type View = 'inicio' | 'prediccionAcademica' | 'prediccionPsicologica' | 'infoCarreras' | 'infoUniversidades' | 'infoBecas' | 'rui';
 
@@ -262,7 +263,11 @@ export function StudentMainDashboard({ user }: Props) {
       </main>
 
       {!userProfile?.isHero && !isInstitutional && <LevelUpView isViewSelected={!!selectedView} />}
-      <HeroChatButton />
+      
+      <div className="fixed bottom-24 right-6 z-30 flex flex-col gap-4">
+        {userProfile?.isHero && <HeroChatButton />}
+        {user && <Inbox user={user} />}
+      </div>
     </div>
   );
 }

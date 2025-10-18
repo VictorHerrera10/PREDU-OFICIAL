@@ -386,6 +386,33 @@
         },
         "required": ["userId", "grades", "prediction"]
     },
+    "Chat": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Chat",
+        "type": "object",
+        "description": "Represents a chat conversation between users.",
+        "properties": {
+          "id": { "type": "string", "description": "The unique identifier for the chat session, typically a combination of the two user IDs." },
+          "participants": {
+            "type": "array",
+            "description": "An array containing the UIDs of the two chat participants.",
+            "items": { "type": "string" },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "lastMessage": {
+            "type": "object",
+            "description": "A summary of the last message sent in the chat.",
+            "properties": {
+              "text": { "type": "string" },
+              "senderId": { "type": "string" },
+              "timestamp": { "type": "string", "format": "date-time" },
+              "isRead": { "type": "boolean" }
+            }
+          }
+        },
+        "required": ["participants"]
+    },
     "ChatMessage": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "ChatMessage",
@@ -500,6 +527,14 @@
                 "name": "userId",
                 "description": "The unique identifier for the user, corresponding to their Firebase Auth UID."
             }]
+        }
+      },
+      {
+        "path": "/chats/{chatId}",
+        "definition": {
+          "entityName": "Chat",
+          "schema": { "$ref": "#/backend/entities/Chat" },
+          "description": "Represents a chat conversation. The document ID is a composite of the two participant UIDs."
         }
       },
       {

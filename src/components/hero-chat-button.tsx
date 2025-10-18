@@ -150,7 +150,7 @@ export function HeroChatButton() {
                 <Button
                   variant="destructive"
                   size="icon"
-                  className="fixed bottom-24 right-6 z-30 h-16 w-16 rounded-full shadow-lg flex items-center justify-center animate-[pulse-glow_4s_ease-in-out_infinite]"
+                  className="h-16 w-16 rounded-full shadow-lg flex items-center justify-center animate-[pulse-glow_4s_ease-in-out_infinite]"
                 >
                   <Bot style={{ width: '40px', height: '40px' }} />
                   <span className="sr-only">Asistente IA</span>

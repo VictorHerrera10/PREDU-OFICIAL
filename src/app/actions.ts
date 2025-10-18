@@ -840,13 +840,30 @@ export async function sendMessage(chatId: string, messageData: { text: string, s
     const { firestore } = await getAuthenticatedAppForUser();
     
     const messagesColRef = collection(firestore, 'chats', chatId, 'messages');
+    const chatDocRef = doc(firestore, 'chats', chatId);
 
     try {
+        // Atomically add the new message and update the lastMessage field.
+        // For simplicity, we'll do this as two separate operations, but in a production app,
+        // you might use a transaction or a Cloud Function.
+        
         await addDoc(messagesColRef, {
             ...messageData,
             timestamp: serverTimestamp(),
             isRead: false,
         });
+
+        // Update the last message on the parent chat document
+        await setDoc(chatDocRef, {
+            participants: [messageData.senderId, messageData.receiverId],
+            lastMessage: {
+                text: messageData.text,
+                senderId: messageData.senderId,
+                timestamp: serverTimestamp(),
+            }
+        }, { merge: true });
+
+
         // No need to revalidate paths for a real-time chat, client will update via snapshots
         return { success: true };
     } catch (error: any) {
