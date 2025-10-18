@@ -5,9 +5,11 @@ import { FirebaseApp } from 'firebase/app';
 import { Firestore } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged } from 'firebase/auth';
 import { Functions } from 'firebase/functions';
-import { Storage } from 'firebase/storage';
-import { initializeFirebase } from '@/firebase'; // Import the initialization function
+import { FirebaseStorage } from 'firebase/storage';
+import { getDatabase, Database } from 'firebase/database';
+import { initializeFirebase } from '@/firebase';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+import { useUserStatus } from '@/hooks/use-user-status';
 
 // Combined state for the Firebase context
 export interface FirebaseContextState {
@@ -15,7 +17,8 @@ export interface FirebaseContextState {
   firestore: Firestore;
   auth: Auth;
   functions: Functions;
-  storage: Storage;
+  storage: FirebaseStorage;
+  rtdb: Database;
   user: User | null;
   isUserLoading: boolean;
 }
@@ -29,19 +32,24 @@ export interface UserHookResult {
 // React Context
 export const FirebaseContext = createContext<FirebaseContextState | undefined>(undefined);
 
-/**
- * FirebaseProvider now handles initialization internally, ensuring it runs only on the client.
- */
+const FirebaseProviderInternal: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { user } = useFirebase();
+  useUserStatus(user?.uid);
+  return <>{children}</>;
+};
+
 export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  // Memoize Firebase services to prevent re-initialization on re-renders
-  const firebaseServices = useMemo(() => initializeFirebase(), []);
+  const firebaseServices = useMemo(() => {
+    const services = initializeFirebase();
+    const rtdb = getDatabase(services.firebaseApp);
+    return { ...services, rtdb };
+  }, []);
 
   const [user, setUser] = useState<User | null>(null);
   const [isUserLoading, setIsUserLoading] = useState(true);
 
-  // Effect to subscribe to Firebase auth state changes
   useEffect(() => {
     if (firebaseServices.auth) {
       const unsubscribe = onAuthStateChanged(
@@ -56,11 +64,10 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({
           setIsUserLoading(false);
         }
       );
-      return () => unsubscribe(); // Cleanup subscription
+      return () => unsubscribe();
     }
   }, [firebaseServices.auth]);
 
-  // Memoize the full context value
   const contextValue = useMemo((): FirebaseContextState => {
     return {
       ...firebaseServices,
@@ -72,14 +79,13 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({
   return (
     <FirebaseContext.Provider value={contextValue}>
       <FirebaseErrorListener />
-      {children}
+      <FirebaseProviderInternal>{children}</FirebaseProviderInternal>
     </FirebaseContext.Provider>
   );
 };
 
 // --- Hooks ---
 
-/** Hook to access the full Firebase context state. */
 function useFirebase(): FirebaseContextState {
   const context = useContext(FirebaseContext);
   if (context === undefined) {
@@ -88,23 +94,15 @@ function useFirebase(): FirebaseContextState {
   return context;
 }
 
-/** Hook to access Firebase Auth instance. */
 export const useAuth = (): Auth => useFirebase().auth;
-
-/** Hook to access Firestore instance. */
 export const useFirestore = (): Firestore => useFirebase().firestore;
-
-/** Hook to access Firebase Functions instance. */
 export const useFunctions = (): Functions => useFirebase().functions;
-
-/** Hook to access Firebase Storage instance. */
-export const useStorage = (): Storage => useFirebase().storage;
-
-/** Hook to access Firebase App instance. */
+export const useStorage = (): FirebaseStorage => useFirebase().storage;
+export const useDatabase = (): Database => useFirebase().rtdb;
 export const useFirebaseApp = (): FirebaseApp => useFirebase().firebaseApp;
-
-/** Hook specifically for accessing the authenticated user's state. */
 export const useUser = (): UserHookResult => {
   const { user, isUserLoading } = useFirebase();
   return { user, isUserLoading };
 };
+
+    

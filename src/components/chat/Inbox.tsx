@@ -21,6 +21,7 @@ type UserProfile = {
     id: string;
     username: string;
     profilePictureUrl?: string;
+    status?: 'online' | 'offline';
 };
 
 type Chat = {
@@ -47,7 +48,6 @@ function ConversationItem({ chat, currentUser, onClick }: { chat: Chat; currentU
 
     const getInitials = (name?: string) => name ? name.split(' ').map(n => n[0]).join('') : '?';
     
-    // An unread message is one where the last message was not sent by the current user and isRead is false
     const isUnread = chat.lastMessage.senderId !== currentUser.uid && !chat.lastMessage.isRead;
 
     if (isLoading || !userProfile) {
@@ -69,7 +69,10 @@ function ConversationItem({ chat, currentUser, onClick }: { chat: Chat; currentU
                     <AvatarImage src={userProfile.profilePictureUrl} />
                     <AvatarFallback>{getInitials(userProfile.username)}</AvatarFallback>
                 </Avatar>
-                {isUnread && <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-blue-500 ring-2 ring-background" />}
+                <span className={cn(
+                    "absolute bottom-0 right-0 block h-3 w-3 rounded-full ring-2 ring-background",
+                    userProfile.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
+                )} />
             </div>
             <div className="flex-grow overflow-hidden">
                 <p className={cn("font-semibold truncate", isUnread && "text-primary")}>{userProfile.username}</p>
@@ -100,7 +103,6 @@ export function Inbox({ user }: { user: User }) {
 
     const handleConversationClick = (recipient: UserProfile) => {
         setSelectedUser(recipient);
-        // Mark chat as read when opening it
         const chatId = recipient.id < user.uid ? `chat_${recipient.id}_${user.uid}` : `chat_${user.uid}_${recipient.id}`;
         markChatAsRead(chatId);
     };
@@ -189,3 +191,5 @@ export function Inbox({ user }: { user: User }) {
         </>
     );
 }
+
+    

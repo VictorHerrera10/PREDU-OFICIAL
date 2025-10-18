@@ -2,8 +2,8 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { User } from 'firebase/auth';
-import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, orderBy, serverTimestamp, addDoc } from 'firebase/firestore';
+import { useCollection, useDoc, useFirestore } from '@/firebase';
+import { collection, query, orderBy, serverTimestamp, addDoc, doc } from 'firebase/firestore';
 import { sendMessage } from '@/app/actions';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -13,13 +13,22 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
+type RecipientUser = { 
+    id: string, 
+    username: string, 
+    profilePictureUrl?: string,
+    status?: 'online' | 'offline';
+    lastSeen?: { seconds: number };
+};
+
+
 type ChatModalProps = {
     currentUser: User;
-    recipientUser: { id: string, username: string, profilePictureUrl?: string };
+    recipientUser: RecipientUser;
     isOpen: boolean;
     onClose: () => void;
 };
@@ -35,13 +44,21 @@ const getChatId = (uid1: string, uid2: string) => {
     return uid1 < uid2 ? `chat_${uid1}_${uid2}` : `chat_${uid2}_${uid1}`;
 };
 
-export function ChatModal({ currentUser, recipientUser, isOpen, onClose }: ChatModalProps) {
+export function ChatModal({ currentUser, recipientUser: initialRecipientUser, isOpen, onClose }: ChatModalProps) {
     const firestore = useFirestore();
     const [input, setInput] = useState('');
     const [isSending, setIsSending] = useState(false);
     const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-    const chatId = useMemo(() => getChatId(currentUser.uid, recipientUser.id), [currentUser.uid, recipientUser.id]);
+    const recipientProfileRef = useMemo(() => {
+        if (!firestore || !initialRecipientUser) return null;
+        return doc(firestore, 'users', initialRecipientUser.id);
+    }, [firestore, initialRecipientUser]);
+
+    const { data: recipientUser } = useDoc<RecipientUser>(recipientProfileRef);
+
+
+    const chatId = useMemo(() => getChatId(currentUser.uid, initialRecipientUser.id), [currentUser.uid, initialRecipientUser.id]);
 
     const messagesQuery = useMemo(() => {
         if (!firestore || !chatId) return null;
@@ -68,7 +85,7 @@ export function ChatModal({ currentUser, recipientUser, isOpen, onClose }: ChatM
         const messageData = {
             text: input,
             senderId: currentUser.uid,
-            receiverId: recipientUser.id,
+            receiverId: initialRecipientUser.id,
         };
 
         setInput('');
@@ -83,17 +100,29 @@ export function ChatModal({ currentUser, recipientUser, isOpen, onClose }: ChatM
         return name.split(' ').map((n) => n[0]).slice(0, 2).join('');
     };
 
+    const lastSeenText = recipientUser?.status === 'offline' && recipientUser.lastSeen
+        ? `Últ. vez: ${formatDistanceToNow(new Date(recipientUser.lastSeen.seconds * 1000), { addSuffix: true, locale: es })}`
+        : 'En línea';
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-lg h-[70vh] flex flex-col p-0 gap-0">
                 <DialogHeader className="p-4 border-b flex-row items-center gap-4 space-y-0">
-                    <Avatar>
-                        <AvatarImage src={recipientUser.profilePictureUrl} />
-                        <AvatarFallback>{getInitials(recipientUser.username)}</AvatarFallback>
-                    </Avatar>
+                    <div className="relative">
+                        <Avatar>
+                            <AvatarImage src={recipientUser?.profilePictureUrl} />
+                            <AvatarFallback>{getInitials(recipientUser?.username)}</AvatarFallback>
+                        </Avatar>
+                        <span className={cn(
+                            "absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-background",
+                            recipientUser?.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
+                        )} />
+                    </div>
                     <div>
-                        <DialogTitle>{recipientUser.username}</DialogTitle>
-                        <DialogDescription>Conversación directa</DialogDescription>
+                        <DialogTitle>{recipientUser?.username}</DialogTitle>
+                         <DialogDescription className="text-xs">
+                             {lastSeenText}
+                        </DialogDescription>
                     </div>
                 </DialogHeader>
 
@@ -155,3 +184,5 @@ export function ChatModal({ currentUser, recipientUser, isOpen, onClose }: ChatM
         </Dialog>
     );
 }
+
+    
