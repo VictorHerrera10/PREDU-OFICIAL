@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useDatabase, useFirestore } from '@/firebase';
-import { ref as dbRef, onValue, goOffline, onDisconnect, serverTimestamp } from 'firebase/database';
+import { ref as dbRef, onValue, goOffline, onDisconnect, serverTimestamp, goOnline } from 'firebase/database';
 import { doc } from 'firebase/firestore';
 import { setRealtimeDatabaseNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
@@ -14,6 +14,9 @@ export function useUserStatus(userId?: string) {
         if (!userId || !db || !firestore) {
             return;
         }
+
+        // Re-establish connection when the hook is run for a new user.
+        goOnline(db);
 
         const userStatusDatabasePath = `/status/${userId}`;
         const userStatusFirestoreRef = doc(firestore, `/users/${userId}`);
@@ -54,7 +57,8 @@ export function useUserStatus(userId?: string) {
         
         return () => {
             unsubscribe();
-            goOffline(db);
+            // Set user offline in Firestore before disconnecting RTDB
+            updateDocumentNonBlocking(userStatusFirestoreRef, isOfflineForFirestore);
         };
     }, [userId, db, firestore]);
 }
