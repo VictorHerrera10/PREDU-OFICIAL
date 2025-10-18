@@ -35,15 +35,11 @@ export function useUserStatus(userId?: string) {
                     status: 'offline',
                     last_changed: serverTimestamp(),
                 });
-                
-                onDisconnect(userStatusFirestoreRef).update({
-                    status: 'offline',
-                    lastSeen: firestoreServerTimestamp(),
-                });
 
             } else {
-                // We're not connected. In a moment, onDisconnect will fire.
-                // We can also preemptively update firestore if we want.
+                // We're not connected. In a moment, onDisconnect will fire if it was a sudden disconnection.
+                // We can also preemptively update firestore if we want, for clients that are not yet disconnected
+                // but have lost connectivity.
                 updateDoc(userStatusFirestoreRef, {
                     status: 'offline',
                     lastSeen: firestoreServerTimestamp(),
