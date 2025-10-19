@@ -28,20 +28,30 @@ export function ForumView() {
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
   const forumQuery = useMemo(() => {
-    // Wait for both firestore and the userProfile with a valid association ID
-    if (!firestore || !userProfile?.institutionId) return null;
+    // Wait until profile is loaded and has an association ID
+    if (isProfileLoading || !userProfile?.institutionId) {
+        return null;
+    }
     return query(
       collection(firestore, 'forums'),
       where('associationId', '==', userProfile.institutionId),
       orderBy('createdAt', 'desc')
     );
-  }, [firestore, userProfile]);
+  }, [firestore, userProfile, isProfileLoading]);
 
   const { data: posts, isLoading: arePostsLoading } = useCollection<ForumPost>(forumQuery);
   
   const isLoading = isProfileLoading || (userProfile?.institutionId && arePostsLoading);
   
-  if (!userProfile?.institutionId && !isProfileLoading) {
+  if (isProfileLoading) {
+    return (
+        <div className="flex items-center justify-center h-40">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+    );
+  }
+
+  if (!userProfile?.institutionId) {
       return (
            <div className="text-center text-muted-foreground p-8 border border-dashed rounded-lg">
                 <Files className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
@@ -51,16 +61,6 @@ export function ForumView() {
       )
   }
 
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-24 w-full" />
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-32 w-full" />
-      </div>
-    );
-  }
-  
   if (!user || !userProfile) {
     return (
         <div className="flex items-center justify-center h-40">
@@ -75,7 +75,12 @@ export function ForumView() {
       <CreatePostForm user={user} userProfile={userProfile} />
       
       <div className="space-y-4">
-        {posts && posts.length > 0 ? (
+        {arePostsLoading ? (
+            <div className="space-y-4">
+                <Skeleton className="h-32 w-full" />
+                <Skeleton className="h-32 w-full" />
+            </div>
+        ) : posts && posts.length > 0 ? (
           posts.map(post => (
             <ForumPostCard key={post.id} post={post} />
           ))
