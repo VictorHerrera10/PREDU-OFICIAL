@@ -914,17 +914,40 @@ export async function markChatAsRead(chatId: string) {
     }
 }
 
-export async function createForumPost(prevState: any, formData: FormData) {
-  const { firestore } = await getAuthenticatedAppForUser();
-  const content = formData.get('content') as string;
-  const authorId = formData.get('authorId') as string;
-  const authorName = formData.get('authorName') as string;
-  const authorRole = formData.get('authorRole') as string;
-  const authorProfilePictureUrl = formData.get('authorProfilePictureUrl') as string;
-  const associationId = formData.get('associationId') as string;
-  const isAnnouncement = formData.get('isAnnouncement') === 'true';
+type ForumPostData = {
+  content: string;
+  authorId: string;
+  authorName: string;
+  authorRole: string;
+  authorProfilePictureUrl?: string;
+  associationId: string;
+  isAnnouncement: boolean;
+  imageUrl?: string | null;
+  fileUrl?: string | null;
+  fileName?: string | null;
+};
 
-  if (!content || !authorId || !authorName || !associationId) {
+export async function createForumPost(prevState: any, postData: ForumPostData) {
+  const { firestore } = await getAuthenticatedAppForUser();
+
+  const {
+    content,
+    authorId,
+    authorName,
+    authorRole,
+    authorProfilePictureUrl,
+    associationId,
+    isAnnouncement,
+    imageUrl,
+    fileUrl,
+    fileName,
+  } = postData;
+  
+  if (!content && !imageUrl && !fileUrl) {
+    return { success: false, message: 'La publicación no puede estar vacía.' };
+  }
+
+  if (!authorId || !authorName || !associationId) {
     return { success: false, message: 'Faltan datos para crear la publicación.' };
   }
 
@@ -935,10 +958,13 @@ export async function createForumPost(prevState: any, formData: FormData) {
       authorName,
       authorRole,
       authorProfilePictureUrl,
-      associationId, // Link post to the institution/group
+      associationId,
       isAnnouncement,
       createdAt: serverTimestamp(),
       commentCount: 0,
+      imageUrl,
+      fileUrl,
+      fileName,
     });
 
     revalidatePath('/student-dashboard');
@@ -951,16 +977,39 @@ export async function createForumPost(prevState: any, formData: FormData) {
   }
 }
 
-export async function createForumComment(prevState: any, formData: FormData) {
-  const { firestore } = await getAuthenticatedAppForUser();
-  const content = formData.get('content') as string;
-  const postId = formData.get('postId') as string;
-  const authorId = formData.get('authorId') as string;
-  const authorName = formData.get('authorName') as string;
-  const authorRole = formData.get('authorRole') as string;
-  const authorProfilePictureUrl = formData.get('authorProfilePictureUrl') as string;
+type ForumCommentData = {
+  postId: string;
+  content: string;
+  authorId: string;
+  authorName: string;
+  authorRole: string;
+  authorProfilePictureUrl?: string;
+  imageUrl?: string | null;
+  fileUrl?: string | null;
+  fileName?: string | null;
+};
 
-  if (!content || !authorId || !authorName || !postId) {
+
+export async function createForumComment(prevState: any, commentData: ForumCommentData) {
+  const { firestore } = await getAuthenticatedAppForUser();
+  
+  const {
+      postId,
+      content,
+      authorId,
+      authorName,
+      authorRole,
+      authorProfilePictureUrl,
+      imageUrl,
+      fileUrl,
+      fileName
+  } = commentData;
+
+  if ((!content || !content.trim()) && !imageUrl && !fileUrl) {
+    return { success: false, message: 'El comentario no puede estar vacío.' };
+  }
+
+  if (!authorId || !authorName || !postId) {
     return { success: false, message: 'Faltan datos para crear el comentario.' };
   }
 
@@ -978,6 +1027,9 @@ export async function createForumComment(prevState: any, formData: FormData) {
             authorRole,
             authorProfilePictureUrl,
             createdAt: serverTimestamp(),
+            imageUrl,
+            fileUrl,
+            fileName,
         });
 
         // 2. Atomically increment the comment count on the parent post.
