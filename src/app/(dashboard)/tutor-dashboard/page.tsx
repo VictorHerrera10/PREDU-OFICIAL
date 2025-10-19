@@ -3,15 +3,18 @@
 import { useMemo } from 'react';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowLeft } from 'lucide-react';
 import { TutorProfileForm } from './tutor-profile-form';
 import { TutorMainDashboard } from './tutor-main-dashboard';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 type UserProfile = {
     id: string;
     username: string;
     email: string;
     isProfileComplete?: boolean;
+    role?: 'student' | 'tutor' | 'admin';
 };
 
 function TutorDashboardPage() {
@@ -33,6 +36,25 @@ function TutorDashboardPage() {
             </div>
         );
     }
+    
+    // Role validation
+    if (userProfile && userProfile.role !== 'tutor') {
+        return (
+            <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4 text-center">
+                 <h1 className="text-3xl font-bold text-destructive mb-4">¡Ups! Parece que tomaste un camino equivocado. 🤔</h1>
+                 <p className="text-muted-foreground mb-8">
+                     Esta área es exclusiva para tutores.
+                 </p>
+                 <Button asChild>
+                    <Link href="/login">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Volver al Inicio
+                    </Link>
+                 </Button>
+            </div>
+        );
+    }
+
 
     if (userProfile && !userProfile.isProfileComplete) {
         return <TutorProfileForm user={user} />;
