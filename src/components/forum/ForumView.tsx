@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useUser, useFirestore, useDoc, useCollection } from '@/firebase';
-import { doc, collection, query, where, orderBy } from 'firebase/firestore';
+import { doc, collection, query, orderBy } from 'firebase/firestore';
 import { CreatePostForm } from './CreatePostForm';
 import { ForumPostCard, ForumPost } from './ForumPostCard';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,26 +27,20 @@ export function ForumView() {
 
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
+  // Query the entire forums collection, we will filter on the client.
   const forumQuery = useMemo(() => {
-    // This is the critical change: The query is ONLY constructed when all conditions are met.
-    // 1. Firestore is available.
-    // 2. The user profile is NOT loading.
-    // 3. The user profile exists and has an institutionId.
-    if (firestore && !isProfileLoading && userProfile?.institutionId) {
-        return query(
-          collection(firestore, 'forums'),
-          where('associationId', '==', userProfile.institutionId),
-          orderBy('createdAt', 'desc')
-        );
-    }
-    // In all other cases (loading, no profile, no institutionId), return null.
-    // useCollection will wait until the query is not null.
-    return null; 
-  }, [firestore, userProfile, isProfileLoading]);
+    if (!firestore) return null;
+    return query(collection(firestore, 'forums'), orderBy('createdAt', 'desc'));
+  }, [firestore]);
 
-  const { data: posts, isLoading: arePostsLoading } = useCollection<ForumPost>(forumQuery);
-  
-  // The overall loading state now correctly waits for the profile to load first.
+  const { data: allPosts, isLoading: arePostsLoading } = useCollection<ForumPost>(forumQuery);
+
+  // Filter posts on the client side
+  const filteredPosts = useMemo(() => {
+    if (!allPosts || !userProfile?.institutionId) return [];
+    return allPosts.filter(post => post.associationId === userProfile.institutionId);
+  }, [allPosts, userProfile]);
+
   const isLoading = isProfileLoading || (!!userProfile?.institutionId && arePostsLoading);
   
   if (isProfileLoading) {
@@ -81,13 +75,13 @@ export function ForumView() {
       <CreatePostForm user={user} userProfile={userProfile} />
       
       <div className="space-y-4">
-        {arePostsLoading ? (
+        {isLoading ? (
             <div className="space-y-4">
                 <Skeleton className="h-32 w-full" />
                 <Skeleton className="h-32 w-full" />
             </div>
-        ) : posts && posts.length > 0 ? (
-          posts.map(post => (
+        ) : filteredPosts && filteredPosts.length > 0 ? (
+          filteredPosts.map(post => (
             <ForumPostCard key={post.id} post={post} />
           ))
         ) : (
