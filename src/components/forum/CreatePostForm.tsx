@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useRef, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { createForumPost } from '@/app/actions';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,8 +8,10 @@ import { SubmitButton } from '@/components/submit-button';
 import { User } from 'firebase/auth';
 import { UserProfile } from './ForumView'; // Assuming UserProfile is exported from ForumView
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { MessageSquarePlus } from 'lucide-react';
+import { MessageSquarePlus, Smile, Send, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Button } from '../ui/button';
 
 type CreatePostFormProps = {
   user: User;
@@ -21,9 +23,13 @@ const initialState = {
   success: false,
 };
 
+const EMOJIS = ['👍', '😂', '❤️', '🙏', '🔥', '🚀', '🤔', '🎉', '👋', '💯', '✅', '💡'];
+
 export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
-  const [state, formAction] = useActionState(createForumPost, initialState);
+  const [state, formAction, isPending] = useActionState(createForumPost, initialState);
   const { toast } = useToast();
+  const formRef = useRef<HTMLFormElement>(null);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
   
   if (state.message && !state.success) {
       toast({
@@ -32,10 +38,45 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
         description: state.message,
       });
   }
+
+  if (state.success) {
+      // Reset form after successful submission
+      formRef.current?.reset();
+      // Optionally show a success toast
+      toast({
+        title: '¡Publicado!',
+        description: 'Tu mensaje ya está en el foro.',
+      });
+      // Reset state
+      state.success = false; 
+  }
   
   const getInitials = (name?: string | null) => {
     if (!name) return '?';
     return name.split(' ').map((n) => n[0]).slice(0, 2).join('');
+  };
+
+  const handleEmojiClick = (emoji: string) => {
+    if (textAreaRef.current) {
+        const start = textAreaRef.current.selectionStart;
+        const end = textAreaRef.current.selectionEnd;
+        const text = textAreaRef.current.value;
+        const newText = text.substring(0, start) + emoji + text.substring(end);
+        
+        // This is a way to set the value and trigger React's state update if it were controlled
+        // For uncontrolled, this directly changes the textarea
+        const nativeTextareaValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value")?.set;
+        nativeTextareaValueSetter?.call(textAreaRef.current, newText);
+
+        const event = new Event('input', { bubbles: true });
+        textAreaRef.current.dispatchEvent(event);
+
+        // Move cursor after inserted emoji
+        setTimeout(() => {
+            textAreaRef.current?.focus();
+            textAreaRef.current?.setSelectionRange(start + emoji.length, start + emoji.length);
+        }, 0);
+    }
   };
 
 
@@ -48,7 +89,7 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-         <form action={formAction} className="space-y-4">
+         <form ref={formRef} action={formAction} className="space-y-4">
             <div className="flex items-start gap-4">
                 <Avatar>
                     <AvatarImage src={userProfile.profilePictureUrl || undefined} />
@@ -62,14 +103,41 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
                     <input type="hidden" name="associationId" value={userProfile.institutionId || ''} />
                     
                     <Textarea
+                        ref={textAreaRef}
                         name="content"
                         placeholder={`¿Qué quieres compartir con la comunidad, ${userProfile.username}?`}
                         rows={3}
                         required
                         className="bg-input"
                     />
-                    <div className="flex justify-end">
-                        <SubmitButton size="sm">Publicar</SubmitButton>
+                    <div className="flex justify-between items-center">
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button type="button" variant="ghost" size="icon">
+                                    <Smile className="h-5 w-5 text-muted-foreground" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-2">
+                                <div className="grid grid-cols-6 gap-1">
+                                    {EMOJIS.map(emoji => (
+                                        <Button
+                                            key={emoji}
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => handleEmojiClick(emoji)}
+                                            className="text-xl"
+                                        >
+                                            {emoji}
+                                        </Button>
+                                    ))}
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+
+                         <Button type="submit" disabled={isPending} className="btn-retro !h-10 !px-4 !text-sm">
+                            {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                            {isPending ? 'Publicando...' : 'Publicar'}
+                        </Button>
                     </div>
                 </div>
             </div>
