@@ -261,7 +261,8 @@ export function StudentMainDashboard({ user }: Props) {
             </AnimatePresence>
             </div>
         </main>
-        <div className="fixed bottom-10 right-6 z-30 flex flex-col items-end gap-4">
+      
+        <div className="fixed bottom-14 right-6 z-30 flex flex-col items-end gap-4">
             {!userProfile?.isHero && !isInstitutional && <LevelUpView isViewSelected={!!selectedView} />}
             {userProfile?.isHero && <HeroChatButton />}
             {user && <Inbox user={user} />}
