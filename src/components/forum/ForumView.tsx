@@ -28,7 +28,8 @@ export function ForumView() {
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
   const forumQuery = useMemo(() => {
-    // Wait until profile is loaded and has an association ID
+    // This is the critical change: Only build the query if we have the institutionId.
+    // If userProfile is loading or doesn't have the ID, this will be null, and useCollection will wait.
     if (userProfile?.institutionId) {
         return query(
           collection(firestore, 'forums'),
@@ -36,13 +37,13 @@ export function ForumView() {
           orderBy('createdAt', 'desc')
         );
     }
-    // Return null if there's no institutionId yet, useCollection will wait.
     return null; 
   }, [firestore, userProfile]);
 
   const { data: posts, isLoading: arePostsLoading } = useCollection<ForumPost>(forumQuery);
   
-  const isLoading = isProfileLoading || (userProfile?.institutionId && arePostsLoading);
+  // Overall loading state is when the profile is loading, or when we have an institutionId but posts are still loading.
+  const isLoading = isProfileLoading || (!!userProfile?.institutionId && arePostsLoading);
   
   if (isProfileLoading) {
     return (
@@ -69,7 +70,6 @@ export function ForumView() {
         </div>
     );
   }
-
 
   return (
     <div className="space-y-6">
