@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Loader2, Lightbulb, Compass, BrainCircuit } from 'lucide-react';
 import { getRecommendation } from './recommendation-data';
 import { useNotifications } from '@/hooks/use-notifications';
+import { ForumView } from '@/components/forum/ForumView';
 
 type AcademicPrediction = {
     prediction: string;
@@ -169,8 +170,9 @@ export default function HomeView() {
     }
 
     return (
-        <div>
+        <div className="space-y-8">
             {renderWelcomeOrGuidance()}
+            <ForumView />
         </div>
     );
 }

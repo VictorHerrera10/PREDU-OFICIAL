@@ -437,6 +437,40 @@
         "isRead": { "type": "boolean" }
       },
       "required": ["text", "senderId", "receiverId", "timestamp"]
+    },
+    "ForumPost": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ForumPost",
+      "type": "object",
+      "description": "Represents a post in a community forum.",
+      "properties": {
+        "id": { "type": "string" },
+        "content": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "authorRole": { "type": "string" },
+        "authorProfilePictureUrl": { "type": "string" },
+        "associationId": { "type": "string", "description": "The ID of the institution or group this post belongs to." },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "commentCount": { "type": "number" }
+      },
+      "required": ["content", "authorId", "authorName", "associationId", "createdAt"]
+    },
+    "ForumComment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ForumComment",
+      "type": "object",
+      "description": "Represents a comment on a forum post.",
+      "properties": {
+        "id": { "type": "string" },
+        "content": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "authorRole": { "type": "string" },
+        "authorProfilePictureUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["content", "authorId", "authorName", "createdAt"]
     }
   },
   "auth": {
@@ -566,10 +600,24 @@
             }
           ]
         }
+      },
+       {
+        "path": "/forums/{postId}",
+        "definition": {
+          "entityName": "ForumPost",
+          "schema": { "$ref": "#/backend/entities/ForumPost" },
+          "description": "Stores individual forum posts. Posts are linked to an institution or group via associationId."
+        }
+      },
+      {
+        "path": "/forums/{postId}/comments/{commentId}",
+        "definition": {
+          "entityName": "ForumComment",
+          "schema": { "$ref": "#/backend/entities/ForumComment" },
+          "description": "Stores comments for a specific forum post."
+        }
       }
     ],
     "reasoning": "The Firestore structure is designed to ensure secure user authentication and profile management for the Pixel Vault application. The core principle is Authorization Independence, achieved through denormalization where necessary, though in this simplified scenario, it primarily relies on path-based ownership. The structure supports straightforward security rules and efficient data retrieval.\\n\\n- User Profiles: User profiles are stored in `/users/{userId}` using path-based ownership. This provides simple security rules based on `request.auth.uid == userId`. This approach provides Authorization Independence since access control depends only on the path and the authenticated user's ID.\\n- Institutions: A collection to manage educational institutions. Access control should be strict, likely limited to admin users for write operations.\\n- Chats: A new collection to store chat messages between users. Each document in `/chats` represents a conversation, with a subcollection `messages` for the actual messages, allowing for real-time updates and queries scoped to a specific chat."
   }
 }
-
-    

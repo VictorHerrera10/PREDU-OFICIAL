@@ -446,7 +446,8 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
       return { success: false, message: 'No se pudo actualizar tu perfil. ' + error.message };
   }
 
-  redirect('/student-dashboard');
+  revalidatePath('/student-dashboard');
+  return { success: true };
 }
 
 
@@ -909,4 +910,39 @@ export async function markChatAsRead(chatId: string) {
         console.error("Error marking chat as read:", error);
         return { success: false, message: "Could not mark chat as read." };
     }
+}
+
+export async function createForumPost(prevState: any, formData: FormData) {
+  const { firestore } = await getAuthenticatedAppForUser();
+  const content = formData.get('content') as string;
+  const authorId = formData.get('authorId') as string;
+  const authorName = formData.get('authorName') as string;
+  const authorRole = formData.get('authorRole') as string;
+  const authorProfilePictureUrl = formData.get('authorProfilePictureUrl') as string;
+  const associationId = formData.get('associationId') as string;
+
+  if (!content || !authorId || !authorName || !associationId) {
+    return { success: false, message: 'Faltan datos para crear la publicación.' };
+  }
+
+  try {
+    await addDoc(collection(firestore, 'forums'), {
+      content,
+      authorId,
+      authorName,
+      authorRole,
+      authorProfilePictureUrl,
+      associationId, // Link post to the institution/group
+      createdAt: serverTimestamp(),
+      commentCount: 0,
+    });
+
+    revalidatePath('/student-dashboard');
+    revalidatePath('/tutor-dashboard');
+
+    return { success: true };
+  } catch (error: any) {
+    console.error('Error creating forum post:', error);
+    return { success: false, message: 'No se pudo crear la publicación. ' + error.message };
+  }
 }
