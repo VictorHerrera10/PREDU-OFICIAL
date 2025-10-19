@@ -188,7 +188,7 @@ export function ChatWindow({ currentUser, recipientUser: initialRecipientUser, o
                                             <Loader2 className="h-8 w-8 animate-spin text-primary" />
                                         </div>
                                     )}
-                                    <div className="space-y-4">
+                                    <div className="space-y-4 px-4">
                                         <AnimatePresence>
                                             {messages?.map(message => {
                                                 const isCurrentUser = message.senderId === currentUser.uid;
@@ -206,13 +206,13 @@ export function ChatWindow({ currentUser, recipientUser: initialRecipientUser, o
                                                             isCurrentUser ? 'flex-row-reverse' : 'flex-row'
                                                         )}>
                                                             <div className={cn(
-                                                                "relative px-3 py-2 text-sm",
+                                                                "relative px-3 py-2 text-sm break-words",
                                                                 isCurrentUser 
                                                                     ? "message-bubble-sent" 
                                                                     : "message-bubble-received"
                                                             )}
                                                             >
-                                                                <p className="break-words">{message.text}</p>
+                                                                <p>{message.text}</p>
                                                             </div>
                                                             {message.timestamp && (
                                                                 <p className="text-xs mb-1 text-muted-foreground">
