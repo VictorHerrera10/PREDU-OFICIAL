@@ -437,6 +437,7 @@ export async function updateTutorProfile(prevState: any, formData: FormData) {
   const phone = formData.get('phone') as string;
   const workArea = formData.get('workArea') as string;
   const gender = formData.get('gender') as string;
+  const profilePictureUrl = formData.get('profilePictureUrl') as string | null;
 
   if (!userId || !firstName || !lastName || !dni || !phone || !workArea || !gender) {
       return { success: false, message: 'Todos los campos son obligatorios.' };
@@ -454,6 +455,10 @@ export async function updateTutorProfile(prevState: any, formData: FormData) {
           gender,
           isProfileComplete: true,
       };
+
+      if (profilePictureUrl) {
+          dataToUpdate.profilePictureUrl = profilePictureUrl;
+      }
       
       await updateDoc(userProfileRef, dataToUpdate);
 

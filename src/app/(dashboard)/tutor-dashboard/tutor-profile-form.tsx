@@ -1,23 +1,25 @@
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { User } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { updateTutorProfile } from '@/app/actions';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useStorage } from '@/firebase';
+import { uploadImage } from '@/lib/storage';
+import Image from 'next/image';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { SubmitButton } from '@/components/submit-button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Briefcase, VenetianMask, X, User as UserIcon, CaseSensitive, Hash, Phone, Mail, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Briefcase, VenetianMask, X, User as UserIcon, CaseSensitive, Hash, Phone, Mail, GraduationCap, Upload, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-
+import { Progress } from '@/components/ui/progress';
 
 type UserProfile = {
     firstName?: string;
@@ -36,21 +38,56 @@ type Props = {
     profileData?: UserProfile | null;
 };
 
-const initialState = {
-    message: null,
-    success: false,
-};
-
 export function TutorProfileForm({ user, profileData }: Props) {
     const { toast } = useToast();
     const router = useRouter();
-    const [state, formAction] = useActionState(updateTutorProfile, initialState);
+    const storage = useStorage();
+
     const isEditing = !!profileData?.firstName;
     const [selectedGender, setSelectedGender] = useState(profileData?.gender);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(profileData?.profilePictureUrl || null);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            const previewUrl = URL.createObjectURL(file);
+            setImagePreview(previewUrl);
+        }
+    };
 
-    useEffect(() => {
-        if(state.success){
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!user) return;
+        setIsSubmitting(true);
+        
+        const formData = new FormData(e.currentTarget);
+        let uploadedImageUrl: string | null = profileData?.profilePictureUrl || null;
+
+        if (imageFile && storage) {
+            try {
+                uploadedImageUrl = await uploadImage(storage, imageFile, user.uid, setUploadProgress);
+                formData.set('profilePictureUrl', uploadedImageUrl);
+            } catch (error) {
+                console.error("Image upload failed:", error);
+                toast({
+                    variant: 'destructive',
+                    title: 'Error de Carga',
+                    description: 'No se pudo subir la foto de perfil.',
+                });
+                setIsSubmitting(false);
+                return;
+            }
+        } else if (uploadedImageUrl) {
+            formData.set('profilePictureUrl', uploadedImageUrl);
+        }
+        
+        const result = await updateTutorProfile(null, formData);
+
+        if(result.success){
             toast({
                 title: '¡Perfil de Tutor Actualizado! ✅',
                 description: 'Tus datos han sido guardados correctamente.',
@@ -58,14 +95,15 @@ export function TutorProfileForm({ user, profileData }: Props) {
             if (!isEditing) {
                 router.refresh(); 
             }
-        } else if (state.message) {
+        } else if (result.message) {
             toast({
                 variant: 'destructive',
                 title: 'Error al actualizar 😵',
-                description: state.message,
+                description: result.message,
             });
         }
-    }, [state, toast, isEditing, router]);
+        setIsSubmitting(false);
+    };
 
     return (
         <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
@@ -79,12 +117,25 @@ export function TutorProfileForm({ user, profileData }: Props) {
                     </Button>
                 )}
                 <CardHeader className="text-center items-center">
-                    <div className="flex justify-center mb-4 pt-8">
+                    <div className="relative flex justify-center mb-4 pt-8">
                          <Avatar className="w-24 h-24 border-4 border-primary">
-                            <AvatarImage src={profileData?.profilePictureUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user?.displayName}`} alt={user?.displayName || 'Avatar'} />
+                            <AvatarImage src={imagePreview || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user?.displayName}`} alt={user?.displayName || 'Avatar'} />
                             <AvatarFallback><Briefcase className="w-12 h-12" /></AvatarFallback>
                         </Avatar>
+                        <Button asChild size="icon" variant="secondary" className="absolute -bottom-2 -right-2 h-8 w-8 border-2 border-background">
+                            <Label htmlFor="photo-upload" className="cursor-pointer">
+                                <Upload className="w-4 h-4" />
+                                <span className="sr-only">Cambiar foto</span>
+                            </Label>
+                        </Button>
+                        <Input id="photo-upload" type="file" accept="image/*" className="sr-only" onChange={handleFileChange} disabled={isSubmitting} />
                     </div>
+                     {uploadProgress > 0 && uploadProgress < 100 && (
+                        <div className="w-full max-w-xs pt-2 mx-auto">
+                            <Progress value={uploadProgress} className="h-2" />
+                            <p className="text-xs text-muted-foreground mt-1 text-center">{`Subiendo... ${Math.round(uploadProgress)}%`}</p>
+                        </div>
+                    )}
                     <CardTitle className="text-3xl font-bold text-primary">
                          {isEditing ? 'Edita tu Perfil de Tutor' : `¡Bienvenido, Tutor ${user?.displayName || ''}!`}
                     </CardTitle>
@@ -93,7 +144,7 @@ export function TutorProfileForm({ user, profileData }: Props) {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form action={formAction} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         <input type="hidden" name="userId" value={user?.uid} />
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -159,9 +210,10 @@ export function TutorProfileForm({ user, profileData }: Props) {
                         </div>
 
                         <div className="md:col-span-2 text-center pt-4">
-                            <SubmitButton className="w-full max-w-xs mx-auto">
-                                Guardar Perfil
-                            </SubmitButton>
+                            <Button type="submit" className="w-full max-w-xs mx-auto" disabled={isSubmitting}>
+                                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                {isSubmitting ? 'Guardando...' : 'Guardar Perfil'}
+                            </Button>
                         </div>
                     </form>
                 </CardContent>
