@@ -202,7 +202,7 @@ export function ChatWindow({ currentUser, recipientUser: initialRecipientUser, o
                                                                 <p>{message.text}</p>
                                                             </div>
                                                             {message.timestamp && (
-                                                                <p className={cn("text-xs mb-1", isCurrentUser ? "text-primary-foreground/70" : "text-secondary-foreground/70")}>
+                                                                <p className="text-xs mb-1 text-muted-foreground">
                                                                     {format(new Date(message.timestamp.seconds * 1000), 'p', { locale: es })}
                                                                 </p>
                                                             )}
