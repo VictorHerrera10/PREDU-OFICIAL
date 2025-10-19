@@ -79,19 +79,19 @@ export function TutorMainDashboard({ user }: Props) {
 
   return (
     <div className="flex flex-col min-h-screen">
-       <div className="fixed top-0 left-0 right-0 z-20">
-         <header className="p-4 flex justify-between items-center bg-background/80 backdrop-blur-sm border-b">
-            <Logo />
-            <UserNav />
+      <div className="fixed top-0 left-0 right-0 z-20">
+        <header className="p-4 flex justify-between items-center bg-background/80 backdrop-blur-sm border-b">
+          <Logo />
+          <UserNav />
         </header>
         <div className="bg-background/80 backdrop-blur-sm border-b">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-                {isIndependentTutor ? <GroupHeader /> : <InstitutionHeader />}
-            </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+            {isIndependentTutor ? <GroupHeader /> : <InstitutionHeader />}
+          </div>
         </div>
-       </div>
-       
-      <main className="pt-32 flex-grow">
+      </div>
+
+      <main className="flex-grow pt-32">
         <LayoutGroup>
           <AnimatePresence>
             {!selectedView && (
@@ -176,6 +176,7 @@ export function TutorMainDashboard({ user }: Props) {
             </AnimatePresence>
         </div>
       </main>
+
       <div className="fixed bottom-6 right-6 z-30 flex flex-col items-end gap-4">
         {user && <Inbox user={user} />}
       </div>
