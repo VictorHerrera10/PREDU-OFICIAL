@@ -264,12 +264,10 @@ export function StudentMainDashboard({ user }: Props) {
 
       {!userProfile?.isHero && !isInstitutional && <LevelUpView isViewSelected={!!selectedView} />}
       
-        <div className="fixed bottom-[520px] right-8 z-30 flex flex-col items-end gap-4">
-            {user && <Inbox user={user} />}
-        </div>
-         <div className="fixed bottom-6 right-6 z-30">
-            {userProfile?.isHero && <HeroChatButton />}
-        </div>
+      <div className="fixed bottom-6 right-6 z-30 flex flex-col items-end gap-4">
+        {userProfile?.isHero && <HeroChatButton />}
+        {user && <Inbox user={user} />}
+      </div>
     </div>
   );
 }
