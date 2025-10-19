@@ -257,7 +257,7 @@ export function StudentProfileForm({ user, profileData }: Props) {
                         </div>
                         
                         <div className="pt-6 flex flex-col items-center">
-                            <Label className="flex items-center gap-2 mb-2 text-center"><KeySquare className="w-4 h-4"/> Código de Colegio (Opcional)</Label>
+                            <Label className="flex items-center gap-2 mb-2 text-center"><KeySquare className="w-4 h-4"/> Código de Institución o Tutor (Opcional)</Label>
                             {profileData?.institutionId ? (
                                  <p className="text-sm text-green-400 mt-2 p-2 bg-green-900/20 border border-green-500/30 rounded-md">Ya estás vinculado a una institución.</p>
                             ) : (
@@ -294,5 +294,3 @@ export function StudentProfileForm({ user, profileData }: Props) {
         </main>
     );
 }
-
-    

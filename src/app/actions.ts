@@ -372,7 +372,7 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
   const profilePictureUrl = formData.get('profilePictureUrl') as string | null;
 
   if (!userId || !firstName || !lastName || !dni || !age || !grade || !city || !phone || !gender) {
-      return { success: false, message: 'Todos los campos son obligatorios, excepto el código de colegio.' };
+      return { success: false, message: 'Todos los campos son obligatorios, excepto el código.' };
   }
 
   const userProfileRef = doc(firestore, 'users', userId);
@@ -394,27 +394,49 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
 
   try {
     if (institutionCode) {
+        // First, try to find a matching institution
         const institutionsQuery = query(collection(firestore, 'institutions'), where('uniqueCode', '==', institutionCode), limit(1));
         const institutionSnap = await getDocs(institutionsQuery);
 
-        if (institutionSnap.empty) {
-            return { success: false, message: 'El código de institución no es válido.' };
-        }
-        
-        const institutionDoc = institutionSnap.docs[0];
-        const institutionData = institutionDoc.data();
-        const institutionId = institutionDoc.id;
+        if (!institutionSnap.empty) {
+            const institutionDoc = institutionSnap.docs[0];
+            const institutionData = institutionDoc.data();
+            const institutionId = institutionDoc.id;
 
-        const studentsQuery = query(collection(firestore, 'users'), where('institutionId', '==', institutionId));
-        const studentsSnap = await getDocs(studentsQuery);
-        const currentStudentCount = studentsSnap.size;
+            const studentsQuery = query(collection(firestore, 'users'), where('institutionId', '==', institutionId), where('role', '==', 'student'));
+            const studentsSnap = await getDocs(studentsQuery);
+            const currentStudentCount = studentsSnap.size;
 
-        if (currentStudentCount >= institutionData.studentLimit) {
-            return { success: false, message: 'El límite de estudiantes para esta institución ha sido alcanzado. Contacta a tu tutor. 🚫' };
+            if (currentStudentCount >= institutionData.studentLimit) {
+                return { success: false, message: 'El límite de estudiantes para esta institución ha sido alcanzado. Contacta a tu tutor. 🚫' };
+            }
+            
+            dataToUpdate.institutionId = institutionId;
+            dataToUpdate.isHero = true; // Grant Hero features
+        } else {
+            // If no institution found, check independent tutor groups
+            const groupsQuery = query(collection(firestore, 'independentTutorGroups'), where('uniqueCode', '==', institutionCode), limit(1));
+            const groupSnap = await getDocs(groupsQuery);
+            
+            if (!groupSnap.empty) {
+                const groupDoc = groupSnap.docs[0];
+                const groupData = groupDoc.data();
+                const groupId = groupDoc.id;
+
+                const studentsQuery = query(collection(firestore, 'users'), where('institutionId', '==', groupId), where('role', '==', 'student'));
+                const studentsSnap = await getDocs(studentsQuery);
+                const currentStudentCount = studentsSnap.size;
+
+                if (currentStudentCount >= groupData.studentLimit) {
+                    return { success: false, message: 'El límite de estudiantes para este grupo ha sido alcanzado. Contacta a tu tutor. 🚫' };
+                }
+                
+                dataToUpdate.institutionId = groupId; // Set institutionId to the group ID
+                dataToUpdate.isHero = true; // Grant Hero features
+            } else {
+                return { success: false, message: 'El código ingresado no es válido para ninguna institución o grupo de tutor.' };
+            }
         }
-        
-        dataToUpdate.institutionId = institutionId;
-        dataToUpdate.isHero = true; // Grant Hero features
     }
       
       await updateDoc(userProfileRef, dataToUpdate);
