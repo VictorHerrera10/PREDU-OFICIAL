@@ -25,6 +25,10 @@ type RecipientUser = {
     profilePictureUrl?: string,
     status?: 'online' | 'offline';
     lastSeen?: { seconds: number };
+    role?: 'student' | 'tutor' | 'admin';
+    tutorDetails?: {
+        roleInInstitution?: string;
+    };
 };
 
 
@@ -109,6 +113,16 @@ export function ChatWindow({ currentUser, recipientUser: initialRecipientUser, o
         return name.split(' ').map((n) => n[0]).slice(0, 2).join('');
     };
 
+    const getRoleInfo = (user: RecipientUser | null) => {
+        if (!user) return null;
+        if (user.role === 'tutor') {
+            const roleInInstitution = user.tutorDetails?.roleInInstitution;
+            return roleInInstitution ? `Tutor (${roleInInstitution})` : 'Tutor';
+        }
+        if (user.role === 'student') return 'Estudiante';
+        return null;
+    }
+
     const cardVariants = {
         open: { height: 500, opacity: 1 },
         minimized: { height: 40, opacity: 1 }
@@ -132,21 +146,27 @@ export function ChatWindow({ currentUser, recipientUser: initialRecipientUser, o
                 className="w-[360px] flex flex-col bg-card/80 backdrop-blur-lg border-border/50 overflow-hidden shadow-2xl rounded-lg"
             >
                  <header className="relative flex items-center justify-center h-10 px-4 bg-muted/30 border-b border-border/50 flex-shrink-0 cursor-pointer" onClick={() => setIsMinimized(!isMinimized)}>
-                    <div className="flex items-center gap-2">
-                        <Avatar className="h-6 w-6">
-                            <AvatarImage src={recipientUser?.profilePictureUrl} />
-                            <AvatarFallback>{getInitials(recipientUser?.username)}</AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm font-bold text-foreground">{recipientUser?.username}</span>
-                        <span className={cn(
-                            "h-2 w-2 rounded-full",
-                            recipientUser?.status === 'online' ? 'bg-green-500' : 'bg-gray-500'
-                        )} />
+                    <div className="flex flex-col items-center">
+                        <div className="flex items-center gap-2">
+                             <Avatar className="h-6 w-6">
+                                <AvatarImage src={recipientUser?.profilePictureUrl} />
+                                <AvatarFallback>{getInitials(recipientUser?.username)}</AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm font-bold text-foreground">{recipientUser?.username}</span>
+                            <span className={cn(
+                                "h-2 w-2 rounded-full",
+                                recipientUser?.status === 'online' ? 'bg-green-500' : 'bg-gray-500'
+                            )} />
+                        </div>
+                        {recipientUser?.role && (
+                             <span className="text-xs text-muted-foreground">{getRoleInfo(recipientUser)}</span>
+                        )}
                     </div>
                     <div className="absolute right-4 flex items-center gap-2">
                         <button onClick={(e) => { e.stopPropagation(); setIsMinimized(!isMinimized); }} className="w-3 h-3 rounded-full bg-yellow-500/50 hover:bg-yellow-500/80 transition-colors flex items-center justify-center">
                             <Minus className="h-2 w-2 text-white/70" />
                         </button>
+                        <div className="w-3 h-3 rounded-full bg-secondary/50" />
                         <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="w-3 h-3 rounded-full bg-destructive/50 hover:bg-destructive/80 transition-colors flex items-center justify-center">
                             <X className="h-2 w-2 text-destructive-foreground/70" />
                         </button>
@@ -192,13 +212,8 @@ export function ChatWindow({ currentUser, recipientUser: initialRecipientUser, o
                                                                     ? "bg-primary text-primary-foreground" 
                                                                     : "bg-secondary text-secondary-foreground"
                                                             )}
-                                                            style={{
-                                                                clipPath: isCurrentUser
-                                                                    ? 'polygon(0% 0%, 100% 0%, 100% 100%, 15% 100%, 0 85%)'
-                                                                    : 'polygon(0% 0%, 100% 85%, 100% 100%, 85% 100%, 0 100%)',
-                                                            }}
                                                             >
-                                                                <p>{message.text}</p>
+                                                                <p className="break-words">{message.text}</p>
                                                             </div>
                                                             {message.timestamp && (
                                                                 <p className="text-xs mb-1 text-muted-foreground">

@@ -45,7 +45,8 @@ type UserProfile = {
   profilePictureUrl?: string;
   role?: 'student' | 'tutor' | 'admin';
   tutorDetails?: {
-    roleInInstitution?: 'psicologo' | 'docente' | 'director' | 'autoridades gubernamentales';
+    roleInInstitution?: string;
+    workArea?: string;
   }
 };
 
@@ -76,18 +77,11 @@ export function UserNav() {
 
   const getWelcomeDetails = (profile: UserProfile | null) => {
     if (profile?.role === 'tutor') {
-        switch (profile.tutorDetails?.roleInInstitution) {
-            case 'docente':
-                return { title: '¡Hola, Prof.', emoji: '🧑‍🏫' };
-            case 'psicologo':
-                return { title: '¡Hola, Psic.', emoji: '🧠' };
-            case 'director':
-                return { title: '¡Hola, Dir.', emoji: '👑' };
-            case 'autoridades gubernamentales':
-                return { title: '¡Hola, Aut.', emoji: '💼' };
-            default:
-                return { title: '¡Hola, Tutor', emoji: '🧑‍🏫' };
+        const tutorRole = profile.tutorDetails?.workArea || profile.tutorDetails?.roleInInstitution;
+        if (tutorRole) {
+            return { title: `¡Hola, ${tutorRole.split(' ')[0]}`, emoji: '🧑‍🏫' };
         }
+        return { title: '¡Hola, Tutor', emoji: '🧑‍🏫' };
     }
     return { title: 'Bienvenido,', emoji: <Star className="w-4 h-4 text-primary" /> };
 };
