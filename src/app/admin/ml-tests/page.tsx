@@ -2,9 +2,10 @@
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TestTube2, BrainCircuit, Compass } from 'lucide-react';
+import { TestTube2, BrainCircuit, Compass, Archive } from 'lucide-react';
 import { AcademicPredictionTest } from './AcademicPredictionTest';
 import { PsychologicalPredictionTest } from './PsychologicalPredictionTest';
+import { StorageTest } from './StorageTest';
 
 function AdminMLTestsPage() {
   return (
@@ -17,18 +18,21 @@ function AdminMLTestsPage() {
                             <TestTube2 className="h-6 w-6 text-primary" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-primary">Pruebas de Modelos de ML</h1>
+                            <h1 className="text-2xl font-bold text-primary">Pruebas de Modelos y Servicios</h1>
                             <p className="text-muted-foreground">
-                            Interactúa directamente con los endpoints de predicción para validarlos.
+                            Interactúa directamente con los endpoints y servicios para validarlos.
                             </p>
                         </div>
                     </div>
-                     <TabsList className="grid w-full md:w-auto grid-cols-2">
+                     <TabsList className="grid w-full md:w-auto grid-cols-2 lg:grid-cols-3">
                         <TabsTrigger value="academic">
                             <Compass className="mr-2 h-4 w-4" /> Predicción Académica
                         </TabsTrigger>
                         <TabsTrigger value="psychological">
                             <BrainCircuit className="mr-2 h-4 w-4" /> Predicción Psicológica
+                        </TabsTrigger>
+                         <TabsTrigger value="storage">
+                            <Archive className="mr-2 h-4 w-4" /> Pruebas de Storage
                         </TabsTrigger>
                     </TabsList>
                 </CardHeader>
@@ -38,6 +42,9 @@ function AdminMLTestsPage() {
                     </TabsContent>
                     <TabsContent value="psychological">
                         <PsychologicalPredictionTest />
+                    </TabsContent>
+                    <TabsContent value="storage">
+                        <StorageTest />
                     </TabsContent>
                 </CardContent>
             </Card>

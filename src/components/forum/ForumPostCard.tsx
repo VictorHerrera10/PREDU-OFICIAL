@@ -6,10 +6,11 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { MessageSquare, Pin } from 'lucide-react';
+import { MessageSquare, Pin, Paperclip } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ForumComments } from './ForumComments';
+import Image from 'next/image';
 
 
 export type ForumPost = {
@@ -23,6 +24,9 @@ export type ForumPost = {
   isAnnouncement?: boolean;
   createdAt: { seconds: number; nanoseconds: number };
   commentCount: number;
+  imageUrl?: string;
+  fileUrl?: string;
+  fileName?: string;
 };
 
 type ForumPostCardProps = {
@@ -87,7 +91,25 @@ export function ForumPostCard({ post, index = 0 }: ForumPostCardProps) {
                 </div>
             </CardHeader>
             <CardContent className="pt-2 pb-4">
-                <p className="text-foreground/90 whitespace-pre-wrap">{post.content}</p>
+                {post.content && <p className="text-foreground/90 whitespace-pre-wrap">{post.content}</p>}
+                
+                {post.imageUrl && (
+                    <div className="mt-4">
+                        <Image src={post.imageUrl} alt="Imagen adjunta" width={500} height={300} className="rounded-md object-cover max-h-96 w-auto" />
+                    </div>
+                )}
+                
+                {post.fileUrl && (
+                    <a 
+                        href={post.fileUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="mt-4 flex items-center gap-2 p-2 bg-muted rounded-md hover:bg-muted/80 transition-colors"
+                    >
+                        <Paperclip className="h-5 w-5 text-primary" />
+                        <span className="text-sm font-medium text-foreground truncate">{post.fileName || 'Ver archivo adjunto'}</span>
+                    </a>
+                )}
             </CardContent>
             <CardFooter className="flex justify-end gap-2 text-muted-foreground text-sm pt-0">
                     <button onClick={() => setShowComments(!showComments)} className="flex items-center gap-2 hover:text-primary transition-colors">

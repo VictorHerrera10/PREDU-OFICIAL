@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useUser, useFirestore, useDoc, useCollection } from '@/firebase';
-import { doc, collection, query, orderBy, where } from 'firebase/firestore';
+import { doc, collection, query, orderBy } from 'firebase/firestore';
 import { CreatePostForm } from './CreatePostForm';
 import { ForumPostCard, ForumPost } from './ForumPostCard';
 import { Skeleton } from '@/components/ui/skeleton';

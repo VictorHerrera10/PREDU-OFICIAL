@@ -6,18 +6,17 @@ import { ref, uploadBytesResumable, getDownloadURL, Storage } from "firebase/sto
  * Uploads a file to Firebase Storage and returns the download URL.
  * @param storage - The Firebase Storage instance.
  * @param file - The file to upload.
- * @param userId - The ID of the user.
+ * @param filePath - The full path in storage where the file will be saved.
  * @param onProgress - Optional callback to track upload progress.
  * @returns A promise that resolves with the download URL.
  */
-export async function uploadImage(
+export async function uploadFile(
   storage: Storage,
   file: File,
-  userId: string,
+  filePath: string,
   onProgress?: (progress: number) => void
 ): Promise<string> {
-  // Use a path that includes the user's ID for organization
-  const storageRef = ref(storage, `profile-pictures/${userId}/${file.name}`);
+  const storageRef = ref(storage, filePath);
 
   return new Promise((resolve, reject) => {
     const uploadTask = uploadBytesResumable(storageRef, file);

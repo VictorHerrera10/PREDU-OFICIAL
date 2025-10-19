@@ -1,19 +1,21 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
-import { useCollection, useUser, useDoc, useFirestore } from '@/firebase';
+import { useMemo, useRef, useState } from 'react';
+import { useCollection, useUser, useDoc, useFirestore, useStorage } from '@/firebase';
 import { collection, doc, orderBy, query } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Separator } from '../ui/separator';
 import { ForumComment, ForumCommentType } from './ForumComment';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
-import { Loader2, Send, Smile } from 'lucide-react';
+import { Loader2, Send, Smile, Paperclip, XCircle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { useActionState } from 'react';
 import { createForumComment } from '@/app/actions';
 import { UserProfile } from './ForumView';
+import { useToast } from '@/hooks/use-toast';
+import { uploadFile } from '@/lib/storage';
+import { Progress } from '../ui/progress';
 
 type ForumCommentsProps = {
   postId: string;
@@ -29,9 +31,16 @@ const getInitials = (name?: string | null) => {
 export function ForumComments({ postId }: ForumCommentsProps) {
     const { user } = useUser();
     const firestore = useFirestore();
-    const [state, formAction, isPending] = useActionState(createForumComment, { success: false, message: null });
+    const storage = useStorage();
+    const { toast } = useToast();
+
+    const [isPending, setIsPending] = useState(false);
+    const [file, setFile] = useState<File | null>(null);
+    const [uploadProgress, setUploadProgress] = useState(0);
+
     const formRef = useRef<HTMLFormElement>(null);
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const userProfileRef = useMemo(() => {
         if (!user || !firestore) return null;
@@ -46,9 +55,90 @@ export function ForumComments({ postId }: ForumCommentsProps) {
     
     const { data: comments, isLoading } = useCollection<ForumCommentType>(commentsQuery);
     
-    if (state.success) {
-        formRef.current?.reset();
-    }
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFile = e.target.files?.[0];
+        if (selectedFile) {
+            if (selectedFile.size > 5 * 1024 * 1024) { // 5MB limit
+                toast({
+                    variant: 'destructive',
+                    title: 'Archivo demasiado grande',
+                    description: 'Por favor, selecciona un archivo menor a 5MB.',
+                });
+                return;
+            }
+            setFile(selectedFile);
+        }
+    };
+    
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!user || !userProfile) return;
+
+        const formData = new FormData(e.currentTarget);
+        const content = formData.get('content') as string;
+
+        if (!content.trim() && !file) {
+            toast({
+                variant: 'destructive',
+                title: 'Comentario vacío',
+                description: 'Escribe un mensaje o adjunta un archivo.',
+            });
+            return;
+        }
+
+        setIsPending(true);
+        let fileUrl: string | null = null;
+        let fileName: string | null = null;
+        let imageUrl: string | null = null;
+
+        if (file && storage) {
+            try {
+                const filePath = `forum-attachments/${user.uid}/comments/${Date.now()}-${file.name}`;
+                const downloadUrl = await uploadFile(storage, file, filePath, setUploadProgress);
+                if (file.type.startsWith('image/')) {
+                    imageUrl = downloadUrl;
+                } else {
+                    fileUrl = downloadUrl;
+                    fileName = file.name;
+                }
+            } catch (error) {
+                toast({
+                    variant: 'destructive',
+                    title: 'Error al subir archivo',
+                    description: 'No se pudo subir el archivo adjunto.',
+                });
+                setIsPending(false);
+                setUploadProgress(0);
+                return;
+            }
+        }
+        
+        const result = await createForumComment(null, {
+            postId,
+            content,
+            authorId: user.uid,
+            authorName: userProfile.username || '',
+            authorRole: userProfile.role || '',
+            authorProfilePictureUrl: userProfile.profilePictureUrl || '',
+            imageUrl,
+            fileUrl,
+            fileName,
+        });
+
+        setIsPending(false);
+        setUploadProgress(0);
+
+        if (result.success) {
+            formRef.current?.reset();
+            setFile(null);
+        } else if (result.message) {
+             toast({
+                variant: 'destructive',
+                title: 'Error al comentar',
+                description: result.message,
+            });
+        }
+    };
     
     const handleEmojiClick = (emoji: string) => {
         if (textAreaRef.current) {
@@ -88,40 +178,52 @@ export function ForumComments({ postId }: ForumCommentsProps) {
             )}
 
              {user && userProfile && (
-                <form ref={formRef} action={formAction} className="flex items-start gap-3 pt-4">
+                <form ref={formRef} onSubmit={handleSubmit} className="flex items-start gap-3 pt-4">
                      <Avatar className="h-8 w-8">
                         <AvatarImage src={userProfile.profilePictureUrl || undefined} />
                         <AvatarFallback>{getInitials(userProfile.username)}</AvatarFallback>
                     </Avatar>
                     <div className="w-full space-y-2">
                         <input type="hidden" name="postId" value={postId} />
-                        <input type="hidden" name="authorId" value={user.uid} />
-                        <input type="hidden" name="authorName" value={userProfile.username || ''} />
-                        <input type="hidden" name="authorRole" value={userProfile.role || ''} />
-                        <input type="hidden" name="authorProfilePictureUrl" value={userProfile.profilePictureUrl || ''} />
                         <Textarea
                             ref={textAreaRef}
                             name="content"
                             placeholder="Añade un comentario..."
                             rows={1}
-                            required
                             className="bg-input"
                         />
+                        {file && (
+                            <div className="flex items-center justify-between text-sm p-2 bg-muted rounded-md">
+                                <span className="truncate text-muted-foreground">{file.name}</span>
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setFile(null)}>
+                                    <XCircle className="h-4 w-4 text-red-500" />
+                                </Button>
+                            </div>
+                        )}
+                        {uploadProgress > 0 && (
+                            <Progress value={uploadProgress} className="h-1" />
+                        )}
                         <div className="flex justify-between items-center">
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button type="button" variant="ghost" size="icon">
-                                        <Smile className="h-5 w-5 text-muted-foreground" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-2">
-                                    <div className="grid grid-cols-6 gap-1">
-                                        {EMOJIS.map(emoji => (
-                                            <Button key={emoji} variant="ghost" size="icon" onClick={() => handleEmojiClick(emoji)} className="text-xl">{emoji}</Button>
-                                        ))}
-                                    </div>
-                                </PopoverContent>
-                            </Popover>
+                            <div className="flex items-center">
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button type="button" variant="ghost" size="icon">
+                                            <Smile className="h-5 w-5 text-muted-foreground" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-2">
+                                        <div className="grid grid-cols-6 gap-1">
+                                            {EMOJIS.map(emoji => (
+                                                <Button key={emoji} variant="ghost" size="icon" onClick={() => handleEmojiClick(emoji)} className="text-xl">{emoji}</Button>
+                                            ))}
+                                        </div>
+                                    </PopoverContent>
+                                </Popover>
+                                <Button type="button" variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()}>
+                                    <Paperclip className="h-5 w-5 text-muted-foreground" />
+                                </Button>
+                                <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+                            </div>
                             <Button type="submit" disabled={isPending} className="btn-retro !h-9 !px-3 !text-xs">
                                 {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
                                 {isPending ? 'Enviando...' : 'Enviar'}
