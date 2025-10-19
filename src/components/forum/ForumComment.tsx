@@ -8,13 +8,14 @@ import { es } from 'date-fns/locale';
 import { motion } from 'framer-motion';
 import { useUser } from '@/firebase';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { Button } from '../ui/button';
+import { Button, buttonVariants } from '../ui/button';
 import { MoreHorizontal, Edit, Trash2, Loader2, Send, Paperclip } from 'lucide-react';
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '../ui/alert-dialog';
 import { deleteForumComment, editForumComment } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '../ui/textarea';
 import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
 export type ForumCommentType = {
   id: string;
@@ -130,16 +131,20 @@ export function ForumComment({ comment, postId, index }: ForumCommentProps) {
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
-                                    <AlertDialogTitle>¿Eliminar comentario?</AlertDialogTitle>
+                                    <AlertDialogTitle>¿Confirmas la eliminación?</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        Esta acción no se puede deshacer.
+                                        Este comentario será borrado permanentemente. Esta acción no se puede deshacer.
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleDelete} disabled={isProcessing}>
+                                    <AlertDialogAction 
+                                      onClick={handleDelete} 
+                                      disabled={isProcessing} 
+                                      className={cn(buttonVariants({variant: 'destructive'}), "btn-retro")}
+                                    >
                                        {isProcessing ? <Loader2 className="animate-spin mr-2" /> : null}
-                                        Eliminar
+                                        Sí, eliminar
                                     </AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>

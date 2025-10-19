@@ -30,7 +30,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Button } from '../ui/button';
+import { Button, buttonVariants } from '../ui/button';
 import { deleteForumPost, editForumPost } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '../ui/textarea';
@@ -162,16 +162,20 @@ export function ForumPostCard({ post, index = 0 }: ForumPostCardProps) {
                                             </AlertDialogTrigger>
                                             <AlertDialogContent>
                                                 <AlertDialogHeader>
-                                                    <AlertDialogTitle>¿Confirmas la eliminación?</AlertDialogTitle>
+                                                    <AlertDialogTitle>¿Enviar al Vacío Digital?</AlertDialogTitle>
                                                     <AlertDialogDescription>
-                                                        Esta acción es permanente y no se puede deshacer.
+                                                        Esta publicación y sus comentarios se desintegrarán para siempre. ¡No hay botón de deshacer en este juego! 💀
                                                     </AlertDialogDescription>
                                                 </AlertDialogHeader>
                                                 <AlertDialogFooter>
-                                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={handleDelete} disabled={isProcessing}>
+                                                    <AlertDialogCancel>Mejor no...</AlertDialogCancel>
+                                                    <AlertDialogAction 
+                                                        onClick={handleDelete} 
+                                                        disabled={isProcessing}
+                                                        className={cn(buttonVariants({variant: 'destructive'}), "btn-retro")}
+                                                    >
                                                         {isProcessing ? <Loader2 className="animate-spin mr-2" /> : null}
-                                                        Eliminar
+                                                        ¡Sí, al olvido!
                                                     </AlertDialogAction>
                                                 </AlertDialogFooter>
                                             </AlertDialogContent>

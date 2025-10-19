@@ -14,7 +14,7 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,6 +53,7 @@ import { updateUser, createStudent } from '@/app/actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
 import { SubmitButton } from '@/components/submit-button';
+import { cn } from '@/lib/utils';
 
 type UserProfile = {
   id: string;
@@ -418,15 +419,19 @@ export function UsersTable() {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                               <AlertDialogHeader>
-                              <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+                              <AlertDialogTitle>¿Enviar a este usuario al vacío?</AlertDialogTitle>
                               <AlertDialogDescription>
                                   Esta acción no se puede deshacer. Esto eliminará permanentemente la cuenta del usuario y sus datos de nuestros servidores. 💀
                               </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDeleteUser(user.id)} disabled={isDeleting}>
-                                  {isDeleting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Eliminando...</>) : 'Sí, eliminar'}
+                              <AlertDialogCancel>Mejor no</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={() => handleDeleteUser(user.id)} 
+                                disabled={isDeleting}
+                                className={cn(buttonVariants({variant: 'destructive'}), "btn-retro")}
+                              >
+                                  {isDeleting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Eliminando...</>) : 'Sí, al olvido'}
                               </AlertDialogAction>
                               </AlertDialogFooter>
                           </AlertDialogContent>
@@ -449,5 +454,3 @@ export function UsersTable() {
     </>
   );
 }
-
-    
