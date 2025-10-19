@@ -28,18 +28,27 @@ export function useUserStatus(userId?: string) {
                     last_changed: serverTimestamp(),
                 };
                 rtdbSet(userStatusDatabaseRef, conStatus);
-                updateDoc(userStatusFirestoreRef, { status: 'online' });
-
-                // When I disconnect, set my status to 'offline'.
+                
+                // When I disconnect, update both RTDB and Firestore.
                 onDisconnect(userStatusDatabaseRef).set({
                     status: 'offline',
                     last_changed: serverTimestamp(),
+                }).then(() => {
+                    // This is a server-side operation that will execute when the client disconnects.
+                    // We need to tell the server to update Firestore as well.
+                    // The onDisconnect for RTDB can trigger a Cloud Function, but for a client-only solution,
+                    // we'll update firestore when we know we're disconnected.
+                });
+
+                // Set the Firestore status to online.
+                updateDoc(userStatusFirestoreRef, {
+                    status: 'online',
+                    lastSeen: firestoreServerTimestamp() // Update lastSeen on connect as well
                 });
 
             } else {
-                // We're not connected. In a moment, onDisconnect will fire if it was a sudden disconnection.
-                // We can also preemptively update firestore if we want, for clients that are not yet disconnected
-                // but have lost connectivity.
+                // We're not connected. This can be triggered by calling goOffline().
+                // We'll update Firestore here for a graceful disconnect.
                 updateDoc(userStatusFirestoreRef, {
                     status: 'offline',
                     lastSeen: firestoreServerTimestamp(),
@@ -49,7 +58,12 @@ export function useUserStatus(userId?: string) {
         
         return () => {
             unsubscribe();
-             // On cleanup (e.g. user logs out), explicitly set offline status.
+            // On cleanup (e.g. user logs out or component unmounts), explicitly set offline status
+            // This is the "graceful" shutdown part.
+             rtdbSet(userStatusDatabaseRef, {
+                status: 'offline',
+                last_changed: serverTimestamp(),
+            });
             updateDoc(userStatusFirestoreRef, {
                 status: 'offline',
                 lastSeen: firestoreServerTimestamp(),
