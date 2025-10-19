@@ -65,8 +65,14 @@ function TutorDashboardPage() {
     }
     
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+        <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4 gap-4">
              <p className="text-muted-foreground">No se pudo cargar el perfil del tutor.</p>
+             <Button asChild variant="outline">
+                <Link href="/login">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Volver al Inicio de Sesión
+                </Link>
+             </Button>
         </div>
     );
 }
