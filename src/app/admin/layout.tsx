@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Logo } from '@/components/logo';
-import { School, Users, UserCheck, TestTube2 } from 'lucide-react';
+import { School, Users, UserCheck, TestTube2, ShieldAlert } from 'lucide-react';
 import {
   SidebarProvider,
   Sidebar,
@@ -17,6 +17,11 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { AdminUserNav } from '@/components/admin-user-nav';
+import { useUser, useFirestore, useDoc } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { useMemo, useEffect } from 'react';
+import { TutorAdminLoader } from '@/components/tutor-admin-loader';
+import { Button } from '@/components/ui/button';
 
 const navItems = [
   { href: '/admin', label: 'Gestión de Usuarios', icon: Users },
@@ -25,13 +30,57 @@ const navItems = [
   { href: '/admin/ml-tests', label: 'Pruebas de ML', icon: TestTube2 },
 ];
 
+type UserProfile = {
+  role?: 'admin' | 'student' | 'tutor';
+};
+
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
 
+  const userProfileRef = useMemo(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [user, firestore]);
+
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
+
+  useEffect(() => {
+    // If not loading and no user, redirect to login
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [isUserLoading, user, router]);
+
+  if (isUserLoading || isProfileLoading) {
+    return <TutorAdminLoader loadingText="Verificando credenciales de administrador..." />;
+  }
+
+  // If user is loaded but doesn't have the admin role
+  if (userProfile && userProfile.role !== 'admin') {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4 text-center">
+        <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
+        <h1 className="text-3xl font-bold text-destructive mb-4">Acceso Denegado</h1>
+        <p className="text-muted-foreground mb-8 max-w-md">
+          No tienes los permisos necesarios para acceder a esta página. Esta área es exclusiva para administradores.
+        </p>
+        <Button asChild onClick={() => router.push('/login')}>
+          <Link href="/login">
+            Ir a Inicio de Sesión
+          </Link>
+        </Button>
+      </div>
+    );
+  }
+
+  // If user is an admin, render the layout
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
