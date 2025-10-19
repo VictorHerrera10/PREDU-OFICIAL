@@ -7,7 +7,7 @@ import { updateTutorProfile } from '@/app/actions';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useStorage } from '@/firebase';
-import { uploadImage } from '@/lib/storage';
+import { uploadFile } from '@/lib/storage';
 import Image from 'next/image';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -69,7 +69,8 @@ export function TutorProfileForm({ user, profileData }: Props) {
 
         if (imageFile && storage) {
             try {
-                uploadedImageUrl = await uploadImage(storage, imageFile, user.uid, setUploadProgress);
+                const filePath = `profile-pictures/${user.uid}/${imageFile.name}`;
+                uploadedImageUrl = await uploadFile(storage, imageFile, filePath, setUploadProgress);
                 formData.set('profilePictureUrl', uploadedImageUrl);
             } catch (error) {
                 console.error("Image upload failed:", error);

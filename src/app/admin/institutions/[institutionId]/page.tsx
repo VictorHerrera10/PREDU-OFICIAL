@@ -7,7 +7,7 @@ import { collection, doc, query, where } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { updateInstitution } from '@/app/actions';
 import Image from 'next/image';
-import { uploadImage } from '@/lib/storage';
+import { uploadFile } from '@/lib/storage';
 
 import {
   Card,
@@ -55,7 +55,7 @@ type UserProfile = {
     email: string;
     tutorDetails?: {
         roleInInstitution: string;
-    };
+    };.
 };
 
 
@@ -200,7 +200,8 @@ export default function InstitutionDetailsPage() {
 
     if (imageFile && storage) {
       try {
-        uploadedImageUrl = await uploadImage(storage, imageFile, institution.id, setUploadProgress);
+        const filePath = `institution-logos/${institution.id}/${imageFile.name}`;
+        uploadedImageUrl = await uploadFile(storage, imageFile, filePath, setUploadProgress);
         formData.set('logoUrl', uploadedImageUrl);
       } catch (error) {
         console.error("Image upload failed:", error);
@@ -509,5 +510,3 @@ function InstitutionDetailsSkeleton() {
         </div>
     )
 }
-
-    

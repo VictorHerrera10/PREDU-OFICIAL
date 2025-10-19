@@ -56,7 +56,7 @@ function Uploader({ fileType, path }: { fileType: 'image' | 'document', path: st
     console.log('Iniciando carga de archivo...');
 
     try {
-      const fullPath = `${path}/${userId}/${file.name}`;
+      const fullPath = `${path}/${user.uid}/${file.name}`;
       const downloadUrl = await uploadFile(
         storage,
         file,

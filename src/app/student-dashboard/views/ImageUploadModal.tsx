@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useUser, useStorage } from '@/firebase';
-import { uploadImage } from '@/lib/storage'; // Reusing the same upload logic
+import { uploadFile } from '@/lib/storage'; 
 
 import { DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -49,15 +49,16 @@ export function ImageUploadModal() {
     console.log('Iniciando carga de imagen...');
 
     try {
-      const downloadUrl = await uploadImage(
-        storage,
-        file,
-        user.uid,
-        (progress) => {
-          setUploadProgress(progress);
-          console.log(`Progreso de carga: ${progress.toFixed(2)}%`);
-        }
-      );
+        const filePath = `profile-pictures/${user.uid}/${file.name}`;
+        const downloadUrl = await uploadFile(
+            storage,
+            file,
+            filePath,
+            (progress) => {
+            setUploadProgress(progress);
+            console.log(`Progreso de carga: ${progress.toFixed(2)}%`);
+            }
+        );
       
       setUploadedUrl(downloadUrl);
       console.log('¡Carga completada!', { url: downloadUrl });

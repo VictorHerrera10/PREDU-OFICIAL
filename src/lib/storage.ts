@@ -25,7 +25,6 @@ export async function uploadFile(
       'state_changed',
       (snapshot) => {
         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log(`Progreso de carga: ${progress.toFixed(2)}%`);
         if (onProgress) {
           onProgress(progress);
         }
@@ -38,7 +37,6 @@ export async function uploadFile(
       () => {
         // Handle successful uploads on complete
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          console.log('¡Carga completada!', { url: downloadURL });
           resolve(downloadURL);
         }).catch(reject);
       }
