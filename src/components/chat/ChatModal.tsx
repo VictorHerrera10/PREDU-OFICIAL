@@ -184,11 +184,11 @@ export function ChatWindow({ currentUser, recipientUser: initialRecipientUser, o
                                                         className={cn('flex items-end gap-2', isCurrentUser && 'justify-end')}
                                                     >
                                                         <div className={cn(
-                                                            "flex items-end gap-2", 
+                                                            "flex items-end gap-2 max-w-xs", 
                                                             isCurrentUser ? 'flex-row-reverse' : 'flex-row'
                                                         )}>
                                                             <div className={cn(
-                                                                "relative max-w-xs md:max-w-sm px-3 py-2 text-sm rounded-lg shadow-md",
+                                                                "relative px-3 py-2 text-sm rounded-lg shadow-md",
                                                                 isCurrentUser 
                                                                     ? "bg-primary text-primary-foreground" 
                                                                     : "bg-secondary text-secondary-foreground"
