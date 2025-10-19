@@ -419,11 +419,12 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
       
       await updateDoc(userProfileRef, dataToUpdate);
 
-      return { success: true };
   } catch (error: any) {
       console.error('Error updating student profile:', error);
       return { success: false, message: 'No se pudo actualizar tu perfil. ' + error.message };
   }
+
+  redirect('/student-dashboard');
 }
 
 
@@ -462,7 +463,6 @@ export async function updateTutorProfile(prevState: any, formData: FormData) {
       
       await updateDoc(userProfileRef, dataToUpdate);
 
-      revalidatePath('/tutor-dashboard');
       return { success: true };
   } catch (error: any) {
       console.error('Error updating tutor profile:', error);

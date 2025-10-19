@@ -92,9 +92,7 @@ export function TutorProfileForm({ user, profileData }: Props) {
                 title: '¡Perfil de Tutor Actualizado! ✅',
                 description: 'Tus datos han sido guardados correctamente.',
             });
-            if (!isEditing) {
-                router.refresh(); 
-            }
+            router.push('/tutor-dashboard'); 
         } else if (result.message) {
             toast({
                 variant: 'destructive',
