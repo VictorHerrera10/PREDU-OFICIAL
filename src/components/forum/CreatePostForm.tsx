@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useRef, useState, useEffect } from 'react';
+import { useRef, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { createForumPost } from '@/app/actions';
 import { uploadFile } from '@/lib/storage';
@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { User } from 'firebase/auth';
 import { UserProfile } from './ForumView';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { MessageSquarePlus, Smile, Send, Loader2, Megaphone, Paperclip, XCircle } from 'lucide-react';
+import { MessageSquarePlus, Smile, Send, Loader2, Megaphone, Paperclip, XCircle, ImageDown } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Button } from '../ui/button';
@@ -16,15 +16,12 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '../ui/label';
 import { useStorage } from '@/firebase';
 import { Progress } from '../ui/progress';
+import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 type CreatePostFormProps = {
   user: User;
   userProfile: UserProfile;
-};
-
-const initialState = {
-  message: null,
-  success: false,
 };
 
 const EMOJIS = ['👍', '😂', '❤️', '🙏', '🔥', '🚀', '🤔', '🎉', '👋', '💯', '✅', '💡'];
@@ -37,8 +34,10 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
 
   const [isAnnouncement, setIsAnnouncement] = useState(false);
   const [isPending, setIsPending] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   
   const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const storage = useStorage();
 
@@ -46,12 +45,10 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
     if (!name) return '?';
     return name.split(' ').map((n) => n[0]).slice(0, 2).join('');
   };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
+  
+  const handleFileSelect = (selectedFile: File | null) => {
     if (selectedFile) {
-        // Limit file size to e.g. 5MB
-        if (selectedFile.size > 5 * 1024 * 1024) {
+        if (selectedFile.size > 5 * 1024 * 1024) { // 5MB limit
             toast({
                 variant: 'destructive',
                 title: 'Archivo demasiado grande',
@@ -60,8 +57,50 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
             return;
         }
         setFile(selectedFile);
+        if (selectedFile.type.startsWith('image/')) {
+            setPreview(URL.createObjectURL(selectedFile));
+        } else {
+            setPreview(null);
+        }
     }
   };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFileSelect(e.target.files?.[0] || null);
+  };
+
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    handleFileSelect(e.dataTransfer.files?.[0] || null);
+  };
+
+  const handleRemoveFile = () => {
+    setFile(null);
+    setPreview(null);
+    if(fileInputRef.current) {
+        fileInputRef.current.value = '';
+    }
+  }
+
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -107,7 +146,7 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
         }
     }
 
-    const result = await createForumPost(null, {
+    const result = await createForumPost({
       content,
       authorId: user.uid,
       authorName: userProfile.username || '',
@@ -129,9 +168,9 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
         description: 'Tu mensaje ya está en el foro.',
       });
       formRef.current?.reset();
-      setFile(null);
+      handleRemoveFile();
       setIsAnnouncement(false);
-    } else {
+    } else if(result.message) {
       toast({
         variant: 'destructive',
         title: 'Error al publicar',
@@ -185,20 +224,49 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
                         rows={3}
                         className="bg-input"
                     />
-                    
-                    {file && (
-                        <div className="flex items-center justify-between text-sm p-2 bg-muted rounded-md">
-                            <span className="truncate text-muted-foreground">{file.name}</span>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setFile(null)}>
-                                <XCircle className="h-4 w-4 text-red-500" />
+
+                    {!file ? (
+                        <div
+                            onDragEnter={handleDragEnter}
+                            onDragLeave={handleDragLeave}
+                            onDragOver={handleDragOver}
+                            onDrop={handleDrop}
+                            onClick={() => fileInputRef.current?.click()}
+                            className={cn(
+                                "relative block w-full rounded-lg border-2 border-dashed border-muted-foreground/30 p-8 text-center hover:border-primary/50 transition-colors cursor-pointer",
+                                isDragging && "border-primary/80 bg-primary/10"
+                            )}
+                        >
+                            <ImageDown className="mx-auto h-8 w-8 text-muted-foreground" />
+                            <span className="mt-2 block text-sm font-semibold text-muted-foreground">
+                                Arrastra una imagen o haz clic para seleccionarla
+                            </span>
+                        </div>
+                    ) : (
+                        <div className="relative w-fit">
+                            {preview ? (
+                                <Image src={preview} alt="Vista previa" width={200} height={150} className="rounded-md object-cover" />
+                            ) : (
+                                <div className="flex items-center gap-2 p-2 bg-muted rounded-md text-sm text-muted-foreground">
+                                    <Paperclip className="h-4 w-4" />
+                                    <span>{file.name}</span>
+                                </div>
+                            )}
+
+                            <Button variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={handleRemoveFile}>
+                                <XCircle className="h-4 w-4" />
                             </Button>
+                            
+                            {uploadProgress > 0 && (
+                                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center rounded-md">
+                                    <Progress value={uploadProgress} className="h-2 w-3/4" />
+                                    <p className="text-xs text-white mt-1">{Math.round(uploadProgress)}%</p>
+                                </div>
+                            )}
                         </div>
                     )}
+                    <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*, application/pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx"/>
                     
-                    {uploadProgress > 0 && (
-                        <Progress value={uploadProgress} className="h-2" />
-                    )}
-
                     <div className="flex justify-between items-center">
                        <div className="flex items-center">
                             <Popover>
@@ -223,10 +291,6 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
                                     </div>
                                 </PopoverContent>
                             </Popover>
-                            <Button type="button" variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()}>
-                                <Paperclip className="h-5 w-5 text-muted-foreground" />
-                            </Button>
-                            <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
                        </div>
                         
                         <div className="flex items-center gap-4">

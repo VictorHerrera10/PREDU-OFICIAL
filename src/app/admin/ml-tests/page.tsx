@@ -2,10 +2,9 @@
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TestTube2, BrainCircuit, Compass, Archive } from 'lucide-react';
+import { TestTube2, BrainCircuit, Compass } from 'lucide-react';
 import { AcademicPredictionTest } from './AcademicPredictionTest';
 import { PsychologicalPredictionTest } from './PsychologicalPredictionTest';
-import { StorageTest } from './StorageTest';
 
 function AdminMLTestsPage() {
   return (
@@ -24,15 +23,12 @@ function AdminMLTestsPage() {
                             </p>
                         </div>
                     </div>
-                     <TabsList className="grid w-full md:w-auto grid-cols-2 lg:grid-cols-3">
+                     <TabsList className="grid w-full md:w-auto grid-cols-2">
                         <TabsTrigger value="academic">
                             <Compass className="mr-2 h-4 w-4" /> Predicción Académica
                         </TabsTrigger>
                         <TabsTrigger value="psychological">
                             <BrainCircuit className="mr-2 h-4 w-4" /> Predicción Psicológica
-                        </TabsTrigger>
-                         <TabsTrigger value="storage">
-                            <Archive className="mr-2 h-4 w-4" /> Pruebas de Storage
                         </TabsTrigger>
                     </TabsList>
                 </CardHeader>
@@ -42,9 +38,6 @@ function AdminMLTestsPage() {
                     </TabsContent>
                     <TabsContent value="psychological">
                         <PsychologicalPredictionTest />
-                    </TabsContent>
-                    <TabsContent value="storage">
-                        <StorageTest />
                     </TabsContent>
                 </CardContent>
             </Card>

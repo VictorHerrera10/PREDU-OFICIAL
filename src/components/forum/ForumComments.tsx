@@ -113,7 +113,7 @@ export function ForumComments({ postId }: ForumCommentsProps) {
             }
         }
         
-        const result = await createForumComment(null, {
+        const result = await createForumComment({
             postId,
             content,
             authorId: user.uid,
