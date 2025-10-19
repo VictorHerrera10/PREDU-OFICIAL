@@ -49,17 +49,17 @@ export function TutorMainDashboard({ user }: Props) {
 
   const options: Option[] = useMemo(() => {
     const baseOptions = [
-      { id: 'inicio', icon: Home, title: 'Inicio', description: 'Tu resumen, notificaciones y próximos pasos.' },
+      { id: 'inicio', icon: Home, title: 'Inicio', description: 'Tu resumen, notificaciones y próximos pasos.' } as const,
     ];
     if (isIndependentTutor) {
       return [
         ...baseOptions,
-        { id: 'grupo', icon: Users, title: 'Mi Grupo', description: 'Información y estadísticas de tu grupo.' },
+        { id: 'grupo', icon: Users, title: 'Mi Grupo', description: 'Información y estadísticas de tu grupo.' } as const,
       ];
     }
     return [
       ...baseOptions,
-      { id: 'colegio', icon: School, title: 'Información del Colegio', description: 'Datos y estadísticas de tu institución.' },
+      { id: 'colegio', icon: School, title: 'Información del Colegio', description: 'Datos y estadísticas de tu institución.' } as const,
     ];
   }, [isIndependentTutor]);
 
