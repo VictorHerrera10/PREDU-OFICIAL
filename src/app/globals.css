@@ -203,31 +203,15 @@
     background-color: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
     border: 2px solid hsl(var(--primary) / 0.8);
-    border-right: 4px solid hsl(var(--primary) / 0.8);
-    border-bottom: 4px solid hsl(var(--primary) / 0.8);
     box-shadow: 2px 2px 0px hsl(var(--primary-foreground) / 0.2);
-    clip-path: polygon(
-      0% 0%, 
-      100% 0%, 
-      100% 100%, 
-      calc(100% - 10px) 100%, 
-      0% 100%
-    );
+    clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px);
   }
   .message-bubble-received {
       background-color: hsl(var(--secondary));
       color: hsl(var(--secondary-foreground));
       border: 2px solid hsl(var(--secondary) / 0.8);
-      border-right: 4px solid hsl(var(--secondary) / 0.8);
-      border-bottom: 4px solid hsl(var(--secondary) / 0.8);
       box-shadow: 2px 2px 0px hsl(var(--secondary-foreground) / 0.1);
-      clip-path: polygon(
-        0% 0%, 
-        100% 0%, 
-        100% calc(100% - 10px), 
-        calc(100% - 0px) 100%,
-        0% 100%
-    );
+      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
   }
 
 }

@@ -137,7 +137,7 @@ export function ChatWindow({ currentUser, recipientUser: initialRecipientUser, o
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed bottom-4 right-8 z-50"
+            className="fixed bottom-4 right-24 z-50"
         >
             <motion.div
                 layout
@@ -206,13 +206,13 @@ export function ChatWindow({ currentUser, recipientUser: initialRecipientUser, o
                                                             isCurrentUser ? 'flex-row-reverse' : 'flex-row'
                                                         )}>
                                                             <div className={cn(
-                                                                "relative px-3 py-2 text-sm break-words",
+                                                                "relative px-3 py-2 text-sm",
                                                                 isCurrentUser 
                                                                     ? "message-bubble-sent" 
                                                                     : "message-bubble-received"
                                                             )}
                                                             >
-                                                                <p>{message.text}</p>
+                                                                <p className="break-words">{message.text}</p>
                                                             </div>
                                                             {message.timestamp && (
                                                                 <p className="text-xs mb-1 text-muted-foreground">
