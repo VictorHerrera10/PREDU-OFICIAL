@@ -192,7 +192,7 @@ export function ForumComments({ postId }: ForumCommentsProps) {
             
             <AnimatePresence>
                 {comments && comments.map((comment, index) => (
-                    <ForumComment key={comment.id} comment={comment} index={index} />
+                    <ForumComment key={comment.id} comment={comment} postId={postId} index={index} />
                 ))}
             </AnimatePresence>
             
@@ -216,13 +216,13 @@ export function ForumComments({ postId }: ForumCommentsProps) {
                             className="bg-input"
                         />
                         {file && (
-                             <div className="relative w-fit mx-auto">
+                             <div className="relative w-fit">
                                 {preview ? (
                                     <Image src={preview} alt="Vista previa" width={100} height={75} className="rounded-md object-cover" />
                                 ) : (
                                     <div className="flex items-center gap-2 p-2 bg-muted rounded-md text-sm text-muted-foreground">
                                         <Paperclip className="h-4 w-4" />
-                                        <span className="truncate max-w-xs">{file.name}</span>
+                                        <span className="truncate max-w-[200px]">{file.name}</span>
                                     </div>
                                 )}
                                 <Button variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={handleRemoveFile}>
