@@ -264,7 +264,7 @@ export function StudentMainDashboard({ user }: Props) {
 
       {!userProfile?.isHero && !isInstitutional && <LevelUpView isViewSelected={!!selectedView} />}
       
-      <div className="fixed bottom-24 right-6 z-30 flex flex-col items-end gap-4">
+      <div className="fixed bottom-8 right-6 z-30 flex flex-col items-end gap-4">
         {userProfile?.isHero && <HeroChatButton />}
         {user && <Inbox user={user} />}
       </div>
