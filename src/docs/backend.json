@@ -451,6 +451,7 @@
         "authorRole": { "type": "string" },
         "authorProfilePictureUrl": { "type": "string" },
         "associationId": { "type": "string", "description": "The ID of the institution or group this post belongs to." },
+        "isAnnouncement": { "type": "boolean", "description": "Flag to mark post as an important announcement." },
         "createdAt": { "type": "string", "format": "date-time" },
         "commentCount": { "type": "number" }
       },

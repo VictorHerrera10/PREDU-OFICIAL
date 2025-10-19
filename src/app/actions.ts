@@ -19,6 +19,8 @@ import {
   getDoc,
   limit,
   orderBy,
+  runTransaction,
+  increment,
 } from 'firebase/firestore';
 import { redirect } from 'next/navigation';
 import { initializeServerApp } from '@/firebase/server-init';
@@ -920,6 +922,7 @@ export async function createForumPost(prevState: any, formData: FormData) {
   const authorRole = formData.get('authorRole') as string;
   const authorProfilePictureUrl = formData.get('authorProfilePictureUrl') as string;
   const associationId = formData.get('associationId') as string;
+  const isAnnouncement = formData.get('isAnnouncement') === 'true';
 
   if (!content || !authorId || !authorName || !associationId) {
     return { success: false, message: 'Faltan datos para crear la publicación.' };
@@ -933,6 +936,7 @@ export async function createForumPost(prevState: any, formData: FormData) {
       authorRole,
       authorProfilePictureUrl,
       associationId, // Link post to the institution/group
+      isAnnouncement,
       createdAt: serverTimestamp(),
       commentCount: 0,
     });
@@ -944,5 +948,50 @@ export async function createForumPost(prevState: any, formData: FormData) {
   } catch (error: any) {
     console.error('Error creating forum post:', error);
     return { success: false, message: 'No se pudo crear la publicación. ' + error.message };
+  }
+}
+
+export async function createForumComment(prevState: any, formData: FormData) {
+  const { firestore } = await getAuthenticatedAppForUser();
+  const content = formData.get('content') as string;
+  const postId = formData.get('postId') as string;
+  const authorId = formData.get('authorId') as string;
+  const authorName = formData.get('authorName') as string;
+  const authorRole = formData.get('authorRole') as string;
+  const authorProfilePictureUrl = formData.get('authorProfilePictureUrl') as string;
+
+  if (!content || !authorId || !authorName || !postId) {
+    return { success: false, message: 'Faltan datos para crear el comentario.' };
+  }
+
+  const postRef = doc(firestore, 'forums', postId);
+  const commentsColRef = collection(postRef, 'comments');
+
+  try {
+    // Use a transaction to ensure both operations succeed or fail together.
+    await runTransaction(firestore, async (transaction) => {
+        // 1. Add the new comment.
+        transaction.set(doc(commentsColRef), {
+            content,
+            authorId,
+            authorName,
+            authorRole,
+            authorProfilePictureUrl,
+            createdAt: serverTimestamp(),
+        });
+
+        // 2. Atomically increment the comment count on the parent post.
+        transaction.update(postRef, {
+            commentCount: increment(1)
+        });
+    });
+
+    revalidatePath('/student-dashboard');
+    revalidatePath('/tutor-dashboard');
+
+    return { success: true };
+  } catch (error: any) {
+    console.error('Error creating forum comment:', error);
+    return { success: false, message: 'No se pudo añadir el comentario. ' + error.message };
   }
 }

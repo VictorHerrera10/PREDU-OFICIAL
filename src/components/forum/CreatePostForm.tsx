@@ -7,10 +7,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { User } from 'firebase/auth';
 import { UserProfile } from './ForumView'; // Assuming UserProfile is exported from ForumView
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { MessageSquarePlus, Smile, Send, Loader2 } from 'lucide-react';
+import { MessageSquarePlus, Smile, Send, Loader2, Megaphone } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Button } from '../ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '../ui/label';
 
 type CreatePostFormProps = {
   user: User;
@@ -29,6 +31,7 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const [isAnnouncement, setIsAnnouncement] = useState(false);
 
   useEffect(() => {
     if (state.message) {
@@ -44,8 +47,7 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
           description: 'Tu mensaje ya está en el foro.',
         });
         formRef.current?.reset();
-        // Resetting state after handling is tricky with useActionState.
-        // The form reset is usually enough for the user.
+        setIsAnnouncement(false);
       }
     }
   }, [state, toast]);
@@ -62,15 +64,12 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
         const text = textAreaRef.current.value;
         const newText = text.substring(0, start) + emoji + text.substring(end);
         
-        // This is a way to set the value and trigger React's state update if it were controlled
-        // For uncontrolled, this directly changes the textarea
         const nativeTextareaValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value")?.set;
         nativeTextareaValueSetter?.call(textAreaRef.current, newText);
 
         const event = new Event('input', { bubbles: true });
         textAreaRef.current.dispatchEvent(event);
 
-        // Move cursor after inserted emoji
         setTimeout(() => {
             textAreaRef.current?.focus();
             textAreaRef.current?.setSelectionRange(start + emoji.length, start + emoji.length);
@@ -78,6 +77,7 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
     }
   };
 
+  const isPrivilegedUser = userProfile.role === 'admin' || userProfile.role === 'tutor';
 
   return (
     <Card className="bg-background/50">
@@ -100,6 +100,7 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
                     <input type="hidden" name="authorRole" value={userProfile.role || ''} />
                     <input type="hidden" name="authorProfilePictureUrl" value={userProfile.profilePictureUrl || ''} />
                     <input type="hidden" name="associationId" value={userProfile.institutionId || ''} />
+                    <input type="hidden" name="isAnnouncement" value={String(isAnnouncement)} />
                     
                     <Textarea
                         ref={textAreaRef}
@@ -132,11 +133,26 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
                                 </div>
                             </PopoverContent>
                         </Popover>
-
-                         <Button type="submit" disabled={isPending} className="btn-retro !h-10 !px-4 !text-sm">
-                            {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                            {isPending ? 'Publicando...' : 'Publicar'}
-                        </Button>
+                        
+                        <div className="flex items-center gap-4">
+                            {isPrivilegedUser && (
+                                <div className="flex items-center space-x-2">
+                                    <Switch 
+                                        id="announcement-switch" 
+                                        checked={isAnnouncement}
+                                        onCheckedChange={setIsAnnouncement}
+                                    />
+                                    <Label htmlFor="announcement-switch" className="flex items-center gap-1.5 text-sm text-amber-400">
+                                        <Megaphone className="h-4 w-4" />
+                                        Aviso
+                                    </Label>
+                                </div>
+                            )}
+                            <Button type="submit" disabled={isPending} className="btn-retro !h-10 !px-4 !text-sm">
+                                {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                                {isPending ? 'Publicando...' : 'Publicar'}
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>
