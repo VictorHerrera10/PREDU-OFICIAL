@@ -927,7 +927,7 @@ type ForumPostData = {
   fileName?: string | null;
 };
 
-export async function createForumPost(prevState: any, postData: ForumPostData) {
+export async function createForumPost(postData: ForumPostData) {
   const { firestore } = await getAuthenticatedAppForUser();
 
   const {
@@ -990,7 +990,7 @@ type ForumCommentData = {
 };
 
 
-export async function createForumComment(prevState: any, commentData: ForumCommentData) {
+export async function createForumComment(commentData: ForumCommentData) {
   const { firestore } = await getAuthenticatedAppForUser();
   
   const {
