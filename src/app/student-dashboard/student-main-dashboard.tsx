@@ -22,6 +22,7 @@ import ScholarshipInfoView from './views/ScholarshipInfoView';
 import { Button } from '@/components/ui/button';
 import RuiView from './views/RUI/RuiView';
 import { InstitutionHeader } from './institution-header';
+import { GroupHeader } from './group-header';
 import { Inbox } from '@/components/chat/Inbox';
 
 type View = 'inicio' | 'prediccionAcademica' | 'prediccionPsicologica' | 'infoCarreras' | 'infoUniversidades' | 'infoBecas' | 'rui';
@@ -102,6 +103,8 @@ export function StudentMainDashboard({ user }: Props) {
     return <StudentLoader loadingText="Cargando tu nivel de Héroe..." />;
   }
 
+  const paddingTopClass = userProfile?.institutionId ? 'pt-32' : 'pt-20';
+
   return (
     <div className={cn("flex flex-col min-h-screen", themeClass)}>
       <div className="fixed top-0 left-0 right-0 z-20">
@@ -109,7 +112,8 @@ export function StudentMainDashboard({ user }: Props) {
           <Logo />
           <UserNav />
         </header>
-        {isInstitutional && <InstitutionHeader />}
+        <InstitutionHeader />
+        <GroupHeader />
       </div>
 
       {(userProfile?.isHero || isInstitutional) && (
@@ -140,7 +144,7 @@ export function StudentMainDashboard({ user }: Props) {
         </div>
       )}
 
-      <main className={cn("flex-grow", (userProfile?.isHero || isInstitutional) ? "md:ml-24" : "", isInstitutional ? "pt-32" : "pt-20")}>
+      <main className={cn("flex-grow", (userProfile?.isHero || isInstitutional) ? "md:ml-24" : "", paddingTopClass)}>
         <LayoutGroup>
           <AnimatePresence>
             {!selectedView && (
@@ -264,10 +268,10 @@ export function StudentMainDashboard({ user }: Props) {
 
       {!userProfile?.isHero && !isInstitutional && <LevelUpView isViewSelected={!!selectedView} />}
       
-        <div className="fixed bottom-14 right-6 z-30 flex flex-col items-end gap-4">
-            {userProfile?.isHero && <HeroChatButton />}
-            {user && (userProfile?.isHero || isInstitutional) && <Inbox user={user} />}
-        </div>
+      <div className="fixed bottom-14 right-6 z-30 flex flex-col items-end gap-4">
+          {userProfile?.isHero && <HeroChatButton />}
+          {user && (userProfile?.isHero || isInstitutional) && <Inbox user={user} />}
+      </div>
     </div>
   );
 }
