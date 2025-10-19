@@ -1,10 +1,9 @@
 'use client';
 
-import { useActionState, useRef, useState } from 'react';
+import { useActionState, useRef, useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { createForumPost } from '@/app/actions';
 import { Textarea } from '@/components/ui/textarea';
-import { SubmitButton } from '@/components/submit-button';
 import { User } from 'firebase/auth';
 import { UserProfile } from './ForumView'; // Assuming UserProfile is exported from ForumView
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -30,26 +29,26 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
-  
-  if (state.message && !state.success) {
-      toast({
-        variant: 'destructive',
-        title: 'Error al publicar',
-        description: state.message,
-      });
-  }
 
-  if (state.success) {
-      // Reset form after successful submission
-      formRef.current?.reset();
-      // Optionally show a success toast
-      toast({
-        title: '¡Publicado!',
-        description: 'Tu mensaje ya está en el foro.',
-      });
-      // Reset state
-      state.success = false; 
-  }
+  useEffect(() => {
+    if (state.message) {
+      if (!state.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error al publicar',
+          description: state.message,
+        });
+      } else {
+        toast({
+          title: '¡Publicado!',
+          description: 'Tu mensaje ya está en el foro.',
+        });
+        formRef.current?.reset();
+        // Resetting state after handling is tricky with useActionState.
+        // The form reset is usually enough for the user.
+      }
+    }
+  }, [state, toast]);
   
   const getInitials = (name?: string | null) => {
     if (!name) return '?';
