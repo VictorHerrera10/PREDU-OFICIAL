@@ -28,19 +28,20 @@ export function ForumView() {
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
   const forumQuery = useMemo(() => {
-    if (!userProfile?.institutionId || !firestore) return null;
+    // Wait for both firestore and the userProfile with a valid association ID
+    if (!firestore || !userProfile?.institutionId) return null;
     return query(
       collection(firestore, 'forums'),
       where('associationId', '==', userProfile.institutionId),
       orderBy('createdAt', 'desc')
     );
-  }, [userProfile, firestore]);
+  }, [firestore, userProfile]);
 
   const { data: posts, isLoading: arePostsLoading } = useCollection<ForumPost>(forumQuery);
   
-  const isLoading = isProfileLoading || arePostsLoading;
+  const isLoading = isProfileLoading || (userProfile?.institutionId && arePostsLoading);
   
-  if (!userProfile?.institutionId && !isLoading) {
+  if (!userProfile?.institutionId && !isProfileLoading) {
       return (
            <div className="text-center text-muted-foreground p-8 border border-dashed rounded-lg">
                 <Files className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
