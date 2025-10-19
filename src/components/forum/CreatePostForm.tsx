@@ -34,7 +34,6 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
 
   const [isAnnouncement, setIsAnnouncement] = useState(false);
   const [isPending, setIsPending] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
   
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -46,7 +45,8 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
     return name.split(' ').map((n) => n[0]).slice(0, 2).join('');
   };
   
-  const handleFileSelect = (selectedFile: File | null) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
     if (selectedFile) {
         if (selectedFile.size > 5 * 1024 * 1024) { // 5MB limit
             toast({
@@ -63,34 +63,6 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
             setPreview(null);
         }
     }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleFileSelect(e.target.files?.[0] || null);
-  };
-
-  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    handleFileSelect(e.dataTransfer.files?.[0] || null);
   };
 
   const handleRemoveFile = () => {
@@ -225,25 +197,8 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
                         className="bg-input"
                     />
 
-                    {!file ? (
-                        <div
-                            onDragEnter={handleDragEnter}
-                            onDragLeave={handleDragLeave}
-                            onDragOver={handleDragOver}
-                            onDrop={handleDrop}
-                            onClick={() => fileInputRef.current?.click()}
-                            className={cn(
-                                "relative block w-full rounded-lg border-2 border-dashed border-muted-foreground/30 p-8 text-center hover:border-primary/50 transition-colors cursor-pointer",
-                                isDragging && "border-primary/80 bg-primary/10"
-                            )}
-                        >
-                            <ImageDown className="mx-auto h-8 w-8 text-muted-foreground" />
-                            <span className="mt-2 block text-sm font-semibold text-muted-foreground">
-                                Arrastra una imagen o haz clic para seleccionarla
-                            </span>
-                        </div>
-                    ) : (
-                        <div className="relative w-fit">
+                    {file && (
+                         <div className="relative w-fit">
                             {preview ? (
                                 <Image src={preview} alt="Vista previa" width={200} height={150} className="rounded-md object-cover" />
                             ) : (
@@ -256,13 +211,12 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
                             <Button variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={handleRemoveFile}>
                                 <XCircle className="h-4 w-4" />
                             </Button>
-                            
-                            {uploadProgress > 0 && (
-                                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center rounded-md">
-                                    <Progress value={uploadProgress} className="h-2 w-3/4" />
-                                    <p className="text-xs text-white mt-1">{Math.round(uploadProgress)}%</p>
-                                </div>
-                            )}
+                        </div>
+                    )}
+                     {uploadProgress > 0 && uploadProgress < 100 && (
+                        <div className="w-full max-w-sm">
+                            <Progress value={uploadProgress} className="h-2" />
+                            <p className="text-xs text-muted-foreground mt-1 text-center">{`Subiendo... ${Math.round(uploadProgress)}%`}</p>
                         </div>
                     )}
                     <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*, application/pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx"/>
@@ -291,6 +245,12 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
                                     </div>
                                 </PopoverContent>
                             </Popover>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()}>
+                                <ImageDown className="h-5 w-5 text-muted-foreground" />
+                            </Button>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()}>
+                                <Paperclip className="h-5 w-5 text-muted-foreground" />
+                            </Button>
                        </div>
                         
                         <div className="flex items-center gap-4">
