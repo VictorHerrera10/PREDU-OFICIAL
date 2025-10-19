@@ -28,6 +28,7 @@ type RecipientUser = {
     role?: 'student' | 'tutor' | 'admin';
     tutorDetails?: {
         roleInInstitution?: string;
+        workArea?: string;
     };
 };
 
@@ -116,7 +117,7 @@ export function ChatWindow({ currentUser, recipientUser: initialRecipientUser, o
     const getRoleInfo = (user: RecipientUser | null) => {
         if (!user) return null;
         if (user.role === 'tutor') {
-            const roleInInstitution = user.tutorDetails?.roleInInstitution;
+            const roleInInstitution = user.tutorDetails?.workArea || user.tutorDetails?.roleInInstitution;
             return roleInInstitution ? `Tutor (${roleInInstitution})` : 'Tutor';
         }
         if (user.role === 'student') return 'Estudiante';
@@ -136,7 +137,7 @@ export function ChatWindow({ currentUser, recipientUser: initialRecipientUser, o
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed bottom-4 right-24 z-50"
+            className="fixed bottom-4 right-8 z-50"
         >
             <motion.div
                 layout
@@ -146,21 +147,19 @@ export function ChatWindow({ currentUser, recipientUser: initialRecipientUser, o
                 className="w-[360px] flex flex-col bg-card/80 backdrop-blur-lg border-border/50 overflow-hidden shadow-2xl rounded-lg"
             >
                  <header className="relative flex items-center justify-center h-10 px-4 bg-muted/30 border-b border-border/50 flex-shrink-0 cursor-pointer" onClick={() => setIsMinimized(!isMinimized)}>
-                    <div className="flex flex-col items-center">
-                        <div className="flex items-center gap-2">
-                             <Avatar className="h-6 w-6">
-                                <AvatarImage src={recipientUser?.profilePictureUrl} />
-                                <AvatarFallback>{getInitials(recipientUser?.username)}</AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm font-bold text-foreground">{recipientUser?.username}</span>
-                            <span className={cn(
-                                "h-2 w-2 rounded-full",
-                                recipientUser?.status === 'online' ? 'bg-green-500' : 'bg-gray-500'
-                            )} />
-                        </div>
+                    <div className="flex items-baseline gap-2">
+                         <Avatar className="h-6 w-6">
+                            <AvatarImage src={recipientUser?.profilePictureUrl} />
+                            <AvatarFallback>{getInitials(recipientUser?.username)}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm font-bold text-foreground">{recipientUser?.username}</span>
                         {recipientUser?.role && (
-                             <span className="text-xs text-muted-foreground">{getRoleInfo(recipientUser)}</span>
+                            <span className="text-xs text-muted-foreground">{getRoleInfo(recipientUser)}</span>
                         )}
+                        <span className={cn(
+                            "h-2 w-2 rounded-full",
+                            recipientUser?.status === 'online' ? 'bg-green-500' : 'bg-gray-500'
+                        )} />
                     </div>
                     <div className="absolute right-4 flex items-center gap-2">
                         <button onClick={(e) => { e.stopPropagation(); setIsMinimized(!isMinimized); }} className="w-3 h-3 rounded-full bg-yellow-500/50 hover:bg-yellow-500/80 transition-colors flex items-center justify-center">
@@ -207,13 +206,13 @@ export function ChatWindow({ currentUser, recipientUser: initialRecipientUser, o
                                                             isCurrentUser ? 'flex-row-reverse' : 'flex-row'
                                                         )}>
                                                             <div className={cn(
-                                                                "relative px-3 py-2 text-sm rounded-lg shadow-md",
+                                                                "relative px-3 py-2 text-sm break-words",
                                                                 isCurrentUser 
-                                                                    ? "bg-primary text-primary-foreground" 
-                                                                    : "bg-secondary text-secondary-foreground"
+                                                                    ? "message-bubble-sent" 
+                                                                    : "message-bubble-received"
                                                             )}
                                                             >
-                                                                <p className="break-words">{message.text}</p>
+                                                                <p>{message.text}</p>
                                                             </div>
                                                             {message.timestamp && (
                                                                 <p className="text-xs mb-1 text-muted-foreground">
