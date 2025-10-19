@@ -29,15 +29,16 @@ export function ForumView() {
 
   const forumQuery = useMemo(() => {
     // Wait until profile is loaded and has an association ID
-    if (isProfileLoading || !userProfile?.institutionId) {
-        return null;
+    if (userProfile?.institutionId) {
+        return query(
+          collection(firestore, 'forums'),
+          where('associationId', '==', userProfile.institutionId),
+          orderBy('createdAt', 'desc')
+        );
     }
-    return query(
-      collection(firestore, 'forums'),
-      where('associationId', '==', userProfile.institutionId),
-      orderBy('createdAt', 'desc')
-    );
-  }, [firestore, userProfile, isProfileLoading]);
+    // Return null if there's no institutionId yet, useCollection will wait.
+    return null; 
+  }, [firestore, userProfile]);
 
   const { data: posts, isLoading: arePostsLoading } = useCollection<ForumPost>(forumQuery);
   
@@ -75,7 +76,7 @@ export function ForumView() {
       <CreatePostForm user={user} userProfile={userProfile} />
       
       <div className="space-y-4">
-        {arePostsLoading ? (
+        {isLoading ? (
             <div className="space-y-4">
                 <Skeleton className="h-32 w-full" />
                 <Skeleton className="h-32 w-full" />
