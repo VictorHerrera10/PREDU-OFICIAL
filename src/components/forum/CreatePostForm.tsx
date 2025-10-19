@@ -206,9 +206,9 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
                     />
 
                     {file && (
-                         <div className="relative w-fit">
+                         <div className="relative w-fit mx-auto">
                             {preview ? (
-                                <Image src={preview} alt="Vista previa" width={200} height={150} className="rounded-md object-cover" />
+                                <Image src={preview} alt="Vista previa" width={150} height={100} className="rounded-md object-cover" />
                             ) : (
                                 <div className="flex items-center gap-2 p-2 bg-muted rounded-md text-sm text-muted-foreground">
                                     <Paperclip className="h-4 w-4" />
@@ -222,7 +222,7 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
                         </div>
                     )}
                      {uploadProgress > 0 && uploadProgress < 100 && (
-                        <div className="w-full max-w-sm">
+                        <div className="w-full max-w-sm mx-auto">
                             <Progress value={uploadProgress} className="h-2" />
                             <p className="text-xs text-muted-foreground mt-1 text-center">{`Subiendo... ${Math.round(uploadProgress)}%`}</p>
                         </div>

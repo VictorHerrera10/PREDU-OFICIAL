@@ -216,7 +216,7 @@ export function ForumComments({ postId }: ForumCommentsProps) {
                             className="bg-input"
                         />
                         {file && (
-                             <div className="relative w-fit">
+                             <div className="relative w-fit mx-auto">
                                 {preview ? (
                                     <Image src={preview} alt="Vista previa" width={100} height={75} className="rounded-md object-cover" />
                                 ) : (

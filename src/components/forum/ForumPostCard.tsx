@@ -94,8 +94,8 @@ export function ForumPostCard({ post, index = 0 }: ForumPostCardProps) {
                 {post.content && <p className="text-foreground/90 whitespace-pre-wrap">{post.content}</p>}
                 
                 {post.imageUrl && (
-                    <div className="mt-4">
-                        <Image src={post.imageUrl} alt="Imagen adjunta" width={500} height={300} className="rounded-md object-cover max-h-96 w-auto" />
+                    <div className="mt-4 flex justify-center">
+                        <Image src={post.imageUrl} alt="Imagen adjunta" width={250} height={150} className="rounded-md object-cover max-h-80 w-auto" />
                     </div>
                 )}
                 
