@@ -28,21 +28,25 @@ export function ForumView() {
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
   const forumQuery = useMemo(() => {
-    // This is the critical change: Only build the query if we have the institutionId.
-    // If userProfile is loading or doesn't have the ID, this will be null, and useCollection will wait.
-    if (userProfile?.institutionId) {
+    // This is the critical change: The query is ONLY constructed when all conditions are met.
+    // 1. Firestore is available.
+    // 2. The user profile is NOT loading.
+    // 3. The user profile exists and has an institutionId.
+    if (firestore && !isProfileLoading && userProfile?.institutionId) {
         return query(
           collection(firestore, 'forums'),
           where('associationId', '==', userProfile.institutionId),
           orderBy('createdAt', 'desc')
         );
     }
+    // In all other cases (loading, no profile, no institutionId), return null.
+    // useCollection will wait until the query is not null.
     return null; 
-  }, [firestore, userProfile]);
+  }, [firestore, userProfile, isProfileLoading]);
 
   const { data: posts, isLoading: arePostsLoading } = useCollection<ForumPost>(forumQuery);
   
-  // Overall loading state is when the profile is loading, or when we have an institutionId but posts are still loading.
+  // The overall loading state now correctly waits for the profile to load first.
   const isLoading = isProfileLoading || (!!userProfile?.institutionId && arePostsLoading);
   
   if (isProfileLoading) {
@@ -53,6 +57,7 @@ export function ForumView() {
     );
   }
 
+  // If after loading, the user has no institutionId, show the message to join one.
   if (!userProfile?.institutionId) {
       return (
            <div className="text-center text-muted-foreground p-8 border border-dashed rounded-lg">
@@ -76,7 +81,7 @@ export function ForumView() {
       <CreatePostForm user={user} userProfile={userProfile} />
       
       <div className="space-y-4">
-        {isLoading ? (
+        {arePostsLoading ? (
             <div className="space-y-4">
                 <Skeleton className="h-32 w-full" />
                 <Skeleton className="h-32 w-full" />
