@@ -8,7 +8,7 @@ import { Separator } from '../ui/separator';
 import { ForumComment, ForumCommentType } from './ForumComment';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
-import { Loader2, Send, Smile, Paperclip, XCircle } from 'lucide-react';
+import { Loader2, Send, Smile, Paperclip, XCircle, ImageDown } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { createForumComment } from '@/app/actions';
@@ -16,6 +16,7 @@ import { UserProfile } from './ForumView';
 import { useToast } from '@/hooks/use-toast';
 import { uploadFile } from '@/lib/storage';
 import { Progress } from '../ui/progress';
+import Image from 'next/image';
 
 type ForumCommentsProps = {
   postId: string;
@@ -36,10 +37,12 @@ export function ForumComments({ postId }: ForumCommentsProps) {
 
     const [isPending, setIsPending] = useState(false);
     const [file, setFile] = useState<File | null>(null);
+    const [preview, setPreview] = useState<string | null>(null);
     const [uploadProgress, setUploadProgress] = useState(0);
 
     const formRef = useRef<HTMLFormElement>(null);
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
+    const imageInputRef = useRef<HTMLInputElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const userProfileRef = useMemo(() => {
@@ -55,9 +58,17 @@ export function ForumComments({ postId }: ForumCommentsProps) {
     
     const { data: comments, isLoading } = useCollection<ForumCommentType>(commentsQuery);
     
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fileType: 'image' | 'document') => {
         const selectedFile = e.target.files?.[0];
         if (selectedFile) {
+            if (fileType === 'image' && !selectedFile.type.startsWith('image/')) {
+                toast({
+                    variant: 'destructive',
+                    title: 'Archivo no válido',
+                    description: 'Por favor, selecciona solo archivos de imagen.',
+                });
+                return;
+            }
             if (selectedFile.size > 5 * 1024 * 1024) { // 5MB limit
                 toast({
                     variant: 'destructive',
@@ -67,7 +78,19 @@ export function ForumComments({ postId }: ForumCommentsProps) {
                 return;
             }
             setFile(selectedFile);
+            if (selectedFile.type.startsWith('image/')) {
+                setPreview(URL.createObjectURL(selectedFile));
+            } else {
+                setPreview(null);
+            }
         }
+    };
+
+    const handleRemoveFile = () => {
+        setFile(null);
+        setPreview(null);
+        if (imageInputRef.current) imageInputRef.current.value = '';
+        if (fileInputRef.current) fileInputRef.current.value = '';
     };
     
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -130,7 +153,7 @@ export function ForumComments({ postId }: ForumCommentsProps) {
 
         if (result.success) {
             formRef.current?.reset();
-            setFile(null);
+            handleRemoveFile();
         } else if (result.message) {
              toast({
                 variant: 'destructive',
@@ -193,13 +216,21 @@ export function ForumComments({ postId }: ForumCommentsProps) {
                             className="bg-input"
                         />
                         {file && (
-                            <div className="flex items-center justify-between text-sm p-2 bg-muted rounded-md">
-                                <span className="truncate text-muted-foreground">{file.name}</span>
-                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setFile(null)}>
-                                    <XCircle className="h-4 w-4 text-red-500" />
+                             <div className="relative w-fit">
+                                {preview ? (
+                                    <Image src={preview} alt="Vista previa" width={100} height={75} className="rounded-md object-cover" />
+                                ) : (
+                                    <div className="flex items-center gap-2 p-2 bg-muted rounded-md text-sm text-muted-foreground">
+                                        <Paperclip className="h-4 w-4" />
+                                        <span className="truncate max-w-xs">{file.name}</span>
+                                    </div>
+                                )}
+                                <Button variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={handleRemoveFile}>
+                                    <XCircle className="h-4 w-4" />
                                 </Button>
                             </div>
                         )}
+
                         {uploadProgress > 0 && (
                             <Progress value={uploadProgress} className="h-1" />
                         )}
@@ -219,10 +250,14 @@ export function ForumComments({ postId }: ForumCommentsProps) {
                                         </div>
                                     </PopoverContent>
                                 </Popover>
+                                <Button type="button" variant="ghost" size="icon" onClick={() => imageInputRef.current?.click()}>
+                                    <ImageDown className="h-5 w-5 text-muted-foreground" />
+                                </Button>
                                 <Button type="button" variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()}>
                                     <Paperclip className="h-5 w-5 text-muted-foreground" />
                                 </Button>
-                                <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+                                <input type="file" ref={imageInputRef} onChange={(e) => handleFileChange(e, 'image')} className="hidden" accept="image/*"/>
+                                <input type="file" ref={fileInputRef} onChange={(e) => handleFileChange(e, 'document')} className="hidden" accept="application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" />
                             </div>
                             <Button type="submit" disabled={isPending} className="btn-retro !h-9 !px-3 !text-xs">
                                 {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}

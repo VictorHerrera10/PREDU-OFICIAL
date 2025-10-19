@@ -16,7 +16,6 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '../ui/label';
 import { useStorage } from '@/firebase';
 import { Progress } from '../ui/progress';
-import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
 type CreatePostFormProps = {
@@ -30,6 +29,7 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isAnnouncement, setIsAnnouncement] = useState(false);
@@ -45,9 +45,18 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
     return name.split(' ').map((n) => n[0]).slice(0, 2).join('');
   };
   
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fileType: 'image' | 'document') => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
+        if (fileType === 'image' && !selectedFile.type.startsWith('image/')) {
+            toast({
+                variant: 'destructive',
+                title: 'Archivo no válido',
+                description: 'Por favor, selecciona solo archivos de imagen.',
+            });
+            return;
+        }
+
         if (selectedFile.size > 5 * 1024 * 1024) { // 5MB limit
             toast({
                 variant: 'destructive',
@@ -68,9 +77,8 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
   const handleRemoveFile = () => {
     setFile(null);
     setPreview(null);
-    if(fileInputRef.current) {
-        fileInputRef.current.value = '';
-    }
+    if(imageInputRef.current) imageInputRef.current.value = '';
+    if(fileInputRef.current) fileInputRef.current.value = '';
   }
 
 
@@ -219,7 +227,8 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
                             <p className="text-xs text-muted-foreground mt-1 text-center">{`Subiendo... ${Math.round(uploadProgress)}%`}</p>
                         </div>
                     )}
-                    <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*, application/pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx"/>
+                    <input type="file" ref={imageInputRef} onChange={(e) => handleFileChange(e, 'image')} className="hidden" accept="image/*"/>
+                    <input type="file" ref={fileInputRef} onChange={(e) => handleFileChange(e, 'document')} className="hidden" accept="application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"/>
                     
                     <div className="flex justify-between items-center">
                        <div className="flex items-center">
@@ -245,7 +254,7 @@ export function CreatePostForm({ user, userProfile }: CreatePostFormProps) {
                                     </div>
                                 </PopoverContent>
                             </Popover>
-                            <Button type="button" variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()}>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => imageInputRef.current?.click()}>
                                 <ImageDown className="h-5 w-5 text-muted-foreground" />
                             </Button>
                             <Button type="button" variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()}>
