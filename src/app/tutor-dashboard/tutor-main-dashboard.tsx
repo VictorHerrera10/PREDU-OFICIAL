@@ -91,9 +91,7 @@ export function TutorMainDashboard({ user }: Props) {
         </div>
        </div>
        
-       <div className="pt-32">
-      
-      <main className="flex-grow">
+      <main className="pt-32 flex-grow">
         <LayoutGroup>
           <AnimatePresence>
             {!selectedView && (
@@ -178,10 +176,9 @@ export function TutorMainDashboard({ user }: Props) {
             </AnimatePresence>
         </div>
       </main>
-       </div>
-        <div className="fixed bottom-6 right-6 z-30 flex flex-col items-end gap-4">
-            {user && <Inbox user={user} />}
-        </div>
+      <div className="fixed bottom-6 right-6 z-30 flex flex-col items-end gap-4">
+        {user && <Inbox user={user} />}
+      </div>
     </div>
   );
 }
