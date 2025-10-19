@@ -129,7 +129,7 @@ export function ChatWindow({ currentUser, recipientUser: initialRecipientUser, o
                 variants={cardVariants}
                 animate={isMinimized ? 'minimized' : 'open'}
                 transition={{ type: 'spring', stiffness: 400, damping: 40 }}
-                className="w-[400px] flex flex-col bg-card/80 backdrop-blur-lg border-border/50 overflow-hidden shadow-2xl rounded-lg"
+                className="w-[360px] flex flex-col bg-card/80 backdrop-blur-lg border-border/50 overflow-hidden shadow-2xl rounded-lg"
             >
                  <header className="relative flex items-center justify-center h-10 px-4 bg-muted/30 border-b border-border/50 flex-shrink-0 cursor-pointer" onClick={() => setIsMinimized(!isMinimized)}>
                     <div className="flex items-center gap-2">
@@ -147,7 +147,6 @@ export function ChatWindow({ currentUser, recipientUser: initialRecipientUser, o
                         <button onClick={(e) => { e.stopPropagation(); setIsMinimized(!isMinimized); }} className="w-3 h-3 rounded-full bg-yellow-500/50 hover:bg-yellow-500/80 transition-colors flex items-center justify-center">
                             <Minus className="h-2 w-2 text-white/70" />
                         </button>
-                        <div className="w-3 h-3 rounded-full bg-green-500/50" />
                         <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="w-3 h-3 rounded-full bg-destructive/50 hover:bg-destructive/80 transition-colors flex items-center justify-center">
                             <X className="h-2 w-2 text-destructive-foreground/70" />
                         </button>
@@ -196,7 +195,7 @@ export function ChatWindow({ currentUser, recipientUser: initialRecipientUser, o
                                                             style={{
                                                                 clipPath: isCurrentUser
                                                                     ? 'polygon(0% 0%, 100% 0%, 100% 100%, 15% 100%, 0 85%)'
-                                                                    : 'polygon(0% 0%, 100% 0%, 100% 85%, 85% 100%, 0 100%)',
+                                                                    : 'polygon(0% 0%, 100% 85%, 100% 100%, 85% 100%, 0 100%)',
                                                             }}
                                                             >
                                                                 <p>{message.text}</p>
