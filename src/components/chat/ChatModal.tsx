@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { User } from 'firebase/auth';
 import { useCollection, useDoc, useFirestore } from '@/firebase';
-import { collection, query, orderBy, doc } from 'firebase/firestore';
+import { collection, query, orderBy, doc, getDocs } from 'firebase/firestore';
 import { sendMessage } from '@/app/actions';
 
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -11,7 +11,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Send, Smile, X, Minus } from 'lucide-react';
+import { Loader2, Send, Smile, X, Minus, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -87,6 +87,27 @@ export function ChatWindow({ currentUser, recipientUser: initialRecipientUser, o
         }
     }, [messages, isSending]);
 
+    // Send initial support message if chat is new
+     useEffect(() => {
+        const sendInitialSupportMessage = async () => {
+            if (!firestore || !recipientUser || recipientUser.role !== 'admin' || isLoading) return;
+
+            const messagesRef = collection(firestore, 'chats', chatId, 'messages');
+            const messagesSnap = await getDocs(messagesRef);
+
+            if (messagesSnap.empty) {
+                const welcomeMessage = {
+                    text: '¡Hola! Soy tu asistente de Soporte Técnico. No dudes en hacer cualquier pregunta o consulta que necesites. ¡Estoy aquí para ayudarte! 🛠️',
+                    senderId: recipientUser.id,
+                    receiverId: currentUser.uid,
+                };
+                await sendMessage(chatId, welcomeMessage);
+            }
+        };
+
+        sendInitialSupportMessage();
+    }, [firestore, recipientUser, chatId, currentUser.uid, isLoading]);
+
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!input.trim() || isSending) return;
@@ -116,6 +137,7 @@ export function ChatWindow({ currentUser, recipientUser: initialRecipientUser, o
 
     const getRoleInfo = (user: RecipientUser | null) => {
         if (!user) return null;
+        if (user.role === 'admin') return 'Soporte Técnico';
         if (user.role === 'tutor') {
             const roleInInstitution = user.tutorDetails?.workArea || user.tutorDetails?.roleInInstitution;
             return roleInInstitution ? `Tutor (${roleInInstitution})` : 'Tutor';
@@ -123,6 +145,17 @@ export function ChatWindow({ currentUser, recipientUser: initialRecipientUser, o
         if (user.role === 'student') return 'Estudiante';
         return null;
     }
+    
+    const isSupportChat = recipientUser?.role === 'admin';
+    const displayName = isSupportChat ? 'Soporte Técnico' : recipientUser?.username;
+    const displayAvatar = isSupportChat ? (
+        <AvatarFallback><ShieldAlert /></AvatarFallback>
+    ) : (
+        <>
+            <AvatarImage src={recipientUser?.profilePictureUrl} />
+            <AvatarFallback>{getInitials(recipientUser?.username)}</AvatarFallback>
+        </>
+    );
 
     const cardVariants = {
         open: { height: 500, opacity: 1 },
@@ -147,19 +180,17 @@ export function ChatWindow({ currentUser, recipientUser: initialRecipientUser, o
                 className="w-[360px] flex flex-col bg-card/80 backdrop-blur-lg border-border/50 overflow-hidden shadow-2xl rounded-lg"
             >
                  <header className="relative flex items-center justify-center h-10 px-4 bg-muted/30 border-b border-border/50 flex-shrink-0 cursor-pointer" onClick={() => setIsMinimized(!isMinimized)}>
-                    <div className="flex items-baseline gap-2">
+                    <div className="flex items-center gap-2">
                          <Avatar className="h-6 w-6">
-                            <AvatarImage src={recipientUser?.profilePictureUrl} />
-                            <AvatarFallback>{getInitials(recipientUser?.username)}</AvatarFallback>
+                            {displayAvatar}
                         </Avatar>
-                        <span className="text-sm font-bold text-foreground">{recipientUser?.username}</span>
-                        {recipientUser?.role && (
-                            <span className="text-xs text-muted-foreground">{getRoleInfo(recipientUser)}</span>
+                        <span className="text-sm font-bold text-foreground">{displayName}</span>
+                        {!isSupportChat && (
+                            <span className={cn(
+                                "h-2 w-2 rounded-full",
+                                recipientUser?.status === 'online' ? 'bg-green-500' : 'bg-gray-500'
+                            )} />
                         )}
-                        <span className={cn(
-                            "h-2 w-2 rounded-full",
-                            recipientUser?.status === 'online' ? 'bg-green-500' : 'bg-gray-500'
-                        )} />
                     </div>
                     <div className="absolute right-4 flex items-center gap-2">
                         <button onClick={(e) => { e.stopPropagation(); setIsMinimized(!isMinimized); }} className="w-3 h-3 rounded-full bg-yellow-500/50 hover:bg-yellow-500/80 transition-colors flex items-center justify-center">
