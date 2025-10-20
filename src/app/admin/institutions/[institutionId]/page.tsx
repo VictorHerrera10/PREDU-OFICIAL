@@ -55,7 +55,7 @@ type UserProfile = {
     email: string;
     tutorDetails?: {
         roleInInstitution: string;
-    };.
+    };
 };
 
 
