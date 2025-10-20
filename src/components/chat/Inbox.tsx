@@ -4,11 +4,11 @@ import { useState, useMemo } from 'react';
 import { User } from 'firebase/auth';
 import { motion } from 'framer-motion';
 import { useCollection, useFirestore, useDoc } from '@/firebase';
-import { collection, query, where, doc } from 'firebase/firestore';
+import { collection, query, where, doc, limit } from 'firebase/firestore';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import { MessagesSquare, Loader2, Inbox as InboxIcon } from 'lucide-react';
+import { MessagesSquare, Loader2, Inbox as InboxIcon, ShieldAlert } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -103,6 +103,13 @@ export function Inbox({ user }: { user: User }) {
     }, [firestore, user]);
 
     const { data: currentUserProfile } = useDoc<UserProfile>(currentUserProfileRef);
+    
+    const adminUserQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'users'), where('role', '==', 'admin'), limit(1));
+    }, [firestore]);
+    const { data: adminUsers, isLoading: isLoadingAdmin } = useCollection<UserProfile>(adminUserQuery);
+    const adminUser = adminUsers?.[0];
 
     const unreadCount = useMemo(() => {
         if (!chats) return 0;
@@ -115,6 +122,13 @@ export function Inbox({ user }: { user: User }) {
         const chatId = recipient.id < user.uid ? `chat_${recipient.id}_${user.uid}` : `chat_${user.uid}_${recipient.id}`;
         markChatAsRead(chatId);
     };
+    
+    const handleSupportClick = () => {
+        if(adminUser) {
+            setSelectedUser(adminUser);
+            setIsInboxOpen(false);
+        }
+    }
     
     const handleCloseChat = () => {
         setSelectedUser(null);
@@ -171,6 +185,14 @@ export function Inbox({ user }: { user: User }) {
                             <MessagesSquare /> Bandeja de Entrada
                         </SheetTitle>
                     </SheetHeader>
+                     {adminUser && (
+                        <div className="border-b pb-2 mb-2">
+                            <Button onClick={handleSupportClick} className="w-full" variant="outline">
+                                <ShieldAlert className="mr-2 h-4 w-4 text-primary" />
+                                Contactar a Soporte Técnico
+                            </Button>
+                        </div>
+                    )}
                     <div className="flex-grow overflow-y-auto -mx-6 px-6">
                         {isLoading ? (
                              <div className="flex justify-center items-center h-full">

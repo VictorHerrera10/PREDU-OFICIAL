@@ -27,6 +27,7 @@ const navItems = [
   { href: '/admin', label: 'Gestión de Usuarios', icon: Users },
   { href: '/admin/institutions', label: 'Instituciones', icon: School },
   { href: '/admin/independent-tutors', label: 'Tutores Independientes', icon: UserCheck },
+  { href: '/admin/support', label: 'Soporte Técnico', icon: ShieldAlert },
   { href: '/admin/ml-tests', label: 'Pruebas de ML', icon: TestTube2 },
 ];
 
