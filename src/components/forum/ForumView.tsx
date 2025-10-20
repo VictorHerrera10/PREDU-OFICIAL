@@ -17,7 +17,13 @@ export type UserProfile = {
   profilePictureUrl?: string;
 };
 
-export function ForumView() {
+// New prop to specify the association ID to display
+type ForumViewProps = {
+    associationId?: string;
+};
+
+
+export function ForumView({ associationId: propAssociationId }: ForumViewProps) {
   const { user, isUserLoading: isAuthLoading } = useUser();
   const firestore = useFirestore();
 
@@ -28,6 +34,9 @@ export function ForumView() {
 
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
+  // Use the prop if provided, otherwise fall back to the user's profile
+  const associationId = propAssociationId || userProfile?.institutionId;
+
   // Fetch all posts, we will filter on the client
   const forumQuery = useMemo(() => {
     if (!firestore) return null;
@@ -37,16 +46,16 @@ export function ForumView() {
   const { data: allPosts, isLoading: arePostsLoading } = useCollection<ForumPost>(forumQuery);
   
   const { communityPosts, announcementPosts } = useMemo(() => {
-    if (!allPosts || !userProfile?.institutionId) {
+    if (!allPosts || !associationId) {
       return { communityPosts: [], announcementPosts: [] };
     }
-    const myPosts = allPosts.filter(post => post.associationId === userProfile.institutionId);
+    const myPosts = allPosts.filter(post => post.associationId === associationId);
     
     const announcements = myPosts.filter(post => post.isAnnouncement);
     const community = myPosts.filter(post => !post.isAnnouncement);
 
     return { communityPosts: community, announcementPosts: announcements };
-  }, [allPosts, userProfile]);
+  }, [allPosts, associationId]);
 
   const isLoading = isAuthLoading || isProfileLoading;
   
@@ -58,7 +67,7 @@ export function ForumView() {
     );
   }
 
-  if (!userProfile?.institutionId) {
+  if (!associationId) {
       return (
            <div className="text-center text-muted-foreground p-8 border border-dashed rounded-lg">
                 <Files className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
@@ -72,9 +81,12 @@ export function ForumView() {
     return null;
   }
 
+  // To allow admin to post in any forum, we pass the currently viewed associationId
+  const profileForPosting = { ...userProfile, institutionId: associationId };
+
   return (
     <div className="space-y-8">
-      <CreatePostForm user={user} userProfile={userProfile} />
+      <CreatePostForm user={user} userProfile={profileForPosting} />
       
       <div className="space-y-6">
          <div className="flex items-center gap-3">
