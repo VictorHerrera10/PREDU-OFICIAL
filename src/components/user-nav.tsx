@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User as UserIcon, Star, LogOut, Check, Trash2, Bell, Clock } from 'lucide-react';
+import { User as UserIcon, Star, LogOut, Check, Trash2, Bell, Clock, UserPlus, LogIn } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
 import Link from 'next/link';
 import { handleLogout } from './logout-button';
@@ -60,7 +60,7 @@ export function UserNav() {
   const { notifications, unreadCount, markAsRead, deleteNotification } = useNotifications();
 
   const userProfileRef = useMemo(() => {
-    if (!user || !firestore) return null;
+    if (!user || !firestore || user.isAnonymous) return null;
     return doc(firestore, 'users', user.uid);
   }, [user, firestore]);
 
@@ -87,28 +87,8 @@ export function UserNav() {
 };
 
 
-  const isLoading = isUserLoading || isProfileLoading;
-  const profilePicture = userProfile?.profilePictureUrl || user?.photoURL;
-  const displayName = userProfile?.username || user?.displayName;
-  const displayEmail = user?.email;
-
-  const { title: welcomeTitle, emoji: welcomeEmoji } = useMemo(
-    () => getWelcomeDetails(userProfile),
-    [userProfile]
-);
-
-
-  const profileLink = useMemo(() => {
-    switch (userProfile?.role) {
-      case 'student':
-        return '/student-dashboard/profile';
-      case 'tutor':
-        return '/tutor-dashboard/profile';
-      default:
-        return '/dashboard'; // Fallback for admin or undefined roles
-    }
-  }, [userProfile?.role]);
-
+  const isLoading = isUserLoading || (isProfileLoading && !user?.isAnonymous);
+  
   if (isLoading) {
     return (
       <div className="flex items-center space-x-4">
@@ -117,6 +97,27 @@ export function UserNav() {
       </div>
     );
   }
+
+  // GUEST VIEW
+  if (!user || user.isAnonymous) {
+    return (
+        <div className="flex items-center gap-2">
+            <Button variant="ghost" asChild>
+                <Link href="/login"><LogIn className="mr-2"/> Iniciar Sesión</Link>
+            </Button>
+            <Button asChild>
+                <Link href="/register"><UserPlus className="mr-2"/> Registrarse</Link>
+            </Button>
+        </div>
+    )
+  }
+
+  // REGISTERED USER VIEW
+  const profilePicture = userProfile?.profilePictureUrl || user?.photoURL;
+  const displayName = userProfile?.username || user?.displayName;
+  const displayEmail = user?.email;
+  const { title: welcomeTitle, emoji: welcomeEmoji } = getWelcomeDetails(userProfile);
+  const profileLink = userProfile?.role === 'student' ? '/student-dashboard/profile' : '/tutor-dashboard/profile';
 
   return (
     <div className="flex items-center gap-4">

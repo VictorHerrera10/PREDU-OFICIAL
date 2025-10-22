@@ -3,7 +3,7 @@
 import React, { createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp } from 'firebase/app';
 import { Firestore } from 'firebase/firestore';
-import { Auth, User, onAuthStateChanged } from 'firebase/auth';
+import { Auth, User, onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 import { Functions } from 'firebase/functions';
 import { FirebaseStorage } from 'firebase/storage';
 import { getDatabase, Database } from 'firebase/database';
@@ -34,7 +34,8 @@ export const FirebaseContext = createContext<FirebaseContextState | undefined>(u
 
 const FirebaseProviderInternal: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user } = useFirebase();
-  useUserStatus(user?.uid);
+  // Only track status for non-anonymous users
+  useUserStatus(user && !user.isAnonymous ? user.uid : undefined);
   return <>{children}</>;
 };
 
@@ -55,8 +56,16 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({
       const unsubscribe = onAuthStateChanged(
         firebaseServices.auth,
         (firebaseUser) => {
-          setUser(firebaseUser);
-          setIsUserLoading(false);
+          if (firebaseUser) {
+            setUser(firebaseUser);
+            setIsUserLoading(false);
+          } else {
+            // If no user is logged in, sign in anonymously
+            signInAnonymously(firebaseServices.auth).catch((error) => {
+              console.error("Anonymous sign-in failed:", error);
+              setIsUserLoading(false); // Stop loading even if anonymous sign-in fails
+            });
+          }
         },
         (error) => {
           console.error("FirebaseProvider: onAuthStateChanged error:", error);
@@ -104,5 +113,3 @@ export const useUser = (): UserHookResult => {
   const { user, isUserLoading } = useFirebase();
   return { user, isUserLoading };
 };
-
-    

@@ -14,21 +14,15 @@ export default function DashboardLayout({
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!isUserLoading && !user) {
+    // If not loading and there's no user or the user is anonymous, redirect to login
+    if (!isUserLoading && (!user || user.isAnonymous)) {
       redirect(`/login?redirect=${pathname}`);
     }
   }, [user, isUserLoading, pathname]);
 
-  if (isUserLoading) {
+  if (isUserLoading || !user || user.isAnonymous) {
     return (
        <StudentLoader loadingText="Verificando tu mochila..." />
-    )
-  }
-
-  // user object might be null for a brief moment, so we also check for that
-  if (!user) {
-     return (
-       <StudentLoader loadingText="Redirigiendo a la entrada..." />
     )
   }
 
