@@ -377,15 +377,11 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                                             disabled={isTestLocked}
                                             className={cn(
                                                 "h-14 w-full border-2 rounded-md flex flex-col items-center justify-center transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:border-current",
-                                                isAnswered
-                                                    ? `bg-${categoryInfo.colorClass}-900/50 border-${categoryInfo.colorClass}-400` // This won't work with tailwind JIT
-                                                    : 'bg-muted/50 border-muted hover:border-primary/50'
+                                                 !isAnswered && 'bg-muted/50 border-muted hover:border-primary/50'
                                             )}
                                             style={isAnswered ? {
-                                                '--tw-border-opacity': '1',
-                                                borderColor: categoryInfo.color.startsWith('text-') ? `var(--color-${categoryInfo.colorClass})` : categoryInfo.color,
-                                                '--tw-bg-opacity': '0.3',
-                                                 backgroundColor: categoryInfo.color.startsWith('text-') ? `var(--color-${categoryInfo.colorClass}-bg)` : categoryInfo.color,
+                                                borderColor: categoryInfo.color,
+                                                backgroundColor: `${categoryInfo.color.replace('text-', 'bg-').replace('-400', '-900/50')}`,
                                             } : {}}
                                             title={q.text}
                                         >
