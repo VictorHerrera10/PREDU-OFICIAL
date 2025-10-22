@@ -256,15 +256,6 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     const isTestLocked = !!savedPrediction?.result;
 
 
-    const colorClasses = {
-        green: { border: 'border-green-400', bg: 'bg-green-900/50', hover: 'hover:border-green-300' },
-        blue: { border: 'border-blue-400', bg: 'bg-blue-900/50', hover: 'hover:border-blue-300' },
-        purple: { border: 'border-purple-400', bg: 'bg-purple-900/50', hover: 'hover:border-purple-300' },
-        pink: { border: 'border-pink-400', bg: 'bg-pink-900/50', hover: 'hover:border-pink-300' },
-        amber: { border: 'border-amber-400', bg: 'bg-amber-900/50', hover: 'hover:border-amber-300' },
-        teal: { border: 'border-teal-400', bg: 'bg-teal-900/50', hover: 'hover:border-teal-300' },
-    };
-
     if (isLoadingPrediction) {
         return (
             <div className="flex items-center justify-center h-40">
@@ -377,8 +368,6 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                                 {questions.filter(q => q.section === activeSection).map((q, index) => {
                                     const categoryInfo = CATEGORY_DETAILS[q.category];
                                     const CategoryIcon = categoryInfo.icon;
-                                    const colorClass = categoryInfo.colorClass as keyof typeof colorClasses;
-                                    const colors = colorClasses[colorClass];
                                     const isAnswered = answers[q.id] !== null;
 
                                     return (
@@ -388,14 +377,20 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                                             disabled={isTestLocked}
                                             className={cn(
                                                 "h-14 w-full border-2 rounded-md flex flex-col items-center justify-center transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:border-current",
-                                                isAnswered 
-                                                    ? `${colors.bg} ${colors.border}`
-                                                    : `bg-muted/50 ${colors.border} ${colors.hover}`
+                                                isAnswered
+                                                    ? `bg-${categoryInfo.colorClass}-900/50 border-${categoryInfo.colorClass}-400` // This won't work with tailwind JIT
+                                                    : 'bg-muted/50 border-muted hover:border-primary/50'
                                             )}
+                                            style={isAnswered ? {
+                                                '--tw-border-opacity': '1',
+                                                borderColor: categoryInfo.color.startsWith('text-') ? `var(--color-${categoryInfo.colorClass})` : categoryInfo.color,
+                                                '--tw-bg-opacity': '0.3',
+                                                 backgroundColor: categoryInfo.color.startsWith('text-') ? `var(--color-${categoryInfo.colorClass}-bg)` : categoryInfo.color,
+                                            } : {}}
                                             title={q.text}
                                         >
                                             <span className={cn("text-lg font-bold", isAnswered ? 'text-foreground/80' : 'text-muted-foreground')}>{index + 1}</span>
-                                            <CategoryIcon className={cn("w-5 h-5", categoryInfo.color)} />
+                                            <CategoryIcon className={cn("w-5 h-5", isAnswered ? categoryInfo.color : 'text-muted-foreground')} />
                                         </button>
                                     );
                                 })}
@@ -420,3 +415,15 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
         </div>
     );
 }
+
+// Temporary patch for Tailwind JIT not picking up dynamic classes
+const ColorClassesForJit = () => (
+    <div className="hidden">
+        <div className="bg-green-900/50 border-green-400"></div>
+        <div className="bg-blue-900/50 border-blue-400"></div>
+        <div className="bg-purple-900/50 border-purple-400"></div>
+        <div className="bg-pink-900/50 border-pink-400"></div>
+        <div className="bg-amber-900/50 border-amber-400"></div>
+        <div className="bg-teal-900/50 border-teal-400"></div>
+    </div>
+);
