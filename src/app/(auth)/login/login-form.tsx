@@ -54,7 +54,7 @@ export default function LoginForm() {
 
   useEffect(() => {
     const redirectUrl = searchParams.get('redirect') || '/dashboard';
-    if (!isUserLoading && user) {
+    if (!isUserLoading && user && !user.isAnonymous) {
       router.push(redirectUrl);
     }
   }, [user, isUserLoading, router, searchParams]);
@@ -107,7 +107,7 @@ export default function LoginForm() {
   
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-  if (isUserLoading) {
+  if (isUserLoading || (user && !user.isAnonymous)) {
     return (
       <div className="flex flex-col items-center justify-center h-full">
         <p className="text-primary-foreground animate-pulse">Verificando sesión...</p>
