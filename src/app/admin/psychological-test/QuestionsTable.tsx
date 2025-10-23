@@ -132,11 +132,11 @@ export function QuestionsTable() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-10">#</TableHead>
+            <TableHead className="w-10 hidden sm:table-cell">#</TableHead>
             <TableHead>Texto de la Pregunta</TableHead>
-            <TableHead>Sección</TableHead>
-            <TableHead>Categoría (RIASEC)</TableHead>
-            <TableHead>GIF</TableHead>
+            <TableHead className="hidden md:table-cell">Sección</TableHead>
+            <TableHead className="hidden lg:table-cell">Categoría (RIASEC)</TableHead>
+            <TableHead className="hidden md:table-cell">GIF</TableHead>
             <TableHead><span className="sr-only">Acciones</span></TableHead>
           </TableRow>
         </TableHeader>
@@ -153,16 +153,27 @@ export function QuestionsTable() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
               >
-                <TableCell className="font-mono text-muted-foreground">{index + 1}</TableCell>
-                <TableCell className="font-medium max-w-sm truncate">{question.text}</TableCell>
-                <TableCell className="capitalize">{question.section}</TableCell>
-                <TableCell>
+                <TableCell className="font-mono text-muted-foreground hidden sm:table-cell">{index + 1}</TableCell>
+                <TableCell className="font-medium">
+                    <div className="flex flex-col gap-1">
+                        <span className="truncate max-w-xs">{question.text}</span>
+                         <div className="flex items-center gap-2 lg:hidden">
+                            <Badge variant="outline" className="capitalize">{question.section}</Badge>
+                            <Badge variant="outline" className="capitalize flex w-fit items-center gap-1.5" style={{ color: categoryInfo.color, borderColor: categoryInfo.color }}>
+                                <CategoryIcon className="h-3.5 w-3.5" />
+                                {question.category}
+                            </Badge>
+                         </div>
+                    </div>
+                </TableCell>
+                <TableCell className="capitalize hidden md:table-cell">{question.section}</TableCell>
+                <TableCell className="hidden lg:table-cell">
                     <Badge variant="outline" className="capitalize flex w-fit items-center gap-1.5" style={{ color: categoryInfo.color, borderColor: categoryInfo.color }}>
                         <CategoryIcon className="h-3.5 w-3.5" />
                         {question.category}
                     </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden md:table-cell">
                     <a href={question.gifUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors">
                         <ImageIcon className="h-4 w-4" />
                         Ver GIF
