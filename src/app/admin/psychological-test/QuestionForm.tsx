@@ -32,7 +32,7 @@ import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
   text: z.string().min(10, 'El texto de la pregunta es muy corto.'),
-  gifUrl: z.string().url('Debe ser una URL válida.'),
+  gifUrl: z.string().min(1, 'Debes cargar un GIF para la pregunta.').url('Debe ser una URL válida.'),
   section: z.enum(['actividades', 'habilidades', 'ocupaciones']),
   category: z.enum(['realista', 'investigador', 'artistico', 'social', 'emprendedor', 'convencional']),
 });
@@ -62,19 +62,21 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
   const gifUrl = watch('gifUrl');
   
   useEffect(() => {
-    if(initialData) {
-        reset(initialData);
-        setPreview(initialData.gifUrl);
-    } else {
-        reset({
-            text: '',
-            gifUrl: '',
-            section: 'actividades',
-            category: 'realista'
-        });
-        setPreview(null);
+    if(isOpen) {
+        if(initialData) {
+            reset(initialData);
+            setPreview(initialData.gifUrl);
+        } else {
+            reset({
+                text: '',
+                gifUrl: '',
+                section: 'actividades',
+                category: 'realista'
+            });
+            setPreview(null);
+        }
+        setImageFile(null);
     }
-    setImageFile(null);
   }, [initialData, reset, isOpen]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -90,8 +92,7 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
       }
       setImageFile(file);
       setPreview(URL.createObjectURL(file));
-      // Clear the gifUrl value so we know we need to upload a new one
-      setValue('gifUrl', '');
+      setValue('gifUrl', 'file-is-being-uploaded', { shouldValidate: false });
     }
   }, [toast, setValue]);
 
@@ -114,6 +115,7 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
       try {
         const filePath = `psychological-test-gifs/${Date.now()}-${imageFile.name}`;
         const uploadedUrl = await uploadFile(storage, imageFile, filePath, setUploadProgress);
+        setValue('gifUrl', uploadedUrl, { shouldValidate: true });
         finalData.gifUrl = uploadedUrl;
       } catch (error) {
         toast({ variant: 'destructive', title: 'Error de carga', description: 'No se pudo subir el GIF.' });
@@ -125,12 +127,12 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
       setUploadProgress(0);
     }
     
-    if (!finalData.gifUrl) {
-      toast({ variant: 'destructive', title: 'Falta GIF', description: 'Por favor, carga un GIF para la pregunta.' });
-      return;
+    // Re-trigger validation before submitting
+    const isValid = await handleSubmit(onSubmit)();
+    if (!isValid) {
+      // This will call the main onSubmit if validation passes now
+      onSubmit(finalData);
     }
-    
-    onSubmit(finalData);
   };
   
   const removeImage = () => {
@@ -143,7 +145,7 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
-        <form onSubmit={handleSubmit(handleFormSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <BrainCircuit className="text-primary" />
@@ -193,7 +195,7 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
                  {(isUploading || uploadProgress > 0) && (
                   <Progress value={uploadProgress} className="w-full h-2 mt-2" />
                 )}
-                 {errors.gifUrl && <p className="text-xs text-destructive">{errors.gifUrl.message}</p>}
+                 {errors.gifUrl && gifUrl !== 'file-is-being-uploaded' && <p className="text-xs text-destructive">{errors.gifUrl.message}</p>}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
