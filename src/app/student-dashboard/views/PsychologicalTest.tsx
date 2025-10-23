@@ -75,36 +75,23 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
 
     const { data: savedPrediction, isLoading: isLoadingPrediction } = useDoc<PsychologicalPrediction>(predictionDocRef);
 
-    // This effect initializes the answers state based on all available questions
-    useEffect(() => {
-        if (questions) {
-            const initialAnswers = questions.reduce((acc, q) => {
-                acc[q.id] = null; // Set all to null initially
-                return acc;
-            }, {} as Answers);
-
-            // If there's a saved prediction, merge those answers in
-            if (savedPrediction?.answers) {
-                setAnswers({ ...initialAnswers, ...savedPrediction.answers });
-            } else {
-                setAnswers(initialAnswers);
-            }
-             if (savedPrediction?.result) {
-                setPredictionResult(savedPrediction.result);
-            }
-        }
-    }, [questions, savedPrediction, setPredictionResult]);
-
     const calculateProgress = useCallback((currentAnswers: Answers) => {
-        if (!questions || questions.length === 0) return { overall: 0, actividades: 0, habilidades: 0, ocupaciones: 0 };
+        if (!questions || questions.length === 0) {
+            return { overall: 0, actividades: 0, habilidades: 0, ocupaciones: 0 };
+        }
+
+        const questionIds = new Set(questions.map(q => q.id));
+        const answeredCount = Object.keys(currentAnswers).filter(
+            questionId => questionIds.has(questionId) && currentAnswers[questionId] !== null
+        ).length;
         
-        const answeredCount = Object.values(currentAnswers).filter(a => a !== null).length;
         const totalCount = questions.length;
-        
+
         const sectionProgress = (section: TestSection) => {
             const sectionQuestions = questions.filter(q => q.section === section);
             if (sectionQuestions.length === 0) return 0;
-            const answeredInSection = sectionQuestions.filter(q => currentAnswers[q.id] !== null).length;
+            
+            const answeredInSection = sectionQuestions.filter(q => currentAnswers[q.id] !== null && currentAnswers[q.id] !== undefined).length;
             return (answeredInSection / sectionQuestions.length) * 100;
         };
 
@@ -115,6 +102,27 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
             ocupaciones: sectionProgress('ocupaciones'),
         };
     }, [questions]);
+
+
+    useEffect(() => {
+        if (questions) {
+            const initialAnswers = questions.reduce((acc, q) => {
+                acc[q.id] = null;
+                return acc;
+            }, {} as Answers);
+
+            if (savedPrediction?.answers) {
+                const mergedAnswers = { ...initialAnswers, ...savedPrediction.answers };
+                setAnswers(mergedAnswers);
+            } else {
+                setAnswers(initialAnswers);
+            }
+
+            if (savedPrediction?.result) {
+                setPredictionResult(savedPrediction.result);
+            }
+        }
+    }, [questions, savedPrediction, setPredictionResult]);
 
     const progress = useMemo(() => {
         return calculateProgress(answers);
