@@ -8,7 +8,7 @@ import { ThumbsUp, ThumbsDown, X, AlertTriangle, ArrowLeft, ArrowRight } from 'l
 import { HollandQuestion, CATEGORY_DETAILS, QuestionCategory } from './psychological-test-data';
 import { Logo } from '@/components/logo';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type QuestionModalProps = {
     question: HollandQuestion;
@@ -80,15 +80,26 @@ export function QuestionModal({
                     </DialogHeader>
                     <QuestionWindowControls questionNumber={questionNumber} totalQuestions={totalQuestions} category={question.category} onClose={() => setIsOpen(false)}/>
                     <CardContent className="p-6">
-                        <div className="text-center">
-                             <p className="text-lg font-semibold mb-4 h-12 flex items-center justify-center">{question.text}</p>
-                             <Image 
-                                src={question.gifUrl} 
-                                alt={question.text} 
-                                width={400} 
-                                height={200} 
-                                className="rounded-md mx-auto mb-6 aspect-video object-cover" 
-                            />
+                        <div className="text-center overflow-hidden">
+                             <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={question.id}
+                                    initial={{ opacity: 0, y: -20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 20 }}
+                                    transition={{ duration: 0.2, ease: 'easeInOut' }}
+                                >
+                                    <p className="text-lg font-semibold mb-4 h-12 flex items-center justify-center">{question.text}</p>
+                                    <Image 
+                                        src={question.gifUrl} 
+                                        alt={question.text} 
+                                        width={400} 
+                                        height={200} 
+                                        className="rounded-md mx-auto mb-6 aspect-video object-cover" 
+                                    />
+                                </motion.div>
+                             </AnimatePresence>
+
                             {answer && (
                                 <motion.div 
                                     initial={{ opacity: 0, y: -10 }}
@@ -99,43 +110,49 @@ export function QuestionModal({
                                     Ya respondiste esta pregunta, pero puedes cambiar tu elección.
                                 </motion.div>
                             )}
-                            <div className="flex justify-center items-center gap-4">
-                                <Button
-                                    size="icon"
-                                    variant="outline"
-                                    onClick={() => onNavigate('prev')}
-                                    disabled={questionIndex === 0}
-                                    aria-label="Pregunta anterior"
-                                >
-                                    <ArrowLeft />
-                                </Button>
-                                <Button 
-                                    size="lg" 
-                                    variant={answer === 'yes' ? 'secondary' : 'outline'} 
-                                    className={cn("border-green-500 hover:bg-green-500/10 hover:text-green-400", answer === 'yes' ? "bg-green-500/20 text-green-300" : "text-green-500")} 
-                                    onClick={() => handleAnswerClick('yes')}
-                                    disabled={isLocked}
-                                >
-                                    <ThumbsUp className="mr-2" /> Sí
-                                </Button>
-                                <Button 
-                                    size="lg" 
-                                    variant={answer === 'no' ? 'secondary' : 'outline'} 
-                                    className={cn("border-red-500 hover:bg-red-500/10 hover:text-red-400", answer === 'no' ? "bg-red-500/20 text-red-300" : "text-red-500")} 
-                                    onClick={() => handleAnswerClick('no')}
-                                    disabled={isLocked}
-                                >
-                                    <ThumbsDown className="mr-2" /> No
-                                </Button>
-                                 <Button
-                                    size="icon"
-                                    variant="outline"
-                                    onClick={() => onNavigate('next')}
-                                    disabled={questionIndex === totalQuestions - 1}
-                                    aria-label="Siguiente pregunta"
-                                >
-                                    <ArrowRight />
-                                </Button>
+                            <div className="relative flex justify-center items-center h-12">
+                                <div className="absolute left-0 bottom-0">
+                                    <Button
+                                        size="icon"
+                                        variant="outline"
+                                        onClick={() => onNavigate('prev')}
+                                        disabled={questionIndex === 0}
+                                        aria-label="Pregunta anterior"
+                                    >
+                                        <ArrowLeft />
+                                    </Button>
+                                </div>
+                                <div className="flex justify-center items-center gap-4">
+                                     <Button 
+                                        size="lg" 
+                                        variant={answer === 'yes' ? 'secondary' : 'outline'} 
+                                        className={cn("border-green-500 hover:bg-green-500/10 hover:text-green-400", answer === 'yes' ? "bg-green-500/20 text-green-300" : "text-green-500")} 
+                                        onClick={() => handleAnswerClick('yes')}
+                                        disabled={isLocked}
+                                    >
+                                        <ThumbsUp className="mr-2" /> Sí
+                                    </Button>
+                                    <Button 
+                                        size="lg" 
+                                        variant={answer === 'no' ? 'secondary' : 'outline'} 
+                                        className={cn("border-red-500 hover:bg-red-500/10 hover:text-red-400", answer === 'no' ? "bg-red-500/20 text-red-300" : "text-red-500")} 
+                                        onClick={() => handleAnswerClick('no')}
+                                        disabled={isLocked}
+                                    >
+                                        <ThumbsDown className="mr-2" /> No
+                                    </Button>
+                                </div>
+                                <div className="absolute right-0 bottom-0">
+                                    <Button
+                                        size="icon"
+                                        variant="outline"
+                                        onClick={() => onNavigate('next')}
+                                        disabled={questionIndex === totalQuestions - 1}
+                                        aria-label="Siguiente pregunta"
+                                    >
+                                        <ArrowRight />
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </CardContent>
