@@ -6,8 +6,9 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 export function VersionBadge() {
-  const version = "0.42.8"; // Hardcoded version
+  const version = "0.42.8";
   const pathname = usePathname();
+  
   const isAuthPage = ['/login', '/register', '/forgot-password'].includes(pathname);
 
   return (
