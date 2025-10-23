@@ -573,7 +573,7 @@
           "schema": {
             "$ref": "#/backend/entities/PsychologicalQuestion"
           },
-          "description": "Stores the questions for the RIASEC psychological test. Should only be writable by administrators.",
+          "description": "Stores the questions for the RIASEC test. Writable only by administrators, but readable by any authenticated user.",
           "params": [
             {
               "name": "questionId",
