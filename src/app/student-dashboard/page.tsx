@@ -8,13 +8,14 @@ import { StudentMainDashboard } from './student-main-dashboard';
 import { StudentLoader } from '@/components/student-loader';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ShieldAlert } from 'lucide-react';
 
 type UserProfile = {
     id: string;
     username: string;
     email: string;
     isProfileComplete?: boolean;
+    role?: 'student' | 'tutor' | 'admin';
 };
 
 function StudentDashboardPage() {
@@ -30,6 +31,25 @@ function StudentDashboardPage() {
 
     if (isUserLoading || isProfileLoading) {
         return <StudentLoader loadingText="Cargando tu perfil..." />;
+    }
+
+    // Role validation
+    if (userProfile && userProfile.role !== 'student') {
+        return (
+            <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4 text-center">
+                 <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
+                 <h1 className="text-3xl font-bold text-destructive mb-4">Acceso Denegado</h1>
+                 <p className="text-muted-foreground mb-8 max-w-md">
+                     No tienes los permisos necesarios para acceder a esta página. Esta área es exclusiva para estudiantes.
+                 </p>
+                 <Button asChild>
+                    <Link href="/login">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Ir a Inicio de Sesión
+                    </Link>
+                 </Button>
+            </div>
+        );
     }
 
     if (userProfile && !userProfile.isProfileComplete) {
