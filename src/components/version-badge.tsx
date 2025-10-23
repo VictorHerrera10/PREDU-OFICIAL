@@ -1,15 +1,13 @@
 'use client';
 
 import { Shield } from 'lucide-react';
-import packageJson from '../../package.json';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 export function VersionBadge() {
-  const version = packageJson.version;
+  const version = process.env.NEXT_PUBLIC_APP_VERSION || '0.0.0';
   const pathname = usePathname();
   
-  // Directly calculate on the client. This avoids hydration mismatch.
   const isAuthPage = ['/login', '/register', '/forgot-password'].includes(pathname);
 
   return (
