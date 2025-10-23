@@ -34,7 +34,7 @@ function QuestionWindowControls({ questionNumber, totalQuestions, category, onCl
                     Pregunta {questionNumber}/{totalQuestions}
                 </span>
                  <span className="mx-2 text-muted-foreground/50">|</span>
-                <div className={cn("flex items-center gap-1.5", categoryDetails.colorClass)}>
+                <div className="flex items-center gap-1.5" style={{ color: categoryDetails.color }}>
                    <CategoryIcon className="h-4 w-4" />
                    <span className="text-sm font-semibold capitalize">{category}</span>
                 </div>
@@ -73,90 +73,97 @@ export function QuestionModal({
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogContent className="p-0 border-0 max-w-lg shadow-none bg-transparent" onInteractOutside={(e) => e.preventDefault()}>
-                <Card className="bg-card/80 backdrop-blur-lg border-border/50 overflow-hidden">
-                    <DialogHeader className="sr-only">
-                        <DialogTitle>Pregunta {questionNumber} de {totalQuestions}</DialogTitle>
-                        <DialogDescription>{question.text}</DialogDescription>
-                    </DialogHeader>
-                    <QuestionWindowControls questionNumber={questionNumber} totalQuestions={totalQuestions} category={question.category} onClose={() => setIsOpen(false)}/>
-                    <CardContent className="p-6">
-                        <div className="text-center overflow-hidden">
-                             <AnimatePresence mode="wait">
-                                <motion.div
-                                    key={question.id}
-                                    initial={{ opacity: 0, y: -20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: 20 }}
-                                    transition={{ duration: 0.2, ease: 'easeInOut' }}
-                                >
-                                    <p className="text-lg font-semibold mb-4 h-12 flex items-center justify-center">{question.text}</p>
-                                    <Image 
-                                        src={question.gifUrl} 
-                                        alt={question.text} 
-                                        width={400} 
-                                        height={200} 
-                                        className="rounded-md mx-auto mb-6 aspect-video object-cover" 
-                                    />
-                                </motion.div>
-                             </AnimatePresence>
+                <motion.div
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.95, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                >
+                    <Card className="bg-card/80 backdrop-blur-lg border-border/50 overflow-hidden">
+                        <DialogHeader className="sr-only">
+                            <DialogTitle>Pregunta {questionNumber} de {totalQuestions}</DialogTitle>
+                            <DialogDescription>{question.text}</DialogDescription>
+                        </DialogHeader>
+                        <QuestionWindowControls questionNumber={questionNumber} totalQuestions={totalQuestions} category={question.category} onClose={() => setIsOpen(false)}/>
+                        <CardContent className="p-6">
+                            <div className="text-center overflow-hidden">
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={question.id}
+                                        initial={{ opacity: 0, y: -20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: 20 }}
+                                        transition={{ duration: 0.2, ease: 'easeInOut' }}
+                                    >
+                                        <p className="text-lg font-semibold mb-4 h-12 flex items-center justify-center">{question.text}</p>
+                                        <Image 
+                                            src={question.gifUrl} 
+                                            alt={question.text} 
+                                            width={400} 
+                                            height={200} 
+                                            className="rounded-md mx-auto mb-6 aspect-video object-cover" 
+                                        />
+                                    </motion.div>
+                                </AnimatePresence>
 
-                            {answer && (
-                                <motion.div 
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="mb-4 text-xs text-destructive flex items-center justify-center gap-1.5"
-                                >
-                                    <AlertTriangle className="h-4 w-4" />
-                                    Ya respondiste esta pregunta, pero puedes cambiar tu elección.
-                                </motion.div>
-                            )}
-                            <div className="relative flex justify-center items-center h-12">
-                                <div className="absolute left-0 bottom-0">
-                                    <Button
-                                        size="icon"
-                                        variant="outline"
-                                        onClick={() => onNavigate('prev')}
-                                        disabled={questionIndex === 0}
-                                        aria-label="Pregunta anterior"
+                                {answer && (
+                                    <motion.div 
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="mb-4 text-xs text-destructive flex items-center justify-center gap-1.5"
                                     >
-                                        <ArrowLeft />
-                                    </Button>
-                                </div>
-                                <div className="flex justify-center items-center gap-4">
-                                     <Button 
-                                        size="lg" 
-                                        variant={answer === 'yes' ? 'secondary' : 'outline'} 
-                                        className={cn("border-green-500 hover:bg-green-500/10 hover:text-green-400", answer === 'yes' ? "bg-green-500/20 text-green-300" : "text-green-500")} 
-                                        onClick={() => handleAnswerClick('yes')}
-                                        disabled={isLocked}
-                                    >
-                                        <ThumbsUp className="mr-2" /> Sí
-                                    </Button>
-                                    <Button 
-                                        size="lg" 
-                                        variant={answer === 'no' ? 'secondary' : 'outline'} 
-                                        className={cn("border-red-500 hover:bg-red-500/10 hover:text-red-400", answer === 'no' ? "bg-red-500/20 text-red-300" : "text-red-500")} 
-                                        onClick={() => handleAnswerClick('no')}
-                                        disabled={isLocked}
-                                    >
-                                        <ThumbsDown className="mr-2" /> No
-                                    </Button>
-                                </div>
-                                <div className="absolute right-0 bottom-0">
-                                    <Button
-                                        size="icon"
-                                        variant="outline"
-                                        onClick={() => onNavigate('next')}
-                                        disabled={questionIndex === totalQuestions - 1}
-                                        aria-label="Siguiente pregunta"
-                                    >
-                                        <ArrowRight />
-                                    </Button>
+                                        <AlertTriangle className="h-4 w-4" />
+                                        Ya respondiste esta pregunta, pero puedes cambiar tu elección.
+                                    </motion.div>
+                                )}
+                                <div className="relative flex justify-center items-center h-12">
+                                    <div className="absolute left-0 bottom-0">
+                                        <Button
+                                            size="icon"
+                                            variant="outline"
+                                            onClick={() => onNavigate('prev')}
+                                            disabled={questionIndex === 0}
+                                            aria-label="Pregunta anterior"
+                                        >
+                                            <ArrowLeft />
+                                        </Button>
+                                    </div>
+                                    <div className="flex justify-center items-center gap-4">
+                                        <Button 
+                                            size="lg" 
+                                            variant={answer === 'yes' ? 'secondary' : 'outline'} 
+                                            className={cn("border-green-500 hover:bg-green-500/10 hover:text-green-400", answer === 'yes' ? "bg-green-500/20 text-green-300" : "text-green-500")} 
+                                            onClick={() => handleAnswerClick('yes')}
+                                            disabled={isLocked}
+                                        >
+                                            <ThumbsUp className="mr-2" /> Sí
+                                        </Button>
+                                        <Button 
+                                            size="lg" 
+                                            variant={answer === 'no' ? 'secondary' : 'outline'} 
+                                            className={cn("border-red-500 hover:bg-red-500/10 hover:text-red-400", answer === 'no' ? "bg-red-500/20 text-red-300" : "text-red-500")} 
+                                            onClick={() => handleAnswerClick('no')}
+                                            disabled={isLocked}
+                                        >
+                                            <ThumbsDown className="mr-2" /> No
+                                        </Button>
+                                    </div>
+                                    <div className="absolute right-0 bottom-0">
+                                        <Button
+                                            size="icon"
+                                            variant="outline"
+                                            onClick={() => onNavigate('next')}
+                                            disabled={questionIndex === totalQuestions - 1}
+                                            aria-label="Siguiente pregunta"
+                                        >
+                                            <ArrowRight />
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
+                </motion.div>
             </DialogContent>
         </Dialog>
     );
