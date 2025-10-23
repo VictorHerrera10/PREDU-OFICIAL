@@ -48,7 +48,7 @@ type QuestionFormProps = {
 };
 
 export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isProcessing }: QuestionFormProps) {
-  const { register, handleSubmit, control, formState: { errors }, reset, setValue } = useForm<QuestionFormData>({
+  const { register, handleSubmit, control, formState: { errors }, reset, setValue, watch } = useForm<QuestionFormData>({
     resolver: zodResolver(formSchema),
   });
 
@@ -58,6 +58,8 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
   const [preview, setPreview] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  
+  const gifUrl = watch('gifUrl');
   
   useEffect(() => {
     if(initialData) {
@@ -88,8 +90,10 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
       }
       setImageFile(file);
       setPreview(URL.createObjectURL(file));
+      // Clear the gifUrl value so we know we need to upload a new one
+      setValue('gifUrl', '');
     }
-  }, [toast]);
+  }, [toast, setValue]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -103,14 +107,14 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
       return;
     }
     
-    let finalGifUrl = initialData?.gifUrl || '';
+    let finalData = { ...data };
 
     if (imageFile && storage) {
       setIsUploading(true);
       try {
         const filePath = `psychological-test-gifs/${Date.now()}-${imageFile.name}`;
-        finalGifUrl = await uploadFile(storage, imageFile, filePath, setUploadProgress);
-        setValue('gifUrl', finalGifUrl);
+        const uploadedUrl = await uploadFile(storage, imageFile, filePath, setUploadProgress);
+        finalData.gifUrl = uploadedUrl;
       } catch (error) {
         toast({ variant: 'destructive', title: 'Error de carga', description: 'No se pudo subir el GIF.' });
         setIsUploading(false);
@@ -121,12 +125,11 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
       setUploadProgress(0);
     }
     
-    if (!finalGifUrl) {
+    if (!finalData.gifUrl) {
       toast({ variant: 'destructive', title: 'Falta GIF', description: 'Por favor, carga un GIF para la pregunta.' });
       return;
     }
     
-    const finalData = { ...data, gifUrl: finalGifUrl };
     onSubmit(finalData);
   };
   
@@ -190,6 +193,7 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
                  {(isUploading || uploadProgress > 0) && (
                   <Progress value={uploadProgress} className="w-full h-2 mt-2" />
                 )}
+                 {errors.gifUrl && <p className="text-xs text-destructive">{errors.gifUrl.message}</p>}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
