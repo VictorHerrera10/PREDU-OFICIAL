@@ -40,68 +40,39 @@ import { MoreHorizontal, PlusCircle, Trash2, Edit, Loader2, BrainCircuit, Image 
 import { QuestionForm, QuestionFormData } from './QuestionForm';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { TestSection, QuestionCategory, CATEGORY_DETAILS, HollandQuestion } from '@/app/student-dashboard/views/psychological-test-data';
+import { TestSection, QuestionCategory, CATEGORY_DETAILS, hollandQuestions as allQuestions, HollandQuestion } from '@/app/student-dashboard/views/psychological-test-data';
 
 
 export function QuestionsTable() {
-  const firestore = useFirestore();
   const { toast } = useToast();
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<HollandQuestion | null>(null);
 
-  const questionsCollectionRef = useMemo(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'psychological_questions'), orderBy('section'), orderBy('category'));
-  }, [firestore]);
+  // Using local data for now
+  const questions = allQuestions;
+  const isLoading = false;
 
-  const { data: questions, isLoading } = useCollection<HollandQuestion>(questionsCollectionRef);
 
   const handleCreate = () => {
-    setEditingQuestion(null);
-    setIsFormOpen(true);
+    // setEditingQuestion(null);
+    // setIsFormOpen(true);
+    toast({ title: 'En desarrollo', description: 'La gestión de preguntas se realiza localmente por ahora.'})
   };
   
   const handleEdit = (question: HollandQuestion) => {
-    setEditingQuestion(question);
-    setIsFormOpen(true);
+    // setEditingQuestion(question);
+    // setIsFormOpen(true);
+    toast({ title: 'En desarrollo', description: 'La gestión de preguntas se realiza localmente por ahora.'})
   };
 
   const handleDelete = async (questionId: string) => {
-    if (!firestore) return;
-    setIsProcessing(true);
-    try {
-        await deleteDoc(doc(firestore, 'psychological_questions', questionId));
-        toast({ title: 'Pregunta eliminada' });
-    } catch (error) {
-        toast({ variant: 'destructive', title: 'Error', description: 'No se pudo eliminar la pregunta.' });
-    } finally {
-        setIsProcessing(false);
-    }
+    toast({ title: 'En desarrollo', description: 'La gestión de preguntas se realiza localmente por ahora.'})
   };
 
   const handleFormSubmit = async (data: QuestionFormData) => {
-    if (!firestore) return;
-    setIsProcessing(true);
-    try {
-        if (editingQuestion) {
-            // Update existing question
-            const questionRef = doc(firestore, 'psychological_questions', editingQuestion.id);
-            await updateDoc(questionRef, data);
-            toast({ title: 'Pregunta Actualizada' });
-        } else {
-            // Create new question
-            await addDoc(collection(firestore, 'psychological_questions'), data);
-            toast({ title: 'Pregunta Creada' });
-        }
-        setIsFormOpen(false);
-        setEditingQuestion(null);
-    } catch (error) {
-        toast({ variant: 'destructive', title: 'Error', description: 'No se pudo guardar la pregunta.' });
-    } finally {
-        setIsProcessing(false);
-    }
+     toast({ title: 'En desarrollo', description: 'La gestión de preguntas se realiza localmente por ahora.'})
   };
 
   if (isLoading) {
@@ -224,5 +195,3 @@ export function QuestionsTable() {
     </div>
   );
 }
-
-    

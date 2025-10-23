@@ -567,22 +567,6 @@
         }
       },
       {
-        "path": "/psychological_questions/{questionId}",
-        "definition": {
-          "entityName": "PsychologicalQuestion",
-          "schema": {
-            "$ref": "#/backend/entities/PsychologicalQuestion"
-          },
-          "description": "Stores the questions for the RIASEC test. Writable only by administrators, but readable by any authenticated user.",
-          "params": [
-            {
-              "name": "questionId",
-              "description": "The unique identifier for the question."
-            }
-          ]
-        }
-      },
-      {
         "path": "/psychological_predictions/{userId}",
         "definition": {
           "entityName": "PsychologicalPrediction",
@@ -660,5 +644,3 @@
     "reasoning": "The Firestore structure is designed to ensure secure user authentication and profile management for the Pixel Vault application. The core principle is Authorization Independence, achieved through denormalization where necessary, though in this simplified scenario, it primarily relies on path-based ownership. The structure supports straightforward security rules and efficient data retrieval.\\n\\n- User Profiles: User profiles are stored in `/users/{userId}` using path-based ownership. This provides simple security rules based on `request.auth.uid == userId`. This approach provides Authorization Independence since access control depends only on the path and the authenticated user's ID.\\n- Institutions: A collection to manage educational institutions. Access control should be strict, likely limited to admin users for write operations.\\n- Chats: A new collection to store chat messages between users. Each document in `/chats` represents a conversation, with a subcollection `messages` for the actual messages, allowing for real-time updates and queries scoped to a specific chat."
   }
 }
-
-    
