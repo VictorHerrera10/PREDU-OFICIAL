@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { useUser, useFirestore, useDoc } from '@/firebase';
+import { useUser, useFirestore, useDoc, useCollection } from '@/firebase';
 import api from '@/lib/api-client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CheckCircle, ArrowLeft, Lock, AlertTriangle } from 'lucide-react';
-import { CATEGORY_DETAILS, SECTION_DETAILS, TestSection, HollandQuestion, QuestionCategory, questions } from './psychological-test-data';
+import { Loader2, CheckCircle, ArrowLeft, Lock } from 'lucide-react';
+import { CATEGORY_DETAILS, SECTION_DETAILS, TestSection, HollandQuestion, QuestionCategory } from './psychological-test-data';
 import { cn } from '@/lib/utils';
 import { QuestionModal } from './QuestionModal';
 import { Badge } from '@/components/ui/badge';
@@ -61,8 +61,12 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentQuestion, setCurrentQuestion] = useState<HollandQuestion | null>(null);
 
-    // Use local questions data
-    const isLoadingQuestions = false;
+    const questionsCollectionRef = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'psychological_questions'), orderBy('section'), orderBy('category'));
+    }, [firestore]);
+
+    const { data: questions, isLoading: isLoadingQuestions } = useCollection<HollandQuestion>(questionsCollectionRef);
     
     // Initialize answers state once questions are available
     useEffect(() => {
@@ -73,7 +77,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                 return { ...newAnswersState, ...prevAnswers };
             });
         }
-    }, []);
+    }, [questions]);
 
 
     const predictionDocRef = useMemo(() => {
@@ -95,7 +99,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     }, [savedPrediction, setPredictionResult]);
 
     const calculateProgress = useCallback((currentAnswers: Answers) => {
-        if (questions.length === 0) return { overall: 0, actividades: 0, habilidades: 0, ocupaciones: 0 };
+        if (!questions || questions.length === 0) return { overall: 0, actividades: 0, habilidades: 0, ocupaciones: 0 };
         
         const answeredCount = Object.values(currentAnswers).filter(a => a !== null).length;
         const totalCount = questions.length;
@@ -113,7 +117,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
             habilidades: sectionProgress('habilidades'),
             ocupaciones: sectionProgress('ocupaciones'),
         };
-    }, []);
+    }, [questions]);
 
     const progress = useMemo(() => {
         return calculateProgress(answers);
@@ -121,7 +125,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
 
 
     const handleAnswer = (questionId: string, answer: 'yes' | 'no') => {
-        if (savedPrediction?.result || !questions) return; // Block answering if result is already saved or questions not loaded
+        if (savedPrediction?.result || !questions) return; // Block answering if result is already saved
 
         const newAnswers = { ...answers, [questionId]: answer };
         setAnswers(newAnswers);
@@ -138,17 +142,19 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                 progressOcupaciones: newProgress.ocupaciones,
                 updatedAt: serverTimestamp() as any,
             };
+            
+            const calculateSectionResults = (section: TestSection | 'all', currentAnswers: Answers): ResultCounts => {
+                const initialCounts: ResultCounts = { realista: { yes: 0, no: 0 }, investigador: { yes: 0, no: 0 }, artistico: { yes: 0, no: 0 }, social: { yes: 0, no: 0 }, emprendedor: { yes: 0, no: 0 }, convencional: { yes: 0, no: 0 } };
+                if (!questions) return initialCounts;
+                const relevantQuestions = section === 'all' ? questions : questions.filter(q => q.section === section);
+                return relevantQuestions.reduce((acc, question) => {
+                    if (currentAnswers[question.id] === 'yes') acc[question.category].yes++;
+                    else if (currentAnswers[question.id] === 'no') acc[question.category].no++;
+                    return acc;
+                }, initialCounts);
+            };
 
             if (isComplete && !savedPrediction?.results) {
-                 const calculateSectionResults = (section: TestSection | 'all', currentAnswers: Answers): ResultCounts => {
-                    const initialCounts: ResultCounts = { realista: { yes: 0, no: 0 }, investigador: { yes: 0, no: 0 }, artistico: { yes: 0, no: 0 }, social: { yes: 0, no: 0 }, emprendedor: { yes: 0, no: 0 }, convencional: { yes: 0, no: 0 } };
-                    const relevantQuestions = section === 'all' ? questions : questions.filter(q => q.section === section);
-                    return relevantQuestions.reduce((acc, question) => {
-                        if (currentAnswers[question.id] === 'yes') acc[question.category].yes++;
-                        else if (currentAnswers[question.id] === 'no') acc[question.category].no++;
-                        return acc;
-                    }, initialCounts);
-                };
                  dataToSave.results = {
                     general: calculateSectionResults('all', newAnswers),
                     actividades: calculateSectionResults('actividades', newAnswers),
@@ -346,7 +352,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                                 transition={{ duration: 0.5, delay: 0.2 }}
                                 className="mt-12"
                             >
-                                <ResultsDisplay answers={answers} />
+                                <ResultsDisplay answers={answers} questions={questions} />
                             </motion.div>
                         )}
 
@@ -396,19 +402,17 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                                             onClick={() => handleOpenQuestion(q)}
                                             disabled={isTestLocked}
                                             className={cn(
-                                                "h-14 w-full border-2 rounded-md flex flex-col items-center justify-center transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:border-current"
+                                                "h-14 w-full border-2 rounded-md flex flex-col items-center justify-center transition-all disabled:opacity-60 disabled:cursor-not-allowed",
+                                                !isAnswered && 'hover:border-primary/50'
                                             )}
                                             style={isAnswered ? { 
                                                 borderColor: categoryInfo.color,
                                                 backgroundColor: `color-mix(in srgb, ${categoryInfo.color} 15%, transparent)`,
-                                            } : {
-                                                backgroundColor: 'var(--muted-background)',
-                                                borderColor: 'var(--muted-border)',
-                                            }}
+                                            } : {}}
                                             title={q.text}
                                         >
                                             <span className={cn("text-lg font-bold", isAnswered ? 'text-foreground/80' : 'text-muted-foreground')}>{index + 1}</span>
-                                            <CategoryIcon className="w-5 h-5" style={{color: isAnswered ? categoryInfo.color : 'inherit'}}/>
+                                            <CategoryIcon className="w-5 h-5" style={isAnswered ? {color: categoryInfo.color} : {}}/>
                                         </button>
                                     );
                                 })}
@@ -418,7 +422,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                 )}
             </AnimatePresence>
             
-            {isModalOpen && currentQuestion && activeSection && (
+            {isModalOpen && currentQuestion && activeSection && questions && (
                      <QuestionModal
                         key={currentQuestion.id}
                         question={currentQuestion}
@@ -434,3 +438,5 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
         </div>
     );
 }
+
+    

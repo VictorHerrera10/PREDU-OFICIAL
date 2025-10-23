@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
@@ -15,7 +15,7 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,31 +36,27 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, PlusCircle, Trash2, Edit, Loader2, BrainCircuit, Image as ImageIcon, FileText, Pickaxe, Palette, Users, Handshake, Calculator } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Trash2, Edit, Loader2, BrainCircuit, Image as ImageIcon, FileText } from 'lucide-react';
 import { QuestionForm, QuestionFormData } from './QuestionForm';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { TestSection, QuestionCategory, questions as allQuestions, HollandQuestion } from '@/app/student-dashboard/views/psychological-test-data';
+import { TestSection, QuestionCategory, CATEGORY_DETAILS, HollandQuestion } from '@/app/student-dashboard/views/psychological-test-data';
 
-
-const categoryIcons = {
-    realista: Pickaxe,
-    investigador: BrainCircuit,
-    artistico: Palette,
-    social: Users,
-    emprendedor: Handshake,
-    convencional: Calculator,
-};
 
 export function QuestionsTable() {
+  const firestore = useFirestore();
   const { toast } = useToast();
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<HollandQuestion | null>(null);
 
-  const questions = allQuestions; // Use local data
-  const isLoading = false; // Data is local, so not loading
+  const questionsCollectionRef = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'psychological_questions'), orderBy('section'), orderBy('category'));
+  }, [firestore]);
+
+  const { data: questions, isLoading } = useCollection<HollandQuestion>(questionsCollectionRef);
 
   const handleCreate = () => {
     setEditingQuestion(null);
@@ -73,13 +69,40 @@ export function QuestionsTable() {
   };
 
   const handleDelete = async (questionId: string) => {
-    toast({ variant: 'destructive', title: 'Función no disponible', description: 'La eliminación de preguntas ahora se gestiona en el código.' });
+    if (!firestore) return;
+    setIsProcessing(true);
+    try {
+        await deleteDoc(doc(firestore, 'psychological_questions', questionId));
+        toast({ title: 'Pregunta eliminada' });
+    } catch (error) {
+        toast({ variant: 'destructive', title: 'Error', description: 'No se pudo eliminar la pregunta.' });
+    } finally {
+        setIsProcessing(false);
+    }
   };
 
   const handleFormSubmit = async (data: QuestionFormData) => {
-    toast({ variant: 'destructive', title: 'Función no disponible', description: 'La edición de preguntas ahora se gestiona en el código.' });
+    if (!firestore) return;
+    setIsProcessing(true);
+    try {
+        if (editingQuestion) {
+            // Update existing question
+            const questionRef = doc(firestore, 'psychological_questions', editingQuestion.id);
+            await updateDoc(questionRef, data);
+            toast({ title: 'Pregunta Actualizada' });
+        } else {
+            // Create new question
+            await addDoc(collection(firestore, 'psychological_questions'), data);
+            toast({ title: 'Pregunta Creada' });
+        }
+        setIsFormOpen(false);
+        setEditingQuestion(null);
+    } catch (error) {
+        toast({ variant: 'destructive', title: 'Error', description: 'No se pudo guardar la pregunta.' });
+    } finally {
+        setIsProcessing(false);
+    }
   };
-
 
   if (isLoading) {
     return (
@@ -95,7 +118,7 @@ export function QuestionsTable() {
   return (
     <div className="w-full">
       <div className="flex justify-end mb-4">
-        <Button size="sm" className="h-8 gap-1" onClick={handleCreate} disabled>
+        <Button size="sm" className="h-8 gap-1" onClick={handleCreate}>
           <PlusCircle className="h-3.5 w-3.5" />
           <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
             Crear Pregunta
@@ -112,6 +135,7 @@ export function QuestionsTable() {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-10">#</TableHead>
             <TableHead>Texto de la Pregunta</TableHead>
             <TableHead>Sección</TableHead>
             <TableHead>Categoría (RIASEC)</TableHead>
@@ -122,7 +146,8 @@ export function QuestionsTable() {
         <TableBody>
           {questions && questions.length > 0 ? (
             questions.map((question, index) => {
-              const CategoryIcon = categoryIcons[question.category] || FileText;
+              const categoryInfo = CATEGORY_DETAILS[question.category] || {};
+              const CategoryIcon = categoryInfo.icon || FileText;
               return (
               <motion.tr 
                 key={question.id}
@@ -131,10 +156,11 @@ export function QuestionsTable() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
               >
+                <TableCell className="font-mono text-muted-foreground">{index + 1}</TableCell>
                 <TableCell className="font-medium max-w-sm truncate">{question.text}</TableCell>
                 <TableCell className="capitalize">{question.section}</TableCell>
                 <TableCell>
-                    <Badge variant="outline" className="capitalize flex w-fit items-center gap-1.5">
+                    <Badge variant="outline" className="capitalize flex w-fit items-center gap-1.5" style={{ color: categoryInfo.color, borderColor: categoryInfo.color }}>
                         <CategoryIcon className="h-3.5 w-3.5" />
                         {question.category}
                     </Badge>
@@ -148,21 +174,21 @@ export function QuestionsTable() {
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button aria-haspopup="true" size="icon" variant="ghost" disabled>
+                      <Button aria-haspopup="true" size="icon" variant="ghost">
                         <MoreHorizontal className="h-4 w-4" />
                         <span className="sr-only">Menú</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => handleEdit(question)} disabled>
+                      <DropdownMenuItem onClick={() => handleEdit(question)}>
                           <Edit className="mr-2 h-4 w-4" />
                           Editar
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                        <AlertDialog>
                           <AlertDialogTrigger asChild>
-                              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10" disabled>
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
                                   <Trash2 className="mr-2 h-4 w-4" />
                                   Eliminar
                               </DropdownMenuItem>
@@ -174,7 +200,7 @@ export function QuestionsTable() {
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                               <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDelete(question.id)} disabled={isProcessing}>
+                              <AlertDialogAction onClick={() => handleDelete(question.id)} disabled={isProcessing} className={cn(buttonVariants({variant: 'destructive'}), "btn-retro")}>
                                   {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
                                   {isProcessing ? 'Eliminando...' : 'Sí, eliminar'}
                               </AlertDialogAction>
@@ -188,7 +214,7 @@ export function QuestionsTable() {
             )})
           ) : (
             <TableRow>
-              <TableCell colSpan={5} className="h-24 text-center">
+              <TableCell colSpan={6} className="h-24 text-center">
                 No hay preguntas configuradas. ¡Crea la primera! 🚀
               </TableCell>
             </TableRow>
@@ -198,3 +224,5 @@ export function QuestionsTable() {
     </div>
   );
 }
+
+    

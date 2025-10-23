@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { questions, CATEGORY_DETAILS, TestSection, QuestionCategory } from './psychological-test-data';
+import { CATEGORY_DETAILS, TestSection, QuestionCategory, HollandQuestion } from './psychological-test-data';
 import { cn } from '@/lib/utils';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ChartConfig, ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
@@ -12,6 +12,7 @@ type Answers = Record<string, 'yes' | 'no' | null>;
 
 type ResultsDisplayProps = {
     answers: Answers;
+    questions: HollandQuestion[];
 };
 
 type ResultCounts = {
@@ -21,7 +22,7 @@ type ResultCounts = {
     };
 };
 
-function calculateSectionResults(section: TestSection | 'all', answers: Answers): ResultCounts {
+function calculateSectionResults(section: TestSection | 'all', answers: Answers, questions: HollandQuestion[]): ResultCounts {
     const initialCounts: ResultCounts = {
         realista: { yes: 0, no: 0 },
         investigador: { yes: 0, no: 0 },
@@ -175,15 +176,18 @@ function GeneralPieChart({ data }: { data: ResultCounts }) {
 }
 
 
-export function ResultsDisplay({ answers }: ResultsDisplayProps) {
+export function ResultsDisplay({ answers, questions }: ResultsDisplayProps) {
     const results = useMemo(() => {
+        if (!questions) return null;
         return {
-            actividades: calculateSectionResults('actividades', answers),
-            habilidades: calculateSectionResults('habilidades', answers),
-            ocupaciones: calculateSectionResults('ocupaciones', answers),
-            general: calculateSectionResults('all', answers),
+            actividades: calculateSectionResults('actividades', answers, questions),
+            habilidades: calculateSectionResults('habilidades', answers, questions),
+            ocupaciones: calculateSectionResults('ocupaciones', answers, questions),
+            general: calculateSectionResults('all', answers, questions),
         };
-    }, [answers]);
+    }, [answers, questions]);
+
+    if (!results) return null;
 
     return (
         <div className="space-y-8">
@@ -208,3 +212,5 @@ export function ResultsDisplay({ answers }: ResultsDisplayProps) {
         </div>
     );
 }
+
+    
