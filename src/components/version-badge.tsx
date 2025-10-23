@@ -8,7 +8,8 @@ import { cn } from '@/lib/utils';
 export function VersionBadge() {
   const version = packageJson.version;
   const pathname = usePathname();
-
+  
+  // Directly calculate on the client. This avoids hydration mismatch.
   const isAuthPage = ['/login', '/register', '/forgot-password'].includes(pathname);
 
   return (
