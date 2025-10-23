@@ -70,7 +70,7 @@ function ResultsTable({ title, data }: { title: string; data: ResultCounts }) {
                             return (
                                 <TableRow key={category}>
                                     <TableCell className="font-medium">
-                                        <div className={cn("flex items-center gap-2", categoryInfo.color)}>
+                                        <div className={cn("flex items-center gap-2")} style={{color: categoryInfo.color}}>
                                             <Icon className="w-4 h-4" />
                                             <span className="capitalize">{category.toUpperCase()}</span>
                                         </div>
@@ -101,19 +101,8 @@ function GeneralPieChart({ data }: { data: ResultCounts }) {
 
     const chartConfig = Object.keys(CATEGORY_DETAILS).reduce((acc, key) => {
         const categoryKey = key as QuestionCategory;
-        const colorName = CATEGORY_DETAILS[categoryKey].colorClass;
+        const colorValue = CATEGORY_DETAILS[categoryKey].color;
         
-        let colorValue = '';
-        switch(colorName) {
-            case 'green': colorValue = '#4ade80'; break;
-            case 'blue': colorValue = '#60a5fa'; break;
-            case 'purple': colorValue = '#a78bfa'; break;
-            case 'pink': colorValue = '#f472b6'; break;
-            case 'amber': colorValue = '#facc15'; break;
-            case 'teal': colorValue = '#2dd4bf'; break;
-            default: colorValue = '#8884d8';
-        }
-
         acc[categoryKey] = {
             label: CATEGORY_DETAILS[categoryKey].label.toUpperCase(),
             color: colorValue,

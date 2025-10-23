@@ -377,16 +377,16 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                                             disabled={isTestLocked}
                                             className={cn(
                                                 "h-14 w-full border-2 rounded-md flex flex-col items-center justify-center transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:border-current",
-                                                 !isAnswered && 'bg-muted/50 border-muted hover:border-primary/50'
+                                                !isAnswered && 'bg-muted/50 border-muted hover:border-primary/50'
                                             )}
-                                            style={isAnswered ? {
+                                            style={isAnswered ? { 
                                                 borderColor: categoryInfo.color,
-                                                backgroundColor: `${categoryInfo.color.replace('text-', 'bg-').replace('-400', '-900/50')}`,
+                                                backgroundColor: categoryInfo.color.replace(')', ', 0.15)'),
                                             } : {}}
                                             title={q.text}
                                         >
                                             <span className={cn("text-lg font-bold", isAnswered ? 'text-foreground/80' : 'text-muted-foreground')}>{index + 1}</span>
-                                            <CategoryIcon className={cn("w-5 h-5", isAnswered ? categoryInfo.color : 'text-muted-foreground')} />
+                                            <CategoryIcon className="w-5 h-5" style={isAnswered ? {color: categoryInfo.color} : {}}/>
                                         </button>
                                     );
                                 })}
@@ -411,15 +411,3 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
         </div>
     );
 }
-
-// Temporary patch for Tailwind JIT not picking up dynamic classes
-const ColorClassesForJit = () => (
-    <div className="hidden">
-        <div className="bg-green-900/50 border-green-400"></div>
-        <div className="bg-blue-900/50 border-blue-400"></div>
-        <div className="bg-purple-900/50 border-purple-400"></div>
-        <div className="bg-pink-900/50 border-pink-400"></div>
-        <div className="bg-amber-900/50 border-amber-400"></div>
-        <div className="bg-teal-900/50 border-teal-400"></div>
-    </div>
-);

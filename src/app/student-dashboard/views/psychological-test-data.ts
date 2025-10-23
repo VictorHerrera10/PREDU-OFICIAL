@@ -13,12 +13,12 @@ export interface HollandQuestion {
 }
 
 export const CATEGORY_DETAILS: Record<QuestionCategory, { icon: React.ElementType, color: string, colorClass: string, label: string }> = {
-    realista: { icon: Wrench, color: 'text-green-400', colorClass: 'green', label: 'Realista' },
-    investigador: { icon: Microscope, color: 'text-blue-400', colorClass: 'blue', label: 'Investigador' },
-    artistico: { icon: Palette, color: 'text-purple-400', colorClass: 'purple', label: 'Artístico' },
-    social: { icon: Users, color: 'text-pink-400', colorClass: 'pink', label: 'Social' },
-    emprendedor: { icon: Handshake, color: 'text-amber-400', colorClass: 'amber', label: 'Emprendedor' },
-    convencional: { icon: Calculator, color: 'text-teal-400', colorClass: 'teal', label: 'Convencional' },
+    realista: { icon: Wrench, color: 'hsl(140 70% 40%)', colorClass: 'green', label: 'Realista' },
+    investigador: { icon: Microscope, color: 'hsl(210 70% 50%)', colorClass: 'blue', label: 'Investigador' },
+    artistico: { icon: Palette, color: 'hsl(280 70% 60%)', colorClass: 'purple', label: 'Artístico' },
+    social: { icon: Users, color: 'hsl(330 70% 60%)', colorClass: 'pink', label: 'Social' },
+    emprendedor: { icon: Handshake, color: 'hsl(45 90% 50%)', colorClass: 'amber', label: 'Emprendedor' },
+    convencional: { icon: Calculator, color: 'hsl(170 70% 40%)', colorClass: 'teal', label: 'Convencional' },
 };
 
 export const SECTION_DETAILS: Record<TestSection, { icon: React.ElementType, title: string, description: string }> = {
