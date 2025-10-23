@@ -4,10 +4,11 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } f
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { ThumbsUp, ThumbsDown, X } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, X, AlertTriangle } from 'lucide-react';
 import { HollandQuestion, CATEGORY_DETAILS, QuestionCategory } from './psychological-test-data';
 import { Logo } from '@/components/logo';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 type QuestionModalProps = {
     question: HollandQuestion;
@@ -32,7 +33,7 @@ function QuestionWindowControls({ questionNumber, totalQuestions, category, onCl
                     Pregunta {questionNumber}/{totalQuestions}
                 </span>
                  <span className="mx-2 text-muted-foreground/50">|</span>
-                <div className={cn("flex items-center gap-1.5", categoryDetails.color)}>
+                <div className={cn("flex items-center gap-1.5", categoryDetails.colorClass)}>
                    <CategoryIcon className="h-4 w-4" />
                    <span className="text-sm font-semibold capitalize">{category}</span>
                 </div>
@@ -85,6 +86,16 @@ export function QuestionModal({
                                 height={200} 
                                 className="rounded-md mx-auto mb-6 aspect-video object-cover" 
                             />
+                            {answer && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="mb-4 text-xs text-destructive flex items-center justify-center gap-1.5"
+                                >
+                                    <AlertTriangle className="h-4 w-4" />
+                                    Ya respondiste esta pregunta, pero puedes cambiar tu elección.
+                                </motion.div>
+                            )}
                             <div className="flex justify-center gap-4">
                                 <Button 
                                     size="lg" 
