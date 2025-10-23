@@ -4,8 +4,8 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } f
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { ThumbsUp, ThumbsDown, X, AlertTriangle, ArrowLeft, ArrowRight } from 'lucide-react';
-import { HollandQuestion, CATEGORY_DETAILS, QuestionCategory } from './psychological-test-data';
+import { ThumbsUp, ThumbsDown, X, AlertTriangle, ArrowLeft, ArrowRight, Check, Ban } from 'lucide-react';
+import { HollandQuestion, CATEGORY_DETAILS, QuestionCategory, TestSection } from './psychological-test-data';
 import { Logo } from '@/components/logo';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -69,6 +69,21 @@ export function QuestionModal({
         if (isLocked) return;
         onAnswer(question.id, selectedAnswer);
     };
+    
+    const getButtonLabels = (section: TestSection): { yes: string, no: string, yesIcon: React.ElementType, noIcon: React.ElementType } => {
+        switch (section) {
+            case 'actividades':
+                return { yes: 'Me Agrada', no: 'No me Agrada', yesIcon: Check, noIcon: Ban };
+            case 'habilidades':
+                return { yes: 'Sí, puedo hacerlo', no: 'No, no puedo', yesIcon: ThumbsUp, noIcon: ThumbsDown };
+            case 'ocupaciones':
+                return { yes: 'Sí, me interesa', no: 'No, no me interesa', yesIcon: ThumbsUp, noIcon: ThumbsDown };
+            default:
+                return { yes: 'Sí', no: 'No', yesIcon: ThumbsUp, noIcon: ThumbsDown };
+        }
+    };
+
+    const { yes: yesLabel, no: noLabel, yesIcon: YesIcon, noIcon: NoIcon } = getButtonLabels(question.section);
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -132,20 +147,20 @@ export function QuestionModal({
                                         <Button 
                                             size="lg" 
                                             variant={answer === 'yes' ? 'secondary' : 'outline'} 
-                                            className={cn("border-green-500 hover:bg-green-500/10 hover:text-green-400", answer === 'yes' ? "bg-green-500/20 text-green-300" : "text-green-500")} 
+                                            className={cn("border-green-500 hover:bg-green-500/10 hover:text-green-400 min-w-[140px]", answer === 'yes' ? "bg-green-500/20 text-green-300" : "text-green-500")} 
                                             onClick={() => handleAnswerClick('yes')}
                                             disabled={isLocked}
                                         >
-                                            <ThumbsUp className="mr-2" /> Sí
+                                            <YesIcon className="mr-2" /> {yesLabel}
                                         </Button>
                                         <Button 
                                             size="lg" 
                                             variant={answer === 'no' ? 'secondary' : 'outline'} 
-                                            className={cn("border-red-500 hover:bg-red-500/10 hover:text-red-400", answer === 'no' ? "bg-red-500/20 text-red-300" : "text-red-500")} 
+                                            className={cn("border-red-500 hover:bg-red-500/10 hover:text-red-400 min-w-[140px]", answer === 'no' ? "bg-red-500/20 text-red-300" : "text-red-500")} 
                                             onClick={() => handleAnswerClick('no')}
                                             disabled={isLocked}
                                         >
-                                            <ThumbsDown className="mr-2" /> No
+                                            <NoIcon className="mr-2" /> {noLabel}
                                         </Button>
                                     </div>
                                     <div className="absolute right-0 bottom-0">
