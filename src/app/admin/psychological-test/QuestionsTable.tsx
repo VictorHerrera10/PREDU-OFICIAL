@@ -2,11 +2,9 @@
 
 import { useMemo, useState } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
-import Image from 'next/image';
-
 import {
   Table,
   TableHeader,
@@ -36,43 +34,71 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, PlusCircle, Trash2, Edit, Loader2, BrainCircuit, Image as ImageIcon, FileText } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Trash2, Edit, Loader2, FileText, Image as ImageIcon } from 'lucide-react';
 import { QuestionForm, QuestionFormData } from './QuestionForm';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { TestSection, QuestionCategory, CATEGORY_DETAILS, hollandQuestions as allQuestions, HollandQuestion } from '@/app/student-dashboard/views/psychological-test-data';
+import { TestSection, QuestionCategory, CATEGORY_DETAILS, HollandQuestion } from '@/app/student-dashboard/views/psychological-test-data';
+import { createPsychologicalQuestion, updatePsychologicalQuestion, deletePsychologicalQuestion } from '@/app/actions';
 
 
 export function QuestionsTable() {
+  const firestore = useFirestore();
   const { toast } = useToast();
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<HollandQuestion | null>(null);
 
-  // Using local data for now
-  const questions = allQuestions;
-  const isLoading = false;
+  const questionsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'psychological_questions'), orderBy('createdAt', 'desc'));
+  }, [firestore]);
 
+  const { data: questions, isLoading } = useCollection<HollandQuestion>(questionsQuery);
 
   const handleCreate = () => {
-    // setEditingQuestion(null);
-    // setIsFormOpen(true);
-    toast({ title: 'En desarrollo', description: 'La gestión de preguntas se realiza localmente por ahora.'})
+    setEditingQuestion(null);
+    setIsFormOpen(true);
   };
   
   const handleEdit = (question: HollandQuestion) => {
-    // setEditingQuestion(question);
-    // setIsFormOpen(true);
-    toast({ title: 'En desarrollo', description: 'La gestión de preguntas se realiza localmente por ahora.'})
+    setEditingQuestion(question);
+    setIsFormOpen(true);
   };
 
   const handleDelete = async (questionId: string) => {
-    toast({ title: 'En desarrollo', description: 'La gestión de preguntas se realiza localmente por ahora.'})
+    setIsProcessing(true);
+    const result = await deletePsychologicalQuestion(questionId);
+    if(result.success) {
+        toast({ title: 'Pregunta eliminada' });
+    } else {
+        toast({ variant: 'destructive', title: 'Error', description: result.message });
+    }
+    setIsProcessing(false);
   };
 
   const handleFormSubmit = async (data: QuestionFormData) => {
-     toast({ title: 'En desarrollo', description: 'La gestión de preguntas se realiza localmente por ahora.'})
+    setIsProcessing(true);
+    const result = editingQuestion
+      ? await updatePsychologicalQuestion(editingQuestion.id, data)
+      : await createPsychologicalQuestion(data);
+
+    if (result.success) {
+      toast({
+        title: `Pregunta ${editingQuestion ? 'actualizada' : 'creada'}`,
+        description: 'Los cambios se han guardado en la base de datos.',
+      });
+      setIsFormOpen(false);
+      setEditingQuestion(null);
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Error al guardar',
+        description: result.message,
+      });
+    }
+    setIsProcessing(false);
   };
 
   if (isLoading) {

@@ -300,7 +300,8 @@
             "section": { "type": "string", "enum": ["actividades", "habilidades", "ocupaciones"] },
             "category": { "type": "string", "enum": ["realista", "investigador", "artistico", "social", "emprendedor", "convencional"] },
             "text": { "type": "string" },
-            "gifUrl": { "type": "string", "format": "uri" }
+            "gifUrl": { "type": "string", "format": "uri" },
+            "createdAt": { "type": "string", "format": "date-time" }
         },
         "required": ["section", "category", "text", "gifUrl"]
     },
@@ -564,6 +565,14 @@
                 "name": "requestId",
                 "description": "The unique identifier for the tutor request."
             }]
+        }
+      },
+       {
+        "path": "/psychological_questions/{questionId}",
+        "definition": {
+          "entityName": "PsychologicalQuestion",
+          "schema": { "$ref": "#/backend/entities/PsychologicalQuestion" },
+          "description": "Stores all questions for the RIASEC test. Publicly readable by authenticated users, but only writable by admins."
         }
       },
       {

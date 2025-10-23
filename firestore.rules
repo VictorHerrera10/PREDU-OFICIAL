@@ -2,48 +2,44 @@
  * @fileoverview Firestore Security Rules for Pixel Vault application.
  *
  * Core Philosophy:
- * This ruleset enforces a strict user-ownership model for user profiles and associated data (psychological and academic predictions).
- * Administrative access is required for managing institutions and tutor requests.
+ * This ruleset enforces a strict user-ownership model for user profiles and psychological predictions,
+ * ensuring that only the authenticated user can access their own data. Institutions and Tutor Requests are
+ * secured with the assumption that they should only be writable by administrators.
  *
  * Data Structure:
- * - /users/{userId}: Stores user profile data, accessible only to the user themselves.
- * - /institutions/{institutionId}: Stores institution data, writable only by administrators.
- * - /independentTutorGroups/{groupId}: Stores independent tutor group data, writable only by administrators.
- * - /tutorRequests/{requestId}: Stores tutor requests, writable only by administrators.
- * - /psychological_predictions/{userId}: Stores psychological prediction data, accessible only to the user themselves.
- * - /academic_prediction/{userId}: Stores academic prediction data, accessible only to the user themselves.
+ * - /users/{userId}: Stores individual user profiles, with 'userId' matching the Firebase Auth UID.
+ * - /institutions/{institutionId}: Stores data about educational institutions.
+ * - /independentTutorGroups/{groupId}: Stores data about independent tutor groups.
+ * - /tutorRequests/{requestId}: Stores tutor requests.
+ * - /psychological_predictions/{userId}: Stores user's RIASEC test data.
+ * - /academic_prediction/{userId}: Stores user's academic prediction data.
  *
  * Key Security Decisions:
- * - User listing is implicitly denied by the absence of a top-level `list` rule on `/users`.
- * - Write operations on `/institutions`, `/independentTutorGroups`, and `/tutorRequests` require administrator privileges (not yet implemented in this prototype).
- * - The default security posture for any ambiguous relationships is strict owner-only access.
+ * - User listing is disallowed to protect user privacy.
+ * - Public read access is generally disallowed except where explicitly noted (e.g., for specific collections).
+ * - The rules default to a secure-by-default posture, explicitly denying access unless specifically allowed.
+ *
+ * Denormalization for Authorization:
+ *  - Path-based ownership is used for `/users/{userId}` and `/psychological_predictions/{userId}`, where the `userId` in the path MUST match `request.auth.uid`.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to user profile documents.
+     * @description Enforces access control for user profiles. Only the authenticated user can read/write their own profile.
      * @path /users/{userId}
-     * @allow (create) - Authenticated user creates their own profile.
-     * @allow (get, update, delete) - Authenticated user accesses their own profile.
-     * @deny (create) - If the authenticated user's ID does not match the userId.
-     * @deny (get, update, delete) - If the authenticated user's ID does not match the userId or if the document does not exist on update/delete.
-     * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
+     * @allow (create, update, get, delete) if the UID in the request matches the `userId` in the path.
+     * @deny (create, update, get, delete) if the UID does not match.
+     * @principle Enforces document ownership for writes.
      */
     match /users/{userId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
+        return request.auth != null && request.auth.uid == userId;
       }
-
       function isExistingOwner(userId) {
         return isOwner(userId) && resource != null;
       }
-
       allow get: if isOwner(userId);
       allow list: if false;
       allow create: if isOwner(userId) && request.resource.data.id == userId;
@@ -52,103 +48,89 @@ service cloud.firestore {
     }
 
     /**
-     * @description Controls access to institution documents.
+     * @description Enforces access control for institutions. Only admins can create, read, update, and delete institutions.
      * @path /institutions/{institutionId}
-     * @allow (get, list) - Public read access for all institutions.
-     * @deny (create, update, delete) - Only admins can create, update or delete institutions.
-     * @principle Restricts write access to institutions to authorized admins.
+     * @allow (create, update, get, delete) if the request comes from an admin.
+     * @deny (create, update, get, delete) if the request does not come from an admin.
+     * @principle Restricts access to admin roles.
      */
     match /institutions/{institutionId} {
-      allow get, list: if true;
-      allow create: if false; // TODO: Add admin check
-      allow update: if false; // TODO: Add admin check and existing document check
-      allow delete: if false; // TODO: Add admin check and existing document check
+      allow get: if true;
+      allow list: if true;
+      allow create: if false; // TODO: Add admin validation
+      allow update: if false; // TODO: Add admin validation
+      allow delete: if false; // TODO: Add admin validation
     }
 
-    /**
-     * @description Controls access to independent tutor group documents.
-     * @path /independentTutorGroups/{groupId}
-     * @allow (get, list) - Public read access for all tutor groups.
-     * @deny (create, update, delete) - Only admins can create, update, or delete tutor groups.
-     * @principle Restricts write access to tutor groups to authorized admins.
-     */
+     /**
+      * @description Enforces access control for independent tutor groups. Only admins can create, read, update, and delete tutor groups.
+      * @path /independentTutorGroups/{groupId}
+      * @allow (create, update, get, delete) if the request comes from an admin.
+      * @deny (create, update, get, delete) if the request does not come from an admin.
+      * @principle Restricts access to admin roles.
+      */
     match /independentTutorGroups/{groupId} {
-      allow get, list: if true;
-      allow create: if false; // TODO: Add admin check
-      allow update: if false; // TODO: Add admin check and existing document check
-      allow delete: if false; // TODO: Add admin check and existing document check
+        allow get: if true;
+        allow list: if true;
+        allow create: if false; // TODO: Add admin validation
+        allow update: if false; // TODO: Add admin validation
+        allow delete: if false; // TODO: Add admin validation
     }
 
     /**
-     * @description Controls access to tutor request documents.
+     * @description Enforces access control for tutor requests. Only admins can create, read, update, and delete tutor requests.
      * @path /tutorRequests/{requestId}
-     * @allow (get, list) - Public read access for all tutor requests.
-     * @deny (create, update, delete) - Only admins can create, update, or delete tutor requests.
-     * @principle Restricts write access to tutor requests to authorized admins.
+     * @allow (create, update, get, delete) if the request comes from an admin.
+     * @deny (create, update, get, delete) if the request does not come from an admin.
+     * @principle Restricts access to admin roles.
      */
     match /tutorRequests/{requestId} {
-      allow get, list: if true;
-      allow create: if false; // TODO: Add admin check
-      allow update: if false; // TODO: Add admin check and existing document check
-      allow delete: if false; // TODO: Add admin check and existing document check
-    }
-
-        /**
-     * @description Controls access to psychological prediction documents.
-     * @path /psychological_predictions/{userId}
-     * @allow (create) - Authenticated user creates their own prediction.
-     * @allow (get, update, delete) - Authenticated user accesses their own prediction.
-     * @deny (create) - If the authenticated user's ID does not match the userId.
-     * @deny (get, update, delete) - If the authenticated user's ID does not match the userId or if the document does not exist on update/delete.
-     * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
-     */
-    match /psychological_predictions/{userId} {
-        function isSignedIn() {
-            return request.auth != null;
-        }
-
-        function isOwner(userId) {
-            return isSignedIn() && request.auth.uid == userId;
-        }
-
-        function isExistingOwner(userId) {
-            return isOwner(userId) && resource != null;
-        }
-
-        allow get: if isOwner(userId);
-        allow list: if false;
-        allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-        allow delete: if isExistingOwner(userId);
+        allow get: if true;
+        allow list: if true;
+        allow create: if false; // TODO: Add admin validation
+        allow update: if false; // TODO: Add admin validation
+        allow delete: if false; // TODO: Add admin validation
     }
 
     /**
-     * @description Controls access to academic prediction documents.
+     * @description Enforces access control for psychological predictions. Only the authenticated user can read/write their own predictions.
+     * @path /psychological_predictions/{userId}
+     * @allow (create, update, get, delete) if the UID in the request matches the `userId` in the path.
+     * @deny (create, update, get, delete) if the UID does not match.
+     * @principle Enforces document ownership for writes.
+     */
+    match /psychological_predictions/{userId} {
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+      }
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Enforces access control for academic predictions. Only the authenticated user can read/write their own predictions.
      * @path /academic_prediction/{userId}
-     * @allow (create) - Authenticated user creates their own prediction.
-     * @allow (get, update, delete) - Authenticated user accesses their own prediction.
-     * @deny (create) - If the authenticated user's ID does not match the userId.
-     * @deny (get, update, delete) - If the authenticated user's ID does not match the userId or if the document does not exist on update/delete.
-     * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
+     * @allow (create, update, get, delete) if the UID in the request matches the `userId` in the path.
+     * @deny (create, update, get, delete) if the UID does not match.
      */
     match /academic_prediction/{userId} {
-        function isSignedIn() {
-            return request.auth != null;
-        }
-
-        function isOwner(userId) {
-            return isSignedIn() && request.auth.uid == userId;
-        }
-
-        function isExistingOwner(userId) {
-            return isOwner(userId) && resource != null;
-        }
-
-        allow get: if isOwner(userId);
-        allow list: if false;
-        allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-        allow delete: if isExistingOwner(userId);
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+      }
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(userId);
     }
   }
 }

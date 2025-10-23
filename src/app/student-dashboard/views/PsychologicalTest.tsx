@@ -1,18 +1,18 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { useUser, useFirestore, useDoc } from '@/firebase';
+import { useUser, useFirestore, useDoc, useCollection } from '@/firebase';
 import api from '@/lib/api-client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, CheckCircle, ArrowLeft, Lock } from 'lucide-react';
-import { CATEGORY_DETAILS, SECTION_DETAILS, TestSection, HollandQuestion, QuestionCategory, hollandQuestions } from './psychological-test-data';
+import { CATEGORY_DETAILS, SECTION_DETAILS, TestSection, HollandQuestion, QuestionCategory } from './psychological-test-data';
 import { cn } from '@/lib/utils';
 import { QuestionModal } from './QuestionModal';
 import { Badge } from '@/components/ui/badge';
-import { doc, serverTimestamp } from 'firebase/firestore';
+import { doc, serverTimestamp, query, collection, orderBy } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { ResultsDisplay } from './ResultsDisplay';
 import { useNotifications } from '@/hooks/use-notifications';
@@ -61,9 +61,12 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentQuestion, setCurrentQuestion] = useState<HollandQuestion | null>(null);
 
-    // Using local data
-    const questions = hollandQuestions;
-    const isLoadingQuestions = false;
+    const questionsQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'psychological_questions'), orderBy('createdAt', 'asc'));
+    }, [firestore]);
+
+    const { data: questions, isLoading: isLoadingQuestions } = useCollection<HollandQuestion>(questionsQuery);
     
     // Initialize answers state once questions are available
     useEffect(() => {
@@ -400,16 +403,16 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                                             disabled={isTestLocked}
                                             className={cn(
                                                 "h-14 w-full border-2 rounded-md flex flex-col items-center justify-center transition-all disabled:opacity-60 disabled:cursor-not-allowed",
-                                                !isAnswered && 'hover:border-primary/50'
+                                                isAnswered ? '' : 'border-muted hover:border-primary/50'
                                             )}
-                                            style={isAnswered ? { 
+                                            style={isAnswered ? {
                                                 borderColor: categoryInfo.color,
                                                 backgroundColor: `color-mix(in srgb, ${categoryInfo.color} 15%, transparent)`,
                                             } : {}}
                                             title={q.text}
                                         >
                                             <span className={cn("text-lg font-bold", isAnswered ? 'text-foreground/80' : 'text-muted-foreground')}>{index + 1}</span>
-                                            <CategoryIcon className="w-5 h-5" style={isAnswered ? {color: categoryInfo.color} : {}}/>
+                                            <CategoryIcon className="w-5 h-5" style={{color: isAnswered ? categoryInfo.color : 'inherit' }}/>
                                         </button>
                                     );
                                 })}
