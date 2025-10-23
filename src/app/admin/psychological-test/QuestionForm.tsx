@@ -3,7 +3,7 @@
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Image from 'next/image';
 
@@ -21,7 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { BrainCircuit, Upload, Image as ImageIcon, X } from 'lucide-react';
+import { BrainCircuit, Upload, Image as ImageIcon, X, Loader2 } from 'lucide-react';
 import { HollandQuestion } from './QuestionsTable';
 import { CATEGORY_DETAILS, SECTION_DETAILS, QuestionCategory, TestSection } from '@/app/student-dashboard/views/psychological-test-data';
 import { useStorage } from '@/firebase';
@@ -48,8 +48,9 @@ type QuestionFormProps = {
 };
 
 export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isProcessing }: QuestionFormProps) {
-  const { register, handleSubmit, control, formState: { errors }, reset, setValue, watch } = useForm<QuestionFormData>({
+  const { register, handleSubmit, control, formState: { errors }, reset, setValue, watch, trigger } = useForm<QuestionFormData>({
     resolver: zodResolver(formSchema),
+    mode: 'onChange',
   });
 
   const storage = useStorage();
@@ -59,12 +60,17 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   
-  const gifUrl = watch('gifUrl');
+  const gifUrlValue = watch('gifUrl');
   
   useEffect(() => {
     if(isOpen) {
         if(initialData) {
-            reset(initialData);
+            reset({
+              text: initialData.text,
+              gifUrl: initialData.gifUrl,
+              section: initialData.section,
+              category: initialData.category,
+            });
             setPreview(initialData.gifUrl);
         } else {
             reset({
@@ -76,6 +82,8 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
             setPreview(null);
         }
         setImageFile(null);
+        setUploadProgress(0);
+        setIsUploading(false);
     }
   }, [initialData, reset, isOpen]);
 
@@ -92,7 +100,8 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
       }
       setImageFile(file);
       setPreview(URL.createObjectURL(file));
-      setValue('gifUrl', 'file-is-being-uploaded', { shouldValidate: false });
+      // Temporarily set a valid-looking but placeholder URL to pass initial validation if needed.
+      setValue('gifUrl', 'https://placeholder.com/image.gif', { shouldDirty: true, shouldValidate: false });
     }
   }, [toast, setValue]);
 
@@ -102,13 +111,12 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
     multiple: false,
   });
 
-  const handleFormSubmit = async (data: QuestionFormData) => {
-    if (isUploading) {
-      toast({ variant: 'destructive', title: 'Espera un momento', description: 'La imagen aún se está subiendo.' });
-      return;
-    }
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     
-    let finalData = { ...data };
+    // Trigger validation for all fields except gifUrl if we're about to upload
+    const textIsValid = await trigger("text");
+    if (!textIsValid) return;
 
     if (imageFile && storage) {
       setIsUploading(true);
@@ -116,36 +124,33 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
         const filePath = `psychological-test-gifs/${Date.now()}-${imageFile.name}`;
         const uploadedUrl = await uploadFile(storage, imageFile, filePath, setUploadProgress);
         setValue('gifUrl', uploadedUrl, { shouldValidate: true });
-        finalData.gifUrl = uploadedUrl;
+        handleSubmit((data) => onSubmit(data))();
       } catch (error) {
         toast({ variant: 'destructive', title: 'Error de carga', description: 'No se pudo subir el GIF.' });
         setIsUploading(false);
         setUploadProgress(0);
         return;
+      } finally {
+        setIsUploading(false);
+        setUploadProgress(0);
       }
-      setIsUploading(false);
-      setUploadProgress(0);
-    }
-    
-    // Re-trigger validation before submitting
-    const isValid = await handleSubmit(onSubmit)();
-    if (!isValid) {
-      // This will call the main onSubmit if validation passes now
-      onSubmit(finalData);
+    } else {
+      // If no new image, just submit with existing data
+      handleSubmit((data) => onSubmit(data))();
     }
   };
   
   const removeImage = () => {
     setImageFile(null);
     setPreview(null);
-    setValue('gifUrl', '');
+    setValue('gifUrl', initialData?.gifUrl || '', { shouldValidate: true });
   };
 
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleFormSubmit}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <BrainCircuit className="text-primary" />
@@ -192,17 +197,16 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
                         </div>
                     </div>
                 )}
-                 {(isUploading || uploadProgress > 0) && (
+                 {(isUploading || uploadProgress > 0) && uploadProgress < 100 && (
                   <Progress value={uploadProgress} className="w-full h-2 mt-2" />
                 )}
-                 {errors.gifUrl && gifUrl !== 'file-is-being-uploaded' && <p className="text-xs text-destructive">{errors.gifUrl.message}</p>}
+                 {errors.gifUrl && <p className="text-xs text-destructive">{errors.gifUrl.message}</p>}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <Controller
                 name="section"
                 control={control}
-                defaultValue={initialData?.section}
                 render={({ field }) => (
                   <div className="space-y-2">
                     <Label>Sección</Label>
@@ -220,7 +224,6 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
               <Controller
                 name="category"
                 control={control}
-                defaultValue={initialData?.category}
                 render={({ field }) => (
                   <div className="space-y-2">
                     <Label>Categoría (RIASEC)</Label>
@@ -241,7 +244,10 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
             <DialogClose asChild>
               <Button type="button" variant="outline">Cancelar</Button>
             </DialogClose>
-            <Button type="submit" disabled={isProcessing || isUploading}>{isUploading ? 'Subiendo...' : isProcessing ? 'Guardando...' : 'Guardar'}</Button>
+            <Button type="submit" disabled={isProcessing || isUploading}>
+              {isUploading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Subiendo...</> : 
+               isProcessing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Guardando...</> : 'Guardar'}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
