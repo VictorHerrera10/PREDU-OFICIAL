@@ -111,13 +111,15 @@ export function QuestionModal({
                                         transition={{ duration: 0.2, ease: 'easeInOut' }}
                                     >
                                         <p className="text-lg font-semibold mb-4 h-12 flex items-center justify-center">{question.text}</p>
-                                        <Image 
-                                            src={question.gifUrl} 
-                                            alt={question.text} 
-                                            width={400} 
-                                            height={200} 
-                                            className="rounded-md mx-auto mb-6 aspect-video object-cover" 
-                                        />
+                                        <div className="relative w-full h-48 mx-auto mb-6">
+                                            <Image 
+                                                src={question.gifUrl} 
+                                                alt={question.text} 
+                                                layout="fill"
+                                                objectFit="contain" 
+                                                className="rounded-xl shadow-lg shadow-black/20"
+                                            />
+                                        </div>
                                     </motion.div>
                                 </AnimatePresence>
 
