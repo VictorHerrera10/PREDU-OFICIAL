@@ -94,8 +94,8 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
         toast({ variant: 'destructive', title: 'Archivo no válido', description: 'Por favor, sube solo archivos de imagen.' });
         return;
       }
-      if (file.size > 2 * 1024 * 1024) { // 2MB Limit
-         toast({ variant: 'destructive', title: 'Archivo muy grande', description: 'El GIF no debe pesar más de 2MB.' });
+      if (file.size > 5 * 1024 * 1024) { // 5MB Limit
+         toast({ variant: 'destructive', title: 'Archivo muy grande', description: 'El GIF no debe pesar más de 5MB.' });
         return;
       }
       setImageFile(file);
@@ -193,7 +193,7 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
                             <p className="mt-2 text-sm text-muted-foreground">
                                 {isDragActive ? 'Suelta el GIF aquí' : 'Arrastra un GIF o haz clic para seleccionarlo'}
                             </p>
-                            <p className="text-xs text-muted-foreground/80">Max. 2MB</p>
+                            <p className="text-xs text-muted-foreground/80">Max. 5MB</p>
                         </div>
                     </div>
                 )}
