@@ -68,18 +68,6 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
 
     const { data: questions, isLoading: isLoadingQuestions } = useCollection<HollandQuestion>(questionsQuery);
     
-    // Initialize answers state once questions are available
-    useEffect(() => {
-        if (questions) {
-            setAnswers(prevAnswers => {
-                const newAnswersState = questions.reduce((acc, q) => ({ ...acc, [q.id]: null }), {});
-                // Preserve any saved answers
-                return { ...newAnswersState, ...prevAnswers };
-            });
-        }
-    }, [questions]);
-
-
     const predictionDocRef = useMemo(() => {
         if (!user || !firestore) return null;
         return doc(firestore, 'psychological_predictions', user.uid);
@@ -87,16 +75,25 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
 
     const { data: savedPrediction, isLoading: isLoadingPrediction } = useDoc<PsychologicalPrediction>(predictionDocRef);
 
+    // This effect initializes the answers state based on all available questions
     useEffect(() => {
-        if (savedPrediction) {
-            if (savedPrediction.answers) {
-                setAnswers(prev => ({ ...prev, ...savedPrediction.answers }));
+        if (questions) {
+            const initialAnswers = questions.reduce((acc, q) => {
+                acc[q.id] = null; // Set all to null initially
+                return acc;
+            }, {} as Answers);
+
+            // If there's a saved prediction, merge those answers in
+            if (savedPrediction?.answers) {
+                setAnswers({ ...initialAnswers, ...savedPrediction.answers });
+            } else {
+                setAnswers(initialAnswers);
             }
-            if (savedPrediction.result) {
+             if (savedPrediction?.result) {
                 setPredictionResult(savedPrediction.result);
             }
         }
-    }, [savedPrediction, setPredictionResult]);
+    }, [questions, savedPrediction, setPredictionResult]);
 
     const calculateProgress = useCallback((currentAnswers: Answers) => {
         if (!questions || questions.length === 0) return { overall: 0, actividades: 0, habilidades: 0, ocupaciones: 0 };
@@ -106,13 +103,13 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
         
         const sectionProgress = (section: TestSection) => {
             const sectionQuestions = questions.filter(q => q.section === section);
-            const answeredInSection = sectionQuestions.filter(q => currentAnswers[q.id] !== null).length;
             if (sectionQuestions.length === 0) return 0;
+            const answeredInSection = sectionQuestions.filter(q => currentAnswers[q.id] !== null).length;
             return (answeredInSection / sectionQuestions.length) * 100;
         };
 
         return {
-            overall: (answeredCount / totalCount) * 100,
+            overall: totalCount > 0 ? (answeredCount / totalCount) * 100 : 0,
             actividades: sectionProgress('actividades'),
             habilidades: sectionProgress('habilidades'),
             ocupaciones: sectionProgress('ocupaciones'),
