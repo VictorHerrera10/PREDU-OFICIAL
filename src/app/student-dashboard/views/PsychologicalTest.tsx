@@ -197,6 +197,19 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
         setIsModalOpen(true);
     };
 
+    const handleNavigate = (direction: 'next' | 'prev') => {
+        if (!currentQuestion || !activeSection) return;
+
+        const sectionQuestions = questions.filter(q => q.section === activeSection);
+        const currentIndex = sectionQuestions.findIndex(q => q.id === currentQuestion.id);
+
+        if (direction === 'next' && currentIndex < sectionQuestions.length - 1) {
+            setCurrentQuestion(sectionQuestions[currentIndex + 1]);
+        } else if (direction === 'prev' && currentIndex > 0) {
+            setCurrentQuestion(sectionQuestions[currentIndex - 1]);
+        }
+    };
+
     const handleSubmit = async () => {
         if (!user) {
             toast({ variant: 'destructive', title: 'Error', description: 'Debes iniciar sesión.' });
@@ -403,6 +416,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                         allQuestions={questions.filter(q => q.section === activeSection)}
                         answer={answers[currentQuestion.id]}
                         onAnswer={handleAnswer}
+                        onNavigate={handleNavigate}
                         isOpen={isModalOpen}
                         setIsOpen={setIsModalOpen}
                         isLocked={isTestLocked}

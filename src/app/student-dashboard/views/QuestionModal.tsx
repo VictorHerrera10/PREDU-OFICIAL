@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } f
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { ThumbsUp, ThumbsDown, X, AlertTriangle } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, X, AlertTriangle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { HollandQuestion, CATEGORY_DETAILS, QuestionCategory } from './psychological-test-data';
 import { Logo } from '@/components/logo';
 import { cn } from '@/lib/utils';
@@ -15,6 +15,7 @@ type QuestionModalProps = {
     allQuestions: HollandQuestion[];
     answer: 'yes' | 'no' | null;
     onAnswer: (questionId: string, answer: 'yes' | 'no') => void;
+    onNavigate: (direction: 'next' | 'prev') => void;
     isOpen: boolean;
     setIsOpen: (isOpen: boolean) => void;
     isLocked?: boolean;
@@ -54,12 +55,14 @@ export function QuestionModal({
     allQuestions,
     answer,
     onAnswer,
+    onNavigate,
     isOpen,
     setIsOpen,
     isLocked = false,
 }: QuestionModalProps) {
 
-    const questionNumber = allQuestions.findIndex(q => q.id === question.id) + 1;
+    const questionIndex = allQuestions.findIndex(q => q.id === question.id);
+    const questionNumber = questionIndex + 1;
     const totalQuestions = allQuestions.length;
     
     const handleAnswerClick = (selectedAnswer: 'yes' | 'no') => {
@@ -96,7 +99,16 @@ export function QuestionModal({
                                     Ya respondiste esta pregunta, pero puedes cambiar tu elección.
                                 </motion.div>
                             )}
-                            <div className="flex justify-center gap-4">
+                            <div className="flex justify-center items-center gap-4">
+                                <Button
+                                    size="icon"
+                                    variant="outline"
+                                    onClick={() => onNavigate('prev')}
+                                    disabled={questionIndex === 0}
+                                    aria-label="Pregunta anterior"
+                                >
+                                    <ArrowLeft />
+                                </Button>
                                 <Button 
                                     size="lg" 
                                     variant={answer === 'yes' ? 'secondary' : 'outline'} 
@@ -114,6 +126,15 @@ export function QuestionModal({
                                     disabled={isLocked}
                                 >
                                     <ThumbsDown className="mr-2" /> No
+                                </Button>
+                                 <Button
+                                    size="icon"
+                                    variant="outline"
+                                    onClick={() => onNavigate('next')}
+                                    disabled={questionIndex === totalQuestions - 1}
+                                    aria-label="Siguiente pregunta"
+                                >
+                                    <ArrowRight />
                                 </Button>
                             </div>
                         </div>
