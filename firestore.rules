@@ -1,8 +1,133 @@
+/**
+ * @fileoverview Firestore Security Rules for Pixel Vault Application
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for user profiles and psychological predictions,
+ * while restricting write access to institutions, tutor groups, and tutor requests to administrators.
+ *
+ * Data Structure:
+ * - User profiles are stored under `/users/{userId}`, ensuring that each user can only access their own profile data.
+ * - Institutions are stored under `/institutions/{institutionId}` and are primarily managed by administrators.
+ * - Independent tutor groups are stored under `/independentTutorGroups/{groupId}` and are primarily managed by administrators.
+ * - Tutor requests are stored under `/tutorRequests/{requestId}` and are primarily managed by administrators.
+ * - Psychological predictions are stored under `/psychological_predictions/{userId}`, ensuring that each user can only access their own test data.
+ * - Academic predictions are stored under `/academic_prediction/{userId}`, ensuring that each user can only access their own prediction data.
+ *
+ * Key Security Decisions:
+ * - User listing is implicitly disallowed by the absence of a top-level `/users` collection.
+ * - Institutions, tutor groups, and tutor requests are only writable by admins (implementation pending the introduction of a role-based system).
+ * - Strict ownership is enforced for user profiles and psychological predictions based on matching `request.auth.uid` to the `userId` path parameter.
+ * - All write operations are protected by authorization checks to prevent unauthorized data modification or deletion.
+ * - No schema validation is enforced beyond authorization checks.
+ *
+ * Denormalization for Authorization:
+ * - Path-based ownership in `/users/{userId}` and `/psychological_predictions/{userId}` inherently denormalizes the user ID, avoiding the need for `get()` calls to verify ownership.
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
+
+    /**
+     * @description Allows users to read and write their own profile data.
+     * @path /users/{userId}
+     * @allow (create) User with UID 'user123' can create a profile with id: 'user123'.
+     * @allow (get) User with UID 'user123' can read their profile at /users/user123.
+     * @deny (create) User with UID 'user456' cannot create a profile with id: 'user123'.
+     * @deny (update) User with UID 'user456' cannot update the profile at /users/user123.
+     * @principle Enforces document ownership for writes. Restricts access to a user's own data tree.
+     */
+    match /users/{userId} {
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isSignedIn() && isExistingOwner(userId) && resource.data.id == request.resource.data.id;
+      allow delete: if isSignedIn() && isExistingOwner(userId);
+    }
+
+    /**
+     * @description Allows administrators to read and write institution data.
+     * @path /institutions/{institutionId}
+     * @allow (get) Any user can read institution data.
+     * @deny (create) Non-admin user cannot create a institution
+     * @deny (update) Non-admin user cannot update a institution
+     * @principle Restricts write access to administrators (currently placeholder).
+     */
+    match /institutions/{institutionId} {
+      allow get, list: if true;
+      allow create, update, delete: if false; // TODO: Add admin-only access
+    }
+
+    /**
+     * @description Allows administrators to read and write independent tutor group data.
+     * @path /independentTutorGroups/{groupId}
+     * @allow (get) Any user can read independent tutor group data.
+     * @deny (create) Non-admin user cannot create a independent tutor group
+     * @deny (update) Non-admin user cannot update a independent tutor group
+     * @principle Restricts write access to administrators (currently placeholder).
+     */
+    match /independentTutorGroups/{groupId} {
+      allow get, list: if true;
+      allow create, update, delete: if false; // TODO: Add admin-only access
+    }
+
+    /**
+     * @description Allows administrators to read and write tutor request data.
+     * @path /tutorRequests/{requestId}
+     * @allow (get) Any user can read tutor request data.
+     * @deny (create) Non-admin user cannot create a tutor request
+     * @deny (update) Non-admin user cannot update a tutor request
+     * @principle Restricts write access to administrators (currently placeholder).
+     */
+    match /tutorRequests/{requestId} {
+        allow get, list: if true;
+        allow create, update, delete: if false; // TODO: Add admin-only access
+    }
+
+    /**
+     * @description Allows users to read and write their own psychological prediction data.
+     * @path /psychological_predictions/{userId}
+     * @allow (create) User with UID 'user123' can create a prediction with userId: 'user123'.
+     * @allow (get) User with UID 'user123' can read their prediction at /psychological_predictions/user123.
+     * @deny (create) User with UID 'user456' cannot create a prediction with userId: 'user123'.
+     * @deny (update) User with UID 'user456' cannot update the prediction at /psychological_predictions/user123.
+     * @principle Enforces document ownership for writes. Restricts access to a user's own data.
+     */
+    match /psychological_predictions/{userId} {
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isSignedIn() && isExistingOwner(userId) && resource.data.userId == request.resource.data.userId;
+      allow delete: if isSignedIn() && isExistingOwner(userId);
+    }
+
+    /**
+     * @description Allows users to read and write their own academic prediction data.
+     * @path /academic_prediction/{userId}
+     * @allow (create) User with UID 'user123' can create a prediction with userId: 'user123'.
+     * @allow (get) User with UID 'user123' can read their prediction at /academic_prediction/user123.
+     * @deny (create) User with UID 'user456' cannot create a prediction with userId: 'user123'.
+     * @deny (update) User with UID 'user456' cannot update the prediction at /academic_prediction/user123.
+     * @principle Enforces document ownership for writes. Restricts access to a user's own data.
+     */
+    match /academic_prediction/{userId} {
+        allow get: if isSignedIn() && isOwner(userId);
+        allow list: if isSignedIn() && isOwner(userId);
+        allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if isSignedIn() && isExistingOwner(userId) && resource.data.userId == request.resource.data.userId;
+        allow delete: if isSignedIn() && isExistingOwner(userId);
+    }
+
+    // --- Helper Functions ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
     }
   }
 }
