@@ -1,18 +1,18 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { useUser, useFirestore, useDoc } from '@/firebase';
+import { useUser, useFirestore, useDoc, useCollection } from '@/firebase';
 import api from '@/lib/api-client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, CheckCircle, ArrowLeft, Lock } from 'lucide-react';
-import { questions, CATEGORY_DETAILS, SECTION_DETAILS, TestSection, HollandQuestion, QuestionCategory } from './psychological-test-data';
+import { CATEGORY_DETAILS, SECTION_DETAILS, TestSection, HollandQuestion, QuestionCategory } from './psychological-test-data';
 import { cn } from '@/lib/utils';
 import { QuestionModal } from './QuestionModal';
 import { Badge } from '@/components/ui/badge';
-import { doc, serverTimestamp } from 'firebase/firestore';
+import { doc, serverTimestamp, collection, query, orderBy } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { ResultsDisplay } from './ResultsDisplay';
 import { useNotifications } from '@/hooks/use-notifications';
@@ -54,14 +54,31 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     const { toast } = useToast();
     const { addNotification } = useNotifications();
     
-    const [answers, setAnswers] = useState<Answers>(() =>
-        questions.reduce((acc, q) => ({ ...acc, [q.id]: null }), {})
-    );
+    const [answers, setAnswers] = useState<Answers>({});
     const [activeSection, setActiveSection] = useState<TestSection | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentQuestion, setCurrentQuestion] = useState<HollandQuestion | null>(null);
+
+    // Fetch questions from Firestore
+    const questionsQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'psychological_questions'), orderBy('section'), orderBy('category'));
+    }, [firestore]);
+    const { data: questions, isLoading: isLoadingQuestions } = useCollection<HollandQuestion>(questionsQuery);
+    
+    // Initialize answers state once questions are loaded
+    useEffect(() => {
+        if (questions) {
+            setAnswers(prevAnswers => {
+                const newAnswersState = questions.reduce((acc, q) => ({ ...acc, [q.id]: null }), {});
+                // Preserve any saved answers
+                return { ...newAnswersState, ...prevAnswers };
+            });
+        }
+    }, [questions]);
+
 
     const predictionDocRef = useMemo(() => {
         if (!user || !firestore) return null;
@@ -81,12 +98,14 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
         }
     }, [savedPrediction, setPredictionResult]);
 
-    const calculateProgress = useCallback((currentAnswers: Answers) => {
+    const calculateProgress = useCallback((currentAnswers: Answers, allQuestions: HollandQuestion[]) => {
+        if (allQuestions.length === 0) return { overall: 0, actividades: 0, habilidades: 0, ocupaciones: 0 };
+        
         const answeredCount = Object.values(currentAnswers).filter(a => a !== null).length;
-        const totalCount = questions.length;
+        const totalCount = allQuestions.length;
         
         const sectionProgress = (section: TestSection) => {
-            const sectionQuestions = questions.filter(q => q.section === section);
+            const sectionQuestions = allQuestions.filter(q => q.section === section);
             const answeredInSection = sectionQuestions.filter(q => currentAnswers[q.id] !== null).length;
             if (sectionQuestions.length === 0) return 0;
             return (answeredInSection / sectionQuestions.length) * 100;
@@ -101,32 +120,19 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     }, []);
 
     const progress = useMemo(() => {
-        if (savedPrediction?.progressOverall !== undefined) {
-             const progressData = {
-                overall: savedPrediction.progressOverall ?? 0,
-                actividades: savedPrediction.progressActividades ?? 0,
-                habilidades: savedPrediction.progressHabilidades ?? 0,
-                ocupaciones: savedPrediction.progressOcupaciones ?? 0,
-            };
-            // Ensure we use the live calculation if the saved data is somehow stale
-             const calculatedProgress = calculateProgress(answers);
-             if (Math.round(progressData.overall) !== Math.round(calculatedProgress.overall)) {
-                 return calculatedProgress;
-             }
-            return progressData;
-        }
-        return calculateProgress(answers);
-    }, [answers, savedPrediction, calculateProgress]);
+        if (!questions) return { overall: 0, actividades: 0, habilidades: 0, ocupaciones: 0 };
+        return calculateProgress(answers, questions);
+    }, [answers, questions, calculateProgress]);
 
 
     const handleAnswer = (questionId: string, answer: 'yes' | 'no') => {
-        if (savedPrediction?.result) return; // Block answering if result is already saved
+        if (savedPrediction?.result || !questions) return; // Block answering if result is already saved or questions not loaded
 
         const newAnswers = { ...answers, [questionId]: answer };
         setAnswers(newAnswers);
 
         if (predictionDocRef) {
-            const newProgress = calculateProgress(newAnswers);
+            const newProgress = calculateProgress(newAnswers, questions);
             const isComplete = newProgress.overall === 100;
 
             const dataToSave: Partial<PsychologicalPrediction> & { updatedAt: any, createdAt?: any } = {
@@ -173,7 +179,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
             setIsModalOpen(false);
             setCurrentQuestion(null);
             
-            if (calculateProgress(newAnswers).overall === 100) {
+            if (calculateProgress(newAnswers, questions).overall === 100) {
                  setTimeout(() => {
                     addNotification({
                         type: 'psychological_test_complete',
@@ -198,7 +204,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     };
 
     const handleNavigate = (direction: 'next' | 'prev') => {
-        if (!currentQuestion || !activeSection) return;
+        if (!currentQuestion || !activeSection || !questions) return;
 
         const sectionQuestions = questions.filter(q => q.section === activeSection);
         const currentIndex = sectionQuestions.findIndex(q => q.id === currentQuestion.id);
@@ -211,8 +217,8 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     };
 
     const handleSubmit = async () => {
-        if (!user) {
-            toast({ variant: 'destructive', title: 'Error', description: 'Debes iniciar sesión.' });
+        if (!user || !questions) {
+            toast({ variant: 'destructive', title: 'Error', description: 'No se pudieron cargar las preguntas o el usuario.' });
             return;
         }
         setIsSubmitting(true);
@@ -244,14 +250,12 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
             console.error("Error al contactar la API de predicción:", error);
 
             if (error.response) {
-                // El servidor respondió con un código de estado fuera del rango 2xx
                 toast({
                     variant: "destructive",
                     title: "Error en el Análisis",
                     description: error.response.data?.detail || "Hubo un problema al procesar tus respuestas.",
                 });
             } else {
-                 // La solicitud se hizo pero no se recibió respuesta (problema de red/servidor)
                 toast({
                     variant: "destructive",
                     title: "Servicio no Disponible",
@@ -269,13 +273,21 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     const isTestLocked = !!savedPrediction?.result;
 
 
-    if (isLoadingPrediction) {
+    if (isLoadingPrediction || isLoadingQuestions) {
         return (
             <div className="flex items-center justify-center h-40">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="ml-4 text-muted-foreground">Recuperando tu progreso...</p>
+                <p className="ml-4 text-muted-foreground">Cargando test...</p>
             </div>
         );
+    }
+    
+    if (!questions || questions.length === 0) {
+        return (
+             <div className="flex items-center justify-center h-40">
+                <p className="text-muted-foreground">No hay preguntas configuradas para este test.</p>
+            </div>
+        )
     }
 
     return (
@@ -399,7 +411,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                                             title={q.text}
                                         >
                                             <span className={cn("text-lg font-bold", isAnswered ? 'text-foreground/80' : 'text-muted-foreground')}>{index + 1}</span>
-                                            <CategoryIcon className="w-5 h-5" style={isAnswered ? {color: categoryInfo.color} : {}}/>
+                                            <CategoryIcon className="w-5 h-5" style={{color: isAnswered ? categoryInfo.color : 'inherit'}}/>
                                         </button>
                                     );
                                 })}
@@ -409,7 +421,7 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
                 )}
             </AnimatePresence>
             
-            {isModalOpen && currentQuestion && activeSection && (
+            {isModalOpen && currentQuestion && activeSection && questions && (
                      <QuestionModal
                         key={currentQuestion.id}
                         question={currentQuestion}

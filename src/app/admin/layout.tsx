@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Logo } from '@/components/logo';
-import { School, Users, UserCheck, TestTube2, ShieldAlert, Megaphone } from 'lucide-react';
+import { School, Users, UserCheck, TestTube2, ShieldAlert, Megaphone, BrainCircuit } from 'lucide-react';
 import {
   SidebarProvider,
   Sidebar,
@@ -28,6 +28,7 @@ const navItems = [
   { href: '/admin/institutions', label: 'Instituciones', icon: School },
   { href: '/admin/independent-tutors', label: 'Tutores Independientes', icon: UserCheck },
   { href: '/admin/forums', label: 'Foros y Avisos', icon: Megaphone },
+  { href: '/admin/psychological-test', label: 'Test Psicológico', icon: BrainCircuit },
   { href: '/admin/support', label: 'Soporte Técnico', icon: ShieldAlert },
   { href: '/admin/ml-tests', label: 'Pruebas de ML', icon: TestTube2 },
 ];

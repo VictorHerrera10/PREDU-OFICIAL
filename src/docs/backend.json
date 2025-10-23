@@ -290,6 +290,20 @@
         },
         "required": ["userId", "email", "dni", "status"]
     },
+    "PsychologicalQuestion": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "PsychologicalQuestion",
+        "type": "object",
+        "description": "Represents a single question in the RIASEC psychological test.",
+        "properties": {
+            "id": { "type": "string" },
+            "section": { "type": "string", "enum": ["actividades", "habilidades", "ocupaciones"] },
+            "category": { "type": "string", "enum": ["realista", "investigador", "artistico", "social", "emprendedor", "convencional"] },
+            "text": { "type": "string" },
+            "gifUrl": { "type": "string", "format": "uri" }
+        },
+        "required": ["section", "category", "text", "gifUrl"]
+    },
     "PsychologicalPrediction": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "PsychologicalPrediction",
@@ -550,6 +564,22 @@
                 "name": "requestId",
                 "description": "The unique identifier for the tutor request."
             }]
+        }
+      },
+      {
+        "path": "/psychological_questions/{questionId}",
+        "definition": {
+          "entityName": "PsychologicalQuestion",
+          "schema": {
+            "$ref": "#/backend/entities/PsychologicalQuestion"
+          },
+          "description": "Stores the questions for the RIASEC psychological test. Should only be writable by administrators.",
+          "params": [
+            {
+              "name": "questionId",
+              "description": "The unique identifier for the question."
+            }
+          ]
         }
       },
       {
