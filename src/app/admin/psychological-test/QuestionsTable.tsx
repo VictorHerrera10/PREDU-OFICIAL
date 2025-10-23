@@ -40,15 +40,8 @@ import { MoreHorizontal, PlusCircle, Trash2, Edit, Loader2, BrainCircuit, Image 
 import { QuestionForm, QuestionFormData } from './QuestionForm';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { TestSection, QuestionCategory } from '@/app/student-dashboard/views/psychological-test-data';
+import { TestSection, QuestionCategory, questions as allQuestions, HollandQuestion } from '@/app/student-dashboard/views/psychological-test-data';
 
-export type HollandQuestion = {
-  id: string;
-  section: TestSection;
-  category: QuestionCategory;
-  text: string;
-  gifUrl: string;
-};
 
 const categoryIcons = {
     realista: Pickaxe,
@@ -60,21 +53,14 @@ const categoryIcons = {
 };
 
 export function QuestionsTable() {
-  const firestore = useFirestore();
   const { toast } = useToast();
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<HollandQuestion | null>(null);
 
-  const questionsCollectionRef = useMemo(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'psychological_questions');
-  }, [firestore]);
-
-  const { data: questions, isLoading, error } = useCollection<HollandQuestion>(questionsCollectionRef);
-  
-  if (error) console.error("Firestore Error:", error)
+  const questions = allQuestions; // Use local data
+  const isLoading = false; // Data is local, so not loading
 
   const handleCreate = () => {
     setEditingQuestion(null);
@@ -87,47 +73,11 @@ export function QuestionsTable() {
   };
 
   const handleDelete = async (questionId: string) => {
-    if (!questionsCollectionRef) return;
-    setIsProcessing(true);
-    try {
-      await deleteDoc(doc(questionsCollectionRef, questionId));
-      toast({
-        title: 'Pregunta Eliminada 🗑️',
-        description: 'La pregunta ha sido eliminada permanentemente.',
-      });
-    } catch (e) {
-      toast({ variant: 'destructive', title: 'Error al Eliminar 😵', description: 'No se pudo eliminar la pregunta.' });
-    } finally {
-      setIsProcessing(false);
-    }
+    toast({ variant: 'destructive', title: 'Función no disponible', description: 'La eliminación de preguntas ahora se gestiona en el código.' });
   };
 
   const handleFormSubmit = async (data: QuestionFormData) => {
-    if (!questionsCollectionRef) return;
-    setIsProcessing(true);
-
-    try {
-      if (editingQuestion) {
-        // Update existing question
-        const questionRef = doc(questionsCollectionRef, editingQuestion.id);
-        await updateDoc(questionRef, data);
-        toast({ title: 'Pregunta Actualizada ✅', description: `La pregunta ha sido guardada.` });
-      } else {
-        // Create new question
-        await addDoc(questionsCollectionRef, data);
-        toast({ title: 'Pregunta Creada ✅', description: `La nueva pregunta ha sido agregada.` });
-      }
-      setIsFormOpen(false);
-      setEditingQuestion(null);
-    } catch (e: any) {
-        toast({
-          variant: 'destructive',
-          title: 'Error al Guardar 😵',
-          description: e.message || 'No se pudo guardar la pregunta.',
-        });
-    } finally {
-        setIsProcessing(false);
-    }
+    toast({ variant: 'destructive', title: 'Función no disponible', description: 'La edición de preguntas ahora se gestiona en el código.' });
   };
 
 
@@ -145,7 +95,7 @@ export function QuestionsTable() {
   return (
     <div className="w-full">
       <div className="flex justify-end mb-4">
-        <Button size="sm" className="h-8 gap-1" onClick={handleCreate}>
+        <Button size="sm" className="h-8 gap-1" onClick={handleCreate} disabled>
           <PlusCircle className="h-3.5 w-3.5" />
           <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
             Crear Pregunta
@@ -198,21 +148,21 @@ export function QuestionsTable() {
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button aria-haspopup="true" size="icon" variant="ghost">
+                      <Button aria-haspopup="true" size="icon" variant="ghost" disabled>
                         <MoreHorizontal className="h-4 w-4" />
                         <span className="sr-only">Menú</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => handleEdit(question)}>
+                      <DropdownMenuItem onClick={() => handleEdit(question)} disabled>
                           <Edit className="mr-2 h-4 w-4" />
                           Editar
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                        <AlertDialog>
                           <AlertDialogTrigger asChild>
-                              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10" disabled>
                                   <Trash2 className="mr-2 h-4 w-4" />
                                   Eliminar
                               </DropdownMenuItem>
