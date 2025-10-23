@@ -3,7 +3,9 @@
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { useDropzone } from 'react-dropzone';
+import Image from 'next/image';
 
 import {
   Dialog,
@@ -19,9 +21,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { BrainCircuit } from 'lucide-react';
+import { BrainCircuit, Upload, Image as ImageIcon, X } from 'lucide-react';
 import { HollandQuestion } from './QuestionsTable';
 import { CATEGORY_DETAILS, SECTION_DETAILS, QuestionCategory, TestSection } from '@/app/student-dashboard/views/psychological-test-data';
+import { useStorage } from '@/firebase';
+import { uploadFile } from '@/lib/storage';
+import { useToast } from '@/hooks/use-toast';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
   text: z.string().min(10, 'El texto de la pregunta es muy corto.'),
@@ -41,13 +48,21 @@ type QuestionFormProps = {
 };
 
 export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isProcessing }: QuestionFormProps) {
-  const { register, handleSubmit, control, formState: { errors }, reset } = useForm<QuestionFormData>({
+  const { register, handleSubmit, control, formState: { errors }, reset, setValue } = useForm<QuestionFormData>({
     resolver: zodResolver(formSchema),
   });
+
+  const storage = useStorage();
+  const { toast } = useToast();
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
   
   useEffect(() => {
     if(initialData) {
         reset(initialData);
+        setPreview(initialData.gifUrl);
     } else {
         reset({
             text: '',
@@ -55,13 +70,77 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
             section: 'actividades',
             category: 'realista'
         });
+        setPreview(null);
     }
-  }, [initialData, reset]);
+    setImageFile(null);
+  }, [initialData, reset, isOpen]);
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({ variant: 'destructive', title: 'Archivo no válido', description: 'Por favor, sube solo archivos de imagen.' });
+        return;
+      }
+      if (file.size > 2 * 1024 * 1024) { // 2MB Limit
+         toast({ variant: 'destructive', title: 'Archivo muy grande', description: 'El GIF no debe pesar más de 2MB.' });
+        return;
+      }
+      setImageFile(file);
+      setPreview(URL.createObjectURL(file));
+    }
+  }, [toast]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: { 'image/*': ['.gif', '.jpeg', '.png', '.jpg'] },
+    multiple: false,
+  });
+
+  const handleFormSubmit = async (data: QuestionFormData) => {
+    if (isUploading) {
+      toast({ variant: 'destructive', title: 'Espera un momento', description: 'La imagen aún se está subiendo.' });
+      return;
+    }
+    
+    let finalGifUrl = initialData?.gifUrl || '';
+
+    if (imageFile && storage) {
+      setIsUploading(true);
+      try {
+        const filePath = `psychological-test-gifs/${Date.now()}-${imageFile.name}`;
+        finalGifUrl = await uploadFile(storage, imageFile, filePath, setUploadProgress);
+        setValue('gifUrl', finalGifUrl);
+      } catch (error) {
+        toast({ variant: 'destructive', title: 'Error de carga', description: 'No se pudo subir el GIF.' });
+        setIsUploading(false);
+        setUploadProgress(0);
+        return;
+      }
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+    
+    if (!finalGifUrl) {
+      toast({ variant: 'destructive', title: 'Falta GIF', description: 'Por favor, carga un GIF para la pregunta.' });
+      return;
+    }
+    
+    const finalData = { ...data, gifUrl: finalGifUrl };
+    onSubmit(finalData);
+  };
+  
+  const removeImage = () => {
+    setImageFile(null);
+    setPreview(null);
+    setValue('gifUrl', '');
+  };
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(handleFormSubmit)}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <BrainCircuit className="text-primary" />
@@ -77,19 +156,51 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
               <Textarea id="text" {...register('text')} placeholder="Ej: ¿Te gustaría reparar aparatos eléctricos?" />
               {errors.text && <p className="text-xs text-destructive">{errors.text.message}</p>}
             </div>
+            
             <div className="space-y-2">
-              <Label htmlFor="gifUrl">URL del GIF</Label>
-              <Input id="gifUrl" {...register('gifUrl')} placeholder="https://example.com/image.gif" />
-              {errors.gifUrl && <p className="text-xs text-destructive">{errors.gifUrl.message}</p>}
+                <Label>GIF de la pregunta</Label>
+                {preview ? (
+                    <div className="relative w-full aspect-video rounded-md overflow-hidden">
+                        <Image src={preview} alt="Vista previa" layout="fill" objectFit="cover" />
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2 h-6 w-6 rounded-full z-10"
+                            onClick={removeImage}
+                        >
+                            <X className="h-4 w-4" />
+                        </Button>
+                    </div>
+                ) : (
+                    <div {...getRootProps()} className={cn(
+                        "flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-md cursor-pointer transition-colors",
+                        isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
+                    )}>
+                        <input {...getInputProps()} />
+                        <div className="text-center">
+                            <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
+                            <p className="mt-2 text-sm text-muted-foreground">
+                                {isDragActive ? 'Suelta el GIF aquí' : 'Arrastra un GIF o haz clic para seleccionarlo'}
+                            </p>
+                            <p className="text-xs text-muted-foreground/80">Max. 2MB</p>
+                        </div>
+                    </div>
+                )}
+                 {(isUploading || uploadProgress > 0) && (
+                  <Progress value={uploadProgress} className="w-full h-2 mt-2" />
+                )}
             </div>
+
             <div className="grid grid-cols-2 gap-4">
               <Controller
                 name="section"
                 control={control}
+                defaultValue={initialData?.section}
                 render={({ field }) => (
                   <div className="space-y-2">
                     <Label>Sección</Label>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {(Object.keys(SECTION_DETAILS) as TestSection[]).map(key => (
@@ -103,10 +214,11 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
               <Controller
                 name="category"
                 control={control}
+                defaultValue={initialData?.category}
                 render={({ field }) => (
                   <div className="space-y-2">
                     <Label>Categoría (RIASEC)</Label>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {(Object.keys(CATEGORY_DETAILS) as QuestionCategory[]).map(key => (
@@ -123,7 +235,7 @@ export function QuestionForm({ isOpen, onOpenChange, onSubmit, initialData, isPr
             <DialogClose asChild>
               <Button type="button" variant="outline">Cancelar</Button>
             </DialogClose>
-            <Button type="submit" disabled={isProcessing}>{isProcessing ? 'Guardando...' : 'Guardar'}</Button>
+            <Button type="submit" disabled={isProcessing || isUploading}>{isUploading ? 'Subiendo...' : isProcessing ? 'Guardando...' : 'Guardar'}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
