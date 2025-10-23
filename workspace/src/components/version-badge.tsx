@@ -2,21 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { Shield } from 'lucide-react';
-import packageJson from '../../package.json';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 export function VersionBadge() {
-  const version = packageJson.version;
+  const version = "0.42.8"; // Hardcoded version
   const pathname = usePathname();
-  
-  // State to manage whether it's an auth page, initialized to false
-  const [isAuthPage, setIsAuthPage] = useState(false);
-
-  // Use useEffect to check the pathname on the client-side only
-  useEffect(() => {
-    setIsAuthPage(['/login', '/register', '/forgot-password'].includes(pathname));
-  }, [pathname]);
+  const isAuthPage = ['/login', '/register', '/forgot-password'].includes(pathname);
 
   return (
     <div className={cn("fixed bottom-4 right-4 z-50", !isAuthPage && "group")}>
