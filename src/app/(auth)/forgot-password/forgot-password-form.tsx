@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link';
-import { useActionState, useEffect } from 'react';
+import { useActionState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { forgotPassword } from '@/app/actions';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,7 @@ const initialState = {
   message: null,
 };
 
-export default function ForgotPasswordForm() {
+function ForgotPasswordFormComponent() {
   const { toast } = useToast();
   const [state, formAction] = useActionState(forgotPassword, initialState);
   const searchParams = useSearchParams();
@@ -70,5 +70,21 @@ export default function ForgotPasswordForm() {
         </Link>
       </div>
     </>
+  );
+}
+
+function ForgotPasswordLoading() {
+    return (
+        <div className="flex flex-col items-center justify-center h-full">
+            <p className="text-primary-foreground animate-pulse">Cargando...</p>
+        </div>
+    )
+}
+
+export default function ForgotPasswordPage() {
+  return (
+    <Suspense fallback={<ForgotPasswordLoading />}>
+      <ForgotPasswordFormComponent />
+    </Suspense>
   );
 }
