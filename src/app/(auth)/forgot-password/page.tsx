@@ -73,17 +73,9 @@ function ForgotPasswordFormComponent() {
   );
 }
 
-function ForgotPasswordLoading() {
-    return (
-        <div className="flex flex-col items-center justify-center h-full">
-            <p className="text-primary-foreground animate-pulse">Cargando...</p>
-        </div>
-    )
-}
-
 export default function ForgotPasswordPage() {
   return (
-    <Suspense fallback={<ForgotPasswordLoading />}>
+    <Suspense fallback={<div className="flex flex-col items-center justify-center h-full"><p className="text-primary-foreground animate-pulse">Cargando...</p></div>}>
       <ForgotPasswordFormComponent />
     </Suspense>
   );
