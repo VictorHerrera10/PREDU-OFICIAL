@@ -12,7 +12,7 @@ export function Logo({ className, iconOnly = false }: LogoProps) {
       <Gamepad2 className="h-6 w-6 text-primary" />
       {!iconOnly && (
         <h1 className="text-xl font-bold font-headline">
-          Predu
+          PREDU
         </h1>
       )}
     </div>
