@@ -19,7 +19,7 @@ import {
 import { AdminUserNav } from '@/components/admin-user-nav';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import { useMemo, useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { TutorAdminLoader } from '@/components/tutor-admin-loader';
 import { Button } from '@/components/ui/button';
 
@@ -126,5 +126,3 @@ export default function AdminLayout({
     </SidebarProvider>
   );
 }
-
-    
