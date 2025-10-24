@@ -35,11 +35,11 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MoreHorizontal, PlusCircle, Trash2, Edit, Loader2, FileText, Image as ImageIcon } from 'lucide-react';
-import { QuestionForm, QuestionFormData } from './QuestionForm';
+import { QuestionForm } from './QuestionForm';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { TestSection, QuestionCategory, CATEGORY_DETAILS, HollandQuestion } from '@/app/student-dashboard/views/psychological-test-data';
-import { createPsychologicalQuestion, updatePsychologicalQuestion, deletePsychologicalQuestion } from '@/app/actions';
+import { createPsychologicalQuestion, updatePsychologicalQuestion, deletePsychologicalQuestion, type QuestionFormData } from '@/app/actions';
 
 
 export function QuestionsTable() {

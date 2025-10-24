@@ -29,6 +29,7 @@ import { uploadFile } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import type { QuestionFormData } from '@/app/actions';
 
 const formSchema = z.object({
   text: z.string().min(10, 'El texto de la pregunta es muy corto.'),
@@ -36,8 +37,6 @@ const formSchema = z.object({
   section: z.enum(['actividades', 'habilidades', 'ocupaciones']),
   category: z.enum(['realista', 'investigador', 'artistico', 'social', 'emprendedor', 'convencional']),
 });
-
-export type QuestionFormData = z.infer<typeof formSchema>;
 
 type QuestionFormProps = {
   isOpen: boolean;
