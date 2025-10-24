@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Megaphone, Users, Building, Loader2 } from 'lucide-react';
+import { Megaphone, Users, Building, Loader2, Award } from 'lucide-react';
 import { ForumView } from '@/components/forum/ForumView';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
@@ -59,6 +59,9 @@ function AdminForumsPage() {
                                 <SelectValue placeholder={isLoading ? 'Cargando...' : 'Selecciona una comunidad...'} />
                             </SelectTrigger>
                             <SelectContent>
+                                 <SelectItem value="hero_students_forum">
+                                    <span className="flex items-center gap-2 font-semibold text-destructive"><Award className="h-4 w-4"/> Estudiantes Héroe (Global)</span>
+                                </SelectItem>
                                 <SelectItem value="null" disabled>-- Instituciones --</SelectItem>
                                 {institutions?.map(inst => (
                                     <SelectItem key={inst.id} value={inst.id}>
