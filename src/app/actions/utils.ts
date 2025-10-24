@@ -1,5 +1,3 @@
-'use server';
-
 import { initializeServerApp } from '@/firebase/server-init';
 
 export type State = {
