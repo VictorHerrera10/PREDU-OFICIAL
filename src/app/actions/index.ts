@@ -4,14 +4,22 @@
 // It cannot use `export * from ...` because of Next.js limitations with server actions.
 // Each action must be explicitly imported and re-exported.
 
-// From auth.actions.ts
-export { forgotPassword } from './auth.actions';
+import {
+    forgotPassword,
+    checkIfUserExists,
+    register,
+    updateUserRole,
+    updateStudentProfile,
+    updateTutorProfile,
+    updateAdminProfile,
+    createStudent,
+    upgradeToHero,
+    updateUser,
+} from './user.actions';
 
-// From chat.actions.ts
-export { sendMessage, markChatAsRead } from './chat.actions';
+import { sendMessage, markChatAsRead } from './chat.actions';
 
-// From forum.actions.ts
-export { 
+import { 
     createForumPost, 
     createForumComment,
     deleteForumPost,
@@ -20,8 +28,7 @@ export {
     editForumComment
 } from './forum.actions';
 
-// From institution.actions.ts
-export {
+import {
     createInstitution,
     updateInstitution,
     deleteInstitution,
@@ -31,37 +38,81 @@ export {
     registerTutor
 } from './institution.actions';
 
-// From psych-test.actions.ts
-export {
+import {
     createPsychologicalQuestion,
     updatePsychologicalQuestion,
     deletePsychologicalQuestion
 } from './psych-test.actions';
 
-// From tutor.actions.ts
-export {
+import {
     registerHeroTutor,
     approveTutorRequest,
     rejectTutorRequest,
     verifyTutorAndLogin
 } from './tutor.actions';
 
-// From user.actions.ts
-export {
-    checkIfUserExists,
-    register,
-    updateUserRole,
-    updateStudentProfile,
-    updateTutorProfile,
-    updateAdminProfile,
-    createStudent,
-    upgradeToHero,
-    updateUser
-} from './user.actions';
+import { generateUniqueCode, getAuthenticatedAppForUser, getFirebaseErrorMessage } from './utils';
+import type { State as UtilState } from './utils';
+import type { QuestionFormData as PsychQuestionFormData } from './psych-test.actions';
 
-// From utils.ts
-// These are not server actions but can be used by them.
-// It's better if components import them directly from utils if needed on the client.
-export { getAuthenticatedAppForUser, getFirebaseErrorMessage, generateUniqueCode } from './utils';
-export type { State } from './utils';
-export type { QuestionFormData } from './psych-test.actions';
+// --- Re-exporting all functions ---
+
+// User and Auth Actions
+export {
+  forgotPassword,
+  checkIfUserExists,
+  register,
+  updateUserRole,
+  updateStudentProfile,
+  updateTutorProfile,
+  updateAdminProfile,
+  createStudent,
+  upgradeToHero,
+  updateUser
+};
+
+// Chat Actions
+export { sendMessage, markChatAsRead };
+
+// Forum Actions
+export {
+  createForumPost,
+  createForumComment,
+  deleteForumPost,
+  editForumPost,
+  deleteForumComment,
+  editForumComment
+};
+
+// Institution Actions
+export {
+  createInstitution,
+  updateInstitution,
+  deleteInstitution,
+  createIndependentTutorGroup,
+  updateIndependentTutorGroup,
+  deleteIndependentTutorGroup,
+  registerTutor
+};
+
+// Psychological Test Actions
+export {
+  createPsychologicalQuestion,
+  updatePsychologicalQuestion,
+  deletePsychologicalQuestion
+};
+
+// Tutor Actions
+export {
+  registerHeroTutor,
+  approveTutorRequest,
+  rejectTutorRequest,
+  verifyTutorAndLogin
+};
+
+// Utils (These are not server actions but can be used by them)
+export { getAuthenticatedAppForUser, getFirebaseErrorMessage, generateUniqueCode };
+
+// --- Re-exporting types ---
+export type State = UtilState;
+export type QuestionFormData = PsychQuestionFormData;

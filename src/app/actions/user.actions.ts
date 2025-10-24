@@ -3,6 +3,7 @@
 import {
   createUserWithEmailAndPassword,
   updateProfile,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import {
   doc,
@@ -19,6 +20,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { getAuthenticatedAppForUser, getFirebaseErrorMessage, type State } from './utils';
 import { addDoc } from 'firebase/firestore';
+import { headers } from 'next/headers';
 
 
 export async function checkIfUserExists(email: string): Promise<boolean> {
@@ -360,5 +362,29 @@ export async function updateUser(userId: string, formData: FormData) {
   } catch (error: any) {
     console.error('Error updating user:', error);
     return { success: false, message: 'No se pudo actualizar el usuario. ' + error.message };
+  }
+}
+
+export async function forgotPassword(prevState: any, formData: FormData) {
+  const { auth } = await getAuthenticatedAppForUser();
+  const email = formData.get('email') as string;
+
+  try {
+    await sendPasswordResetEmail(auth, email);
+  } catch (e: any) {
+    return { message: getFirebaseErrorMessage(e.code) };
+  }
+
+  const referer = (await headers()).get('referer');
+  const refererUrl = referer ? new URL(referer) : null;
+
+  if (refererUrl) {
+    redirect(
+      `${refererUrl.pathname}?message=Si existe una cuenta para este correo, hemos enviado un mensaje 🧑‍🏫 para restablecer tu contraseña.`
+    );
+  } else {
+    redirect(
+      '/login?message=Si existe una cuenta para este correo, hemos enviado un mensaje 🧑‍🏫 para restablecer tu contraseña.'
+    );
   }
 }

@@ -13,9 +13,29 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import Link from 'next/link';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useNotifications } from '@/hooks/use-notifications';
-import { checkIfUserExists, getFirebaseErrorMessage } from '@/app/actions';
+import { checkIfUserExists } from '@/app/actions';
 import { cn } from '@/lib/utils';
 
+
+// Moved from actions.ts to avoid server-only export issues
+function getFirebaseErrorMessage(errorCode: string): string {
+  switch (errorCode) {
+    case 'auth/invalid-credential':
+      return 'Las credenciales no son correctas. Revisa tus apuntes y vuelve a intentarlo. 🤔';
+    case 'auth/user-not-found': // This is now often covered by invalid-credential
+      return 'No encontramos a ningún estudiante con ese correo.';
+    case 'auth/wrong-password': // This is also now often covered by invalid-credential
+      return '¡Contraseña incorrecta! Inténtalo de nuevo. 🤫';
+    case 'auth/email-already-in-use':
+      return '¡Ese email ya está en uso! Parece que ya estás en la lista. Intenta iniciar sesión. 😉';
+    case 'auth/weak-password':
+      return 'Tu contraseña es muy débil. ¡Necesitas al menos 6 caracteres para proteger tu mochila digital! 🎒';
+    case 'auth/operation-not-allowed':
+      return 'Esta operación no está permitida. Habla con el director si crees que es un error.';
+    default:
+      return 'Ocurrió un error inesperado en el servidor de la escuela. Por favor, inténtalo de nuevo más tarde. 🏫';
+  }
+}
 
 export default function LoginForm() {
   const { user, isUserLoading } = useUser();
