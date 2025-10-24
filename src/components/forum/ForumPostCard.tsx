@@ -126,7 +126,7 @@ export function ForumPostCard({ post, index = 0 }: ForumPostCardProps) {
         <Card className={cn(
             "transition-all", 
             isPrivilegedPost 
-                ? "bg-card/90 border-2 border-primary/50 shadow-lg shadow-primary/10" 
+                ? "bg-card border-2 border-primary/50 shadow-lg shadow-primary/10" 
                 : "hover:border-primary/50 bg-card/50"
         )}>
             <CardHeader className="flex flex-row items-start gap-4 pb-2">
