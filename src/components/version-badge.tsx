@@ -1,21 +1,33 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Shield } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 export function VersionBadge() {
-  const version = "0.51.1";
-  const pathname = usePathname();
+  const [pathname, setPathname] = useState<string | null>(null);
 
+  // Safely get the pathname on the client side
+  const currentPathname = usePathname();
+  useEffect(() => {
+    setPathname(currentPathname);
+  }, [currentPathname]);
+
+  // Don't render on the server or on initial client render
+  if (pathname === null) {
+    return null;
+  }
+
+  const version = "0.51.1";
   const isAuthPage = ['/login', '/register', '/forgot-password'].includes(pathname);
 
   return (
     <div className={cn("fixed bottom-4 right-4 z-50", !isAuthPage && "group")}>
       <div className={cn(
           "flex items-center gap-2 rounded-full border border-border/50 bg-card/60 backdrop-blur-lg px-2 py-1.5 text-xs font-mono shadow-lg transition-all duration-300 overflow-hidden",
-          isAuthPage 
-            ? "w-auto px-3 py-1.5" 
+          isAuthPage
+            ? "w-auto px-3 py-1.5"
             : "w-9 h-9 group-hover:w-auto group-hover:px-3 group-hover:py-1.5"
       )}>
         <Shield className="h-5 w-5 text-primary flex-shrink-0" />
