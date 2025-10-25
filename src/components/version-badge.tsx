@@ -6,28 +6,28 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 export function VersionBadge() {
-  const [pathname, setPathname] = useState<string | null>(null);
+  const [version, setVersion] = useState<string | null>(null);
+  const [currentPathname, setCurrentPathname] = useState<string>('');
 
-  // Safely get the pathname on the client side
-  const currentPathname = usePathname();
   useEffect(() => {
-    setPathname(currentPathname);
-  }, [currentPathname]);
+    // Safely set the version and pathname on the client-side to avoid hydration errors.
+    setVersion('0.51.1');
+    setCurrentPathname(window.location.pathname);
+  }, []);
 
-  // Don't render on the server or on initial client render
-  if (pathname === null) {
+  const isAuthPage = ['/login', '/register', '/forgot-password'].includes(currentPathname);
+
+  // Render nothing on the server and initial client render to avoid hydration mismatch
+  if (!version) {
     return null;
   }
-
-  const version = "0.51.1";
-  const isAuthPage = ['/login', '/register', '/forgot-password'].includes(pathname);
 
   return (
     <div className={cn("fixed bottom-4 right-4 z-50", !isAuthPage && "group")}>
       <div className={cn(
           "flex items-center gap-2 rounded-full border border-border/50 bg-card/60 backdrop-blur-lg px-2 py-1.5 text-xs font-mono shadow-lg transition-all duration-300 overflow-hidden",
-          isAuthPage
-            ? "w-auto px-3 py-1.5"
+          isAuthPage 
+            ? "w-auto px-3 py-1.5" 
             : "w-9 h-9 group-hover:w-auto group-hover:px-3 group-hover:py-1.5"
       )}>
         <Shield className="h-5 w-5 text-primary flex-shrink-0" />

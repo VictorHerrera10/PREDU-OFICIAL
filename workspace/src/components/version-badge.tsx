@@ -6,10 +6,21 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 export function VersionBadge() {
-  const version = "0.42.8";
-  const pathname = usePathname();
+  const [version, setVersion] = useState<string | null>(null);
+  const [currentPathname, setCurrentPathname] = useState<string>('');
+
+  useEffect(() => {
+    // Safely set the version and pathname on the client-side
+    setVersion('0.51.1');
+    setCurrentPathname(window.location.pathname);
+  }, []);
   
-  const isAuthPage = ['/login', '/register', '/forgot-password'].includes(pathname);
+  const isAuthPage = ['/login', '/register', '/forgot-password'].includes(currentPathname);
+
+  // Render nothing on the server and initial client render to avoid hydration mismatch
+  if (!version) {
+    return null;
+  }
 
   return (
     <div className={cn("fixed bottom-4 right-4 z-50", !isAuthPage && "group")}>
