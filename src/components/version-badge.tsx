@@ -1,14 +1,24 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Shield } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 export function VersionBadge() {
-  const version = "0.51.1";
+  const [version, setVersion] = useState<string | null>(null);
   const pathname = usePathname();
-  
+
+  useEffect(() => {
+    // This ensures the version is only set on the client-side after initial render, preventing hydration mismatch.
+    setVersion("0.51.1");
+  }, []);
+
   const isAuthPage = ['/login', '/register', '/forgot-password'].includes(pathname);
+
+  if (!version) {
+    return null; // Don't render anything until the version is set on the client
+  }
 
   return (
     <div className={cn("fixed bottom-4 right-4 z-50", !isAuthPage && "group")}>
