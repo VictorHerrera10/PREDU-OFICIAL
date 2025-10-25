@@ -32,7 +32,7 @@ import { cn } from '@/lib/utils';
 import type { QuestionFormData } from '@/app/actions';
 
 const formSchema = z.object({
-  text: z.string().min(10, 'El texto de la pregunta es muy corto.'),
+  text: z.string().min(1, 'El texto de la pregunta no puede estar vacío.'),
   gifUrl: z.string().min(1, 'Debes cargar un GIF para la pregunta.').url('Debe ser una URL válida.'),
   section: z.enum(['actividades', 'habilidades', 'ocupaciones']),
   category: z.enum(['realista', 'investigador', 'artistico', 'social', 'emprendedor', 'convencional']),
