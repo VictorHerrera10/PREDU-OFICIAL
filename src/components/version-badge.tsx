@@ -6,18 +6,21 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 export function VersionBadge() {
-  const [version, setVersion] = useState<string | null>(null);
+  // Hard-code the version and manage its visibility on the client to prevent hydration issues.
+  const version = "0.51.1";
+  const [isClient, setIsClient] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
-    // This ensures the version is only set on the client-side after initial render, preventing hydration mismatch.
-    setVersion("0.51.1");
+    // This effect runs only on the client, after the initial server render.
+    setIsClient(true);
   }, []);
 
   const isAuthPage = ['/login', '/register', '/forgot-password'].includes(pathname);
 
-  if (!version) {
-    return null; // Don't render anything until the version is set on the client
+  // Don't render anything on the server or before the client-side effect has run.
+  if (!isClient) {
+    return null; 
   }
 
   return (
