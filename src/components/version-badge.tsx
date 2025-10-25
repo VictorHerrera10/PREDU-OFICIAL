@@ -1,27 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Shield } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 export function VersionBadge() {
-  // Hard-code the version and manage its visibility on the client to prevent hydration issues.
   const version = "0.51.1";
-  const [isClient, setIsClient] = useState(false);
   const pathname = usePathname();
 
-  useEffect(() => {
-    // This effect runs only on the client, after the initial server render.
-    setIsClient(true);
-  }, []);
-
   const isAuthPage = ['/login', '/register', '/forgot-password'].includes(pathname);
-
-  // Don't render anything on the server or before the client-side effect has run.
-  if (!isClient) {
-    return null; 
-  }
 
   return (
     <div className={cn("fixed bottom-4 right-4 z-50", !isAuthPage && "group")}>
