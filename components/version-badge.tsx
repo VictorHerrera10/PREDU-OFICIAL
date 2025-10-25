@@ -4,21 +4,25 @@ import { useState, useEffect } from 'react';
 import { Shield } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import packageJson from '../../package.json';
+import packageJson from '../package.json';
 
 export function VersionBadge() {
   const [version, setVersion] = useState<string | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
-    // Read version from imported package.json
+    // This effect runs only on the client, after the initial server render.
+    // It safely reads the version from the imported package.json file.
     setVersion(packageJson.version);
   }, []);
 
   const isAuthPage = ['/login', '/register', '/forgot-password'].includes(pathname);
 
+  // By returning null until the version is set on the client, we avoid hydration mismatch.
+  // The server will render nothing, and the client will render nothing initially.
+  // After hydration, the useEffect runs, state updates, and the component re-renders with the version.
   if (!version) {
-    return null; // Don't render anything until the version is set on the client
+    return null;
   }
 
   return (
