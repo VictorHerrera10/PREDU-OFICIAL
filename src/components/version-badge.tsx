@@ -11,7 +11,7 @@ export function VersionBadge() {
 
   useEffect(() => {
     // Safely set the version and pathname on the client-side to avoid hydration errors.
-    setVersion('0.51.1');
+    setVersion('0.53.1');
     setCurrentPathname(window.location.pathname);
   }, []);
 
