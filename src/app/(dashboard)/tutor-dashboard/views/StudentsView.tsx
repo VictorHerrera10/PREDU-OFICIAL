@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { useUser, useFirestore, useCollection, useDoc } from '@/firebase';
 import { collection, query, where, doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -145,11 +145,11 @@ function StudentRow({ student }: { student: UserProfile }) {
                         <AvatarFallback>{getInitials(student.username)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-grow">
-                        <p className="font-semibold flex items-center gap-2">
+                        <div className="font-semibold flex items-center gap-2">
                             {student.username}
                             {student.grade && <Badge variant="outline">{student.grade}</Badge>}
                             {student.section && <Badge variant="secondary">{student.section}</Badge>}
-                        </p>
+                        </div>
                         <p className="text-sm text-muted-foreground flex items-center gap-1.5"><Mail className="h-3 w-3" /> {student.email}</p>
                     </div>
                     <div className="flex items-center gap-2">
