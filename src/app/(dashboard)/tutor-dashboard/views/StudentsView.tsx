@@ -5,7 +5,7 @@ import { useUser, useFirestore, useCollection, useDoc } from '@/firebase';
 import { collection, query, where, doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Mail, MessageSquare, ChevronDown, CheckCircle, Clock, Hash, Save, Loader2 } from 'lucide-react';
+import { Mail, MessageSquare, ChevronDown, CheckCircle, Clock, Hash, Save, Loader2, BookOpen, Filter } from 'lucide-react';
 import { ChatWindow } from '@/components/chat/ChatModal';
 import { Button } from '@/components/ui/button';
 import { User as FirebaseUser } from 'firebase/auth';
@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { updateStudentSection } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type UserProfile = {
   id: string;
@@ -206,6 +207,9 @@ export default function StudentsList() {
     const { user } = useUser();
     const firestore = useFirestore();
     
+    const [gradeFilter, setGradeFilter] = useState('all');
+    const [sectionFilter, setSectionFilter] = useState('all');
+
     const userProfileRef = useMemo(() => {
         if (!user || !firestore) return null;
         return doc(firestore, 'users', user.uid);
@@ -225,10 +229,26 @@ export default function StudentsList() {
     const { data: students, isLoading: areStudentsLoading } = useCollection<UserProfile>(studentsQuery);
     
     const isLoading = isProfileLoading || areStudentsLoading;
+    
+    const { uniqueGrades, uniqueSections, filteredStudents } = useMemo(() => {
+        if (!students) return { uniqueGrades: [], uniqueSections: [], filteredStudents: [] };
+
+        const grades = [...new Set(students.map(s => s.grade).filter(Boolean))].sort();
+        const sections = [...new Set(students.map(s => s.section).filter(Boolean))].sort();
+        
+        const filtered = students.filter(student => {
+            const gradeMatch = gradeFilter === 'all' || student.grade === gradeFilter;
+            const sectionMatch = sectionFilter === 'all' || student.section === sectionFilter;
+            return gradeMatch && sectionMatch;
+        });
+
+        return { uniqueGrades: grades, uniqueSections: sections, filteredStudents: filtered };
+    }, [students, gradeFilter, sectionFilter]);
 
     if (isLoading) {
         return (
             <div className="space-y-4">
+                <Skeleton className="h-10 w-full" />
                 <Skeleton className="h-20 w-full" />
                 <Skeleton className="h-20 w-full" />
                 <Skeleton className="h-20 w-full" />
@@ -238,15 +258,52 @@ export default function StudentsList() {
     
     return (
         <>
-            {students && students.length > 0 ? (
+             <div className="flex flex-col sm:flex-row gap-4 mb-6 p-4 border rounded-lg bg-background/30">
+                <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                    <Filter className="h-5 w-5" />
+                    Filtrar Estudiantes
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-grow">
+                    <div className="space-y-1">
+                        <Label htmlFor="grade-filter" className="text-xs">Grado</Label>
+                        <Select value={gradeFilter} onValueChange={setGradeFilter}>
+                            <SelectTrigger id="grade-filter">
+                                <SelectValue placeholder="Filtrar por grado..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todos los Grados</SelectItem>
+                                {uniqueGrades.map(grade => (
+                                    <SelectItem key={grade} value={grade}>{grade}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                     <div className="space-y-1">
+                        <Label htmlFor="section-filter" className="text-xs">Sección</Label>
+                        <Select value={sectionFilter} onValueChange={setSectionFilter}>
+                            <SelectTrigger id="section-filter">
+                                <SelectValue placeholder="Filtrar por sección..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todas las Secciones</SelectItem>
+                                {uniqueSections.map(section => (
+                                    <SelectItem key={section} value={section}>{section}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+            </div>
+
+            {filteredStudents && filteredStudents.length > 0 ? (
                 <div className="space-y-3">
-                    {students.map(student => (
+                    {filteredStudents.map(student => (
                        <StudentRow key={student.id} student={student} />
                     ))}
                 </div>
             ) : (
-                 <p className="text-muted-foreground text-center py-8">
-                    Aún no hay estudiantes registrados en tu institución.
+                 <p className="text-muted-foreground text-center py-8 border border-dashed rounded-lg">
+                    {students && students.length > 0 ? 'No hay estudiantes que coincidan con los filtros seleccionados.' : 'Aún no hay estudiantes registrados en tu institución.'}
                 </p>
             )}
         </>
