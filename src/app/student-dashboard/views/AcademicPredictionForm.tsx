@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useUser, useFirestore } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { doc, serverTimestamp } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import api from '@/lib/api-client';
 
@@ -97,8 +97,8 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
     setDocumentNonBlocking(predictionDocRef, {
         userId: user.uid,
         grades: data,
-        prediction: null,
-        createdAt: new Date().toISOString(),
+        // No establecemos la predicción aquí, solo guardamos las notas
+        createdAt: serverTimestamp(),
     }, { merge: true });
 
     toast({
@@ -136,7 +136,7 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
         userId: user.uid,
         grades: data,
         prediction: result,
-        createdAt: new Date().toISOString(),
+        createdAt: serverTimestamp(),
       }, { merge: true });
 
       toast({
@@ -162,7 +162,7 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
           userId: user.uid,
           grades: data,
           prediction: null,
-          createdAt: new Date().toISOString(),
+          createdAt: serverTimestamp(),
       }, { merge: true });
       
       // Notifica al usuario que las notas se guardaron pero la predicción falló
