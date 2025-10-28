@@ -70,6 +70,13 @@ export function StudentMainDashboard({ user }: Props) {
   const isInstitutional = !!userProfile?.institutionId;
   const themeClass = isInstitutional ? 'theme-institutional' : userProfile?.isHero ? 'theme-hero' : '';
 
+  const allOptions = useMemo(() => {
+    if (userProfile?.isHero || isInstitutional) {
+      return [...mainOptions, ...heroOptions];
+    }
+    return mainOptions;
+  }, [userProfile, isInstitutional]);
+
   const renderContent = () => {
     switch (selectedView) {
       case 'inicio':
@@ -117,7 +124,7 @@ export function StudentMainDashboard({ user }: Props) {
       </div>
 
       {(userProfile?.isHero || isInstitutional) && (
-        <div className="group fixed top-1/2 left-4 -translate-y-1/2 z-10 flex flex-col items-center gap-4 p-2 bg-card/60 backdrop-blur-sm border rounded-lg w-20 hover:w-48 transition-all duration-300">
+        <div className="group fixed top-1/2 left-4 -translate-y-1/2 z-10 hidden md:flex flex-col items-center gap-4 p-2 bg-card/60 backdrop-blur-sm border rounded-lg w-20 hover:w-48 transition-all duration-300">
           {heroOptions.map(option => (
             <Button
               key={option.id}
@@ -173,18 +180,20 @@ export function StudentMainDashboard({ user }: Props) {
             key="options-container"
             className={cn(
               "grid gap-8 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8",
-              selectedView ? `grid-cols-${mainOptions.length}` : 'grid-cols-1 md:grid-cols-3'
+              selectedView ? `grid-cols-1 sm:grid-cols-2 md:grid-cols-${allOptions.length}` : 'grid-cols-1 md:grid-cols-3'
             )}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
-            {mainOptions.map((option) => (
+            {allOptions.map((option) => (
               <motion.div
                 layout
                 key={option.id}
                 onClick={() => handleSelectView(option.id)}
                 className={cn(
                   "cursor-pointer overflow-hidden",
-                  selectedView ? 'rounded-lg' : 'card-outline'
+                  selectedView ? 'rounded-lg' : 'card-outline',
+                   // Hide hero options on desktop main grid
+                  option.isHero && !selectedView && 'hidden md:block'
                 )}
                 initial={{ borderRadius: '0.75rem' }}
               >
@@ -209,7 +218,7 @@ export function StudentMainDashboard({ user }: Props) {
                   ) : (
                     <div className="card-content flex flex-col items-center text-center gap-4 p-6">
                       <motion.div layout="position">
-                        <option.icon className={cn("w-10 h-10", isInstitutional ? "text-blue-500" : "text-primary")} />
+                        <option.icon className={cn("w-10 h-10", option.isHero ? (isInstitutional ? "text-blue-500" : "text-destructive") : "text-primary")} />
                       </motion.div>
                       <div className="flex flex-col">
                         <motion.h2 layout="position" className="font-bold text-2xl">{option.title}</motion.h2>
