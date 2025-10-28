@@ -107,6 +107,7 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
     });
     
     setIsSaving(false);
+    setIsOpen(false); // Cierra el modal después de guardar
   };
 
 
