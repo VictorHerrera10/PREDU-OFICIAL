@@ -21,6 +21,7 @@ type PsychologicalPrediction = {
     result?: string;
     answers?: Record<string, 'yes' | 'no'>;
     results?: any; // Define this type more strictly if possible
+    progressOverall?: number;
 };
 
 type StudentProgressCardProps = {
@@ -78,7 +79,7 @@ export function StudentProgressCard({ studentId, studentName }: StudentProgressC
                         {academicPrediction ? (
                             <div className="space-y-2">
                                 <p className="font-bold text-lg text-green-400 flex items-center justify-center gap-2"><CheckCircle /> Completado</p>
-                                <p>Carrera Sugerida: <Badge variant="secondary">{academicPrediction.prediction}</Badge></p>
+                                <div className="text-sm text-muted-foreground">Carrera Sugerida: <Badge variant="secondary">{academicPrediction.prediction}</Badge></div>
                             </div>
                         ) : (
                             <p className="font-bold text-lg text-amber-400 flex items-center justify-center gap-2"><Clock /> Pendiente</p>
@@ -96,7 +97,7 @@ export function StudentProgressCard({ studentId, studentName }: StudentProgressC
                         {psychPrediction?.result ? (
                              <div className="space-y-2">
                                 <p className="font-bold text-lg text-green-400 flex items-center justify-center gap-2"><CheckCircle /> Completado</p>
-                                <p>Perfil RIASEC: <Badge variant="secondary">{psychPrediction.result}</Badge></p>
+                                <div className="text-sm text-muted-foreground">Perfil RIASEC: <Badge variant="secondary">{psychPrediction.result}</Badge></div>
                             </div>
                         ) : (
                             <p className="font-bold text-lg text-amber-400 flex items-center justify-center gap-2"><Clock /> {psychPrediction?.progressOverall ? `En Progreso (${Math.round(psychPrediction.progressOverall)}%)` : 'Pendiente'}</p>
