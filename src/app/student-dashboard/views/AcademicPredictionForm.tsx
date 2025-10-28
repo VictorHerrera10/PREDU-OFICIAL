@@ -97,7 +97,7 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
       
       // Si tiene éxito, guarda las notas y la predicción
       setPredictionResult(result);
-      await setDocumentNonBlocking(predictionDocRef, {
+      setDocumentNonBlocking(predictionDocRef, {
         userId: user.uid,
         grades: data,
         prediction: result,
@@ -123,7 +123,7 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
       console.error("Error al contactar la API de predicción:", error);
 
       // Si la API falla, guarda solo las notas
-      await setDocumentNonBlocking(predictionDocRef, {
+      setDocumentNonBlocking(predictionDocRef, {
           userId: user.uid,
           grades: data,
           // `prediction` no se establece o se establece como null/undefined
