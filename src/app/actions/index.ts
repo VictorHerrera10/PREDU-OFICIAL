@@ -15,6 +15,7 @@ import {
     createStudent,
     upgradeToHero,
     updateUser,
+    updateStudentSection,
 } from './user.actions';
 
 import { sendMessage, markChatAsRead } from './chat.actions';
@@ -68,7 +69,8 @@ export {
   updateAdminProfile,
   createStudent,
   upgradeToHero,
-  updateUser
+  updateUser,
+  updateStudentSection
 };
 
 // Chat Actions

@@ -1,11 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useUser, useFirestore, useCollection, useDoc } from '@/firebase';
 import { collection, query, where, doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Mail, MessageSquare, ChevronDown, CheckCircle, Clock, BrainCircuit, Compass } from 'lucide-react';
+import { Mail, MessageSquare, ChevronDown, CheckCircle, Clock, Hash, Save, Loader2 } from 'lucide-react';
 import { ChatWindow } from '@/components/chat/ChatModal';
 import { Button } from '@/components/ui/button';
 import { User as FirebaseUser } from 'firebase/auth';
@@ -13,6 +13,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { StudentProgressCard } from './StudentProgressCard';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { updateStudentSection } from '@/app/actions';
+import { useToast } from '@/hooks/use-toast';
 
 type UserProfile = {
   id: string;
@@ -20,6 +25,8 @@ type UserProfile = {
   email: string;
   profilePictureUrl?: string;
   institutionId?: string;
+  grade?: string;
+  section?: string;
 };
 
 type AcademicPrediction = {
@@ -29,6 +36,78 @@ type AcademicPrediction = {
 type PsychologicalPrediction = {
     result?: string;
 };
+
+function StudentSectionForm({ studentId, currentSection }: { studentId: string; currentSection?: string }) {
+    const [section, setSection] = useState(currentSection || '');
+    const [isSaving, setIsSaving] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
+    const { toast } = useToast();
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        setSection(currentSection || '');
+    }, [currentSection]);
+
+    const handleSave = async (newSection: string) => {
+        setIsSaving(true);
+        setIsSaved(false);
+        const result = await updateStudentSection(studentId, newSection);
+        if (result.success) {
+            toast({
+                title: 'Sección actualizada',
+                description: `El estudiante ha sido asignado a la sección ${newSection}.`,
+            });
+            setIsSaved(true);
+        } else {
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: result.message || 'No se pudo actualizar la sección.',
+            });
+        }
+        setIsSaving(false);
+         // Hide the saved checkmark after a delay
+        setTimeout(() => setIsSaved(false), 2000);
+    };
+
+    const handleSectionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newSectionValue = e.target.value.toUpperCase();
+        setSection(newSectionValue);
+        
+        // Clear previous debounce timeout
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
+        }
+
+        // Set a new timeout to save after 1.5 seconds of inactivity
+        debounceTimeout.current = setTimeout(() => {
+            if (newSectionValue.trim() !== (currentSection || '')) {
+                handleSave(newSectionValue.trim());
+            }
+        }, 1500);
+    };
+
+    return (
+        <div className="relative max-w-xs">
+            <Label htmlFor={`section-${studentId}`} className="flex items-center gap-2 mb-1 text-xs">
+                <Hash className="h-3 w-3" /> Sección
+            </Label>
+            <Input
+                id={`section-${studentId}`}
+                value={section}
+                onChange={handleSectionChange}
+                placeholder="Ej: A, B, C..."
+                className="pr-10"
+                maxLength={10}
+            />
+            <div className="absolute top-7 right-2 h-6 w-6 flex items-center justify-center">
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                : isSaved ? <CheckCircle className="h-4 w-4 text-green-500" />
+                : null}
+            </div>
+        </div>
+    );
+}
 
 function StudentRow({ student }: { student: UserProfile }) {
     const firestore = useFirestore();
@@ -66,7 +145,11 @@ function StudentRow({ student }: { student: UserProfile }) {
                         <AvatarFallback>{getInitials(student.username)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-grow">
-                        <p className="font-semibold">{student.username}</p>
+                        <p className="font-semibold flex items-center gap-2">
+                            {student.username}
+                            {student.grade && <Badge variant="outline">{student.grade}</Badge>}
+                            {student.section && <Badge variant="secondary">{student.section}</Badge>}
+                        </p>
                         <p className="text-sm text-muted-foreground flex items-center gap-1.5"><Mail className="h-3 w-3" /> {student.email}</p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -99,7 +182,8 @@ function StudentRow({ student }: { student: UserProfile }) {
                             exit={{ height: 0, opacity: 0 }}
                             transition={{ duration: 0.3 }}
                         >
-                            <div className="p-4 border-t">
+                            <div className="p-4 border-t space-y-4">
+                                <StudentSectionForm studentId={student.id} currentSection={student.section} />
                                 <StudentProgressCard studentId={student.id} studentName={student.username} />
                             </div>
                         </motion.div>

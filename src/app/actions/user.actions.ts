@@ -388,3 +388,17 @@ export async function forgotPassword(prevState: any, formData: FormData) {
     );
   }
 }
+
+export async function updateStudentSection(studentId: string, section: string) {
+    const { firestore } = await getAuthenticatedAppForUser();
+    const userProfileRef = doc(firestore, 'users', studentId);
+
+    try {
+        await updateDoc(userProfileRef, { section });
+        revalidatePath('/tutor-dashboard');
+        return { success: true };
+    } catch (error: any) {
+        console.error('Error updating student section:', error);
+        return { success: false, message: 'No se pudo actualizar la sección del estudiante.' };
+    }
+}
