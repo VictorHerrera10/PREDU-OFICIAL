@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -53,10 +53,11 @@ type PredictionFormValues = z.infer<typeof formSchema>;
 
 type Props = {
   setPredictionResult: (result: string | null) => void;
+  savedGrades?: Record<string, string> | null;
 };
 
 // ===== Componente principal =====
-export function VocationalFormModal({ setPredictionResult }: Props) {
+export function VocationalFormModal({ setPredictionResult, savedGrades }: Props) {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -67,11 +68,17 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
 
   const form = useForm<PredictionFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: subjects.reduce(
+    defaultValues: savedGrades || subjects.reduce(
       (acc, subject) => ({ ...acc, [subject.id]: undefined }),
       {}
     ),
   });
+
+  useEffect(() => {
+    if (savedGrades) {
+        form.reset(savedGrades);
+    }
+  }, [savedGrades, form]);
 
   const { formState: { errors } } = form;
   const hasErrors = Object.keys(errors).length > 0 && form.formState.isSubmitted;
@@ -97,13 +104,12 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
     setDocumentNonBlocking(predictionDocRef, {
         userId: user.uid,
         grades: data,
-        // No establecemos la predicción aquí, solo guardamos las notas
         createdAt: serverTimestamp(),
     }, { merge: true });
 
     toast({
         title: "¡Notas Guardadas! 💾",
-        description: `Tus calificaciones han sido guardadas. Ahora puedes obtener una predicción cuando quieras.`,
+        description: `Tus calificaciones han sido guardadas. Puedes cerrar esta ventana.`,
     });
     
     setIsSaving(false);
@@ -182,10 +188,11 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>Obtener Predicción</Button>
+        <Button>
+          {savedGrades ? 'Obtener Predicción Ahora' : 'Iniciar Test Académico'}
+        </Button>
       </DialogTrigger>
 
-      {/* ===== Modal con scroll externo y estilo acorde a tu página ===== */}
       <DialogContent className="max-w-4xl max-h-[95vh] w-full overflow-y-auto flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-lg">
         <DialogHeader className="flex-shrink-0 px-6 pt-6">
           <DialogTitle className="text-center text-2xl font-bold">

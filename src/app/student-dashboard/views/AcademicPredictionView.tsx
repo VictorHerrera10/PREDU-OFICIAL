@@ -26,6 +26,7 @@ export default function AcademicPredictionView() {
 
   const { data: savedPrediction, isLoading: isLoadingPrediction } = useDoc<AcademicPrediction>(predictionDocRef);
 
+  // Use localPrediction to immediately reflect changes, fallback to savedPrediction
   const finalPrediction = localPrediction || savedPrediction?.prediction;
 
   if (isLoadingPrediction) {
@@ -52,17 +53,25 @@ export default function AcademicPredictionView() {
         </CardDescription>
       </CardHeader>
       <CardContent className="text-center">
-         {finalPrediction && savedPrediction?.grades ? (
+         {savedPrediction?.grades ? (
             <div className="space-y-4">
-                 <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center justify-center gap-2 text-sm text-amber-400 bg-amber-900/30 border border-amber-500/50 rounded-lg p-2 mb-6"
-                >
-                    <Lock className="w-4 h-4" />
-                    <span>El test está finalizado y bloqueado.</span>
-                </motion.div>
+                {finalPrediction && (
+                     <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex items-center justify-center gap-2 text-sm text-amber-400 bg-amber-900/30 border border-amber-500/50 rounded-lg p-2 mb-6"
+                    >
+                        <Lock className="w-4 h-4" />
+                        <span>El test está finalizado y bloqueado.</span>
+                    </motion.div>
+                )}
                 <SavedGradesView grades={savedPrediction.grades} />
+                {!finalPrediction && (
+                     <div className="mt-6">
+                        <p className="text-muted-foreground mb-4">Tus notas están guardadas. ¡Ahora puedes obtener tu predicción!</p>
+                        <VocationalFormModal setPredictionResult={setLocalPrediction} savedGrades={savedPrediction.grades} />
+                    </div>
+                )}
             </div>
         ) : (
             <>
