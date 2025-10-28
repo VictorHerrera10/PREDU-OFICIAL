@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { subjects } from './academic-test-data';
 import { useNotifications } from '@/hooks/use-notifications';
@@ -62,6 +62,7 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { addNotification } = useNotifications();
 
   const form = useForm<PredictionFormValues>({
@@ -74,6 +75,40 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
 
   const { formState: { errors } } = form;
   const hasErrors = Object.keys(errors).length > 0 && form.formState.isSubmitted;
+
+  const handleSaveGrades = async () => {
+    if (!user || !firestore) return;
+
+    // Trigger validation to show errors if fields are empty
+    const isValid = await form.trigger();
+    if (!isValid) {
+        toast({
+            variant: "destructive",
+            title: "Faltan Campos",
+            description: "Por favor, completa todas las calificaciones antes de guardar.",
+        });
+        return;
+    }
+    
+    setIsSaving(true);
+    const data = form.getValues();
+    const predictionDocRef = doc(firestore, 'academic_prediction', user.uid);
+    
+    setDocumentNonBlocking(predictionDocRef, {
+        userId: user.uid,
+        grades: data,
+        prediction: null,
+        createdAt: new Date().toISOString(),
+    }, { merge: true });
+
+    toast({
+        title: "¡Notas Guardadas! 💾",
+        description: `Tus calificaciones han sido guardadas. Ahora puedes obtener una predicción cuando quieras.`,
+    });
+    
+    setIsSaving(false);
+  };
+
 
   const onSubmit = async (data: PredictionFormValues) => {
     if (!user || !firestore) {
@@ -126,7 +161,6 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
       setDocumentNonBlocking(predictionDocRef, {
           userId: user.uid,
           grades: data,
-          // `prediction` no se establece o se establece como null/undefined
           prediction: null,
           createdAt: new Date().toISOString(),
       }, { merge: true });
@@ -214,14 +248,16 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
             </div>
 
             <DialogFooter className="flex-shrink-0 pt-4 pb-6">
-              <div className="w-full flex justify-center">
-                <Button type="submit" disabled={isSubmitting} size="lg" className='w-full md:w-auto'>
-                  {isSubmitting && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  {isSubmitting ? "Analizando..." : "Obtener Predicción"}
-                </Button>
-              </div>
+                <div className="w-full flex flex-col sm:flex-row justify-center items-center gap-4">
+                    <Button type="button" variant="outline" onClick={handleSaveGrades} disabled={isSubmitting || isSaving}>
+                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                        {isSaving ? "Guardando..." : "Guardar Notas"}
+                    </Button>
+                    <Button type="submit" disabled={isSubmitting || isSaving} size="lg" className='w-full sm:w-auto'>
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {isSubmitting ? "Analizando..." : "Obtener Predicción"}
+                    </Button>
+                </div>
             </DialogFooter>
           </form>
         </Form>
