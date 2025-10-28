@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { ResultsDisplay } from '@/app/student-dashboard/views/ResultsDisplay';
 import { SavedGradesView } from '@/app/student-dashboard/views/SavedGradesView';
 import { HollandQuestion } from '@/app/student-dashboard/views/psychological-test-data';
+import { Progress } from '@/components/ui/progress';
 
 type AcademicPrediction = {
     prediction: string;
@@ -22,6 +23,9 @@ type PsychologicalPrediction = {
     answers?: Record<string, 'yes' | 'no'>;
     results?: any; // Define this type more strictly if possible
     progressOverall?: number;
+    progressActividades?: number;
+    progressHabilidades?: number;
+    progressOcupaciones?: number;
 };
 
 type StudentProgressCardProps = {
@@ -100,7 +104,35 @@ export function StudentProgressCard({ studentId, studentName }: StudentProgressC
                                 <div className="text-sm text-muted-foreground">Perfil RIASEC: <Badge variant="secondary">{psychPrediction.result}</Badge></div>
                             </div>
                         ) : (
-                            <p className="font-bold text-lg text-amber-400 flex items-center justify-center gap-2"><Clock /> {psychPrediction?.progressOverall ? `En Progreso (${Math.round(psychPrediction.progressOverall)}%)` : 'Pendiente'}</p>
+                            <div className="space-y-3 text-xs text-left">
+                                { psychPrediction ? (
+                                <>
+                                    <div>
+                                        <div className="flex justify-between items-center mb-1">
+                                            <span className="font-medium text-muted-foreground">Actividades</span>
+                                            <span className="font-mono text-primary">{Math.round(psychPrediction.progressActividades || 0)}%</span>
+                                        </div>
+                                        <Progress value={psychPrediction.progressActividades || 0} className="h-2" />
+                                    </div>
+                                    <div>
+                                        <div className="flex justify-between items-center mb-1">
+                                            <span className="font-medium text-muted-foreground">Habilidades</span>
+                                            <span className="font-mono text-primary">{Math.round(psychPrediction.progressHabilidades || 0)}%</span>
+                                        </div>
+                                        <Progress value={psychPrediction.progressHabilidades || 0} className="h-2" />
+                                    </div>
+                                    <div>
+                                        <div className="flex justify-between items-center mb-1">
+                                            <span className="font-medium text-muted-foreground">Ocupaciones</span>
+                                            <span className="font-mono text-primary">{Math.round(psychPrediction.progressOcupaciones || 0)}%</span>
+                                        </div>
+                                        <Progress value={psychPrediction.progressOcupaciones || 0} className="h-2" />
+                                    </div>
+                                </>
+                                ) : (
+                                    <p className="font-bold text-lg text-amber-400 flex items-center justify-center gap-2"><Clock /> Pendiente</p>
+                                )}
+                            </div>
                         )}
                     </CardContent>
                 </Card>
