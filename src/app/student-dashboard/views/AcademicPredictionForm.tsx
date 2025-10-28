@@ -86,14 +86,17 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
     }
 
     setIsSubmitting(true);
+    const predictionDocRef = doc(firestore, 'academic_prediction', user.uid);
+
     try {
+      // Intenta obtener la predicción de la API
       const response = await api.post("/prediccion/academico/", data);
       const result =
         Object.values(response.data)[0] as string ||
         "No se pudo determinar la carrera.";
+      
+      // Si tiene éxito, guarda las notas y la predicción
       setPredictionResult(result);
-
-      const predictionDocRef = doc(firestore, 'academic_prediction', user.uid);
       await setDocumentNonBlocking(predictionDocRef, {
         userId: user.uid,
         grades: data,
@@ -119,20 +122,23 @@ export function VocationalFormModal({ setPredictionResult }: Props) {
     } catch (error: any) {
       console.error("Error al contactar la API de predicción:", error);
 
-      if (error.response) {
-        toast({
-          variant: "destructive",
-          title: "Error en la Predicción",
-          description: error.response.data?.detail || "Hubo un problema al procesar tus calificaciones.",
-        });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Servicio no Disponible",
-          description: "El servicio de predicción parece tener dificultades. Por favor, intenta de nuevo más tarde o regresa al inicio. 🛠️",
-        });
-        setIsOpen(false);
-      }
+      // Si la API falla, guarda solo las notas
+      await setDocumentNonBlocking(predictionDocRef, {
+          userId: user.uid,
+          grades: data,
+          // `prediction` no se establece o se establece como null/undefined
+          prediction: null,
+          createdAt: new Date().toISOString(),
+      }, { merge: true });
+      
+      // Notifica al usuario que las notas se guardaron pero la predicción falló
+      toast({
+        variant: "destructive",
+        title: "Servicio no Disponible",
+        description: "Tus notas se han guardado, pero el servicio de predicción no está disponible. Inténtalo de nuevo más tarde.",
+      });
+       setIsOpen(false); // Cierra el modal igual
+
     } finally {
       setIsSubmitting(false);
     }
