@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { Logo } from '@/components/logo';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { UserNav } from '@/components/user-nav';
-import { Home, School, Users, MessagesSquare } from 'lucide-react';
+import { Home, School, Users, GraduationCap } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { useUser, useFirestore, useDoc } from '@/firebase';
@@ -12,12 +12,12 @@ import { doc } from 'firebase/firestore';
 import { Inbox } from '@/components/chat/Inbox';
 
 import HomeView from './views/HomeView';
-import InstitutionView from './views/InstitutionView';
+import StudentsView from './views/StudentsView'; // Renombrado de InstitutionView
 import { InstitutionHeader } from './institution-header';
 import { GroupHeader } from './group-header';
 import GroupView from './views/GroupView';
 
-type View = 'inicio' | 'colegio' | 'grupo';
+type View = 'inicio' | 'estudiantes' | 'grupo';
 
 type Option = {
   id: View;
@@ -35,7 +35,7 @@ type Props = {
 };
 
 export function TutorMainDashboard({ user }: Props) {
-  const [selectedView, setSelectedView] = useState<View | null>(null);
+  const [selectedView, setSelectedView] = useState<View | null>('inicio');
   const firestore = useFirestore();
 
   const userProfileRef = useMemo(() => {
@@ -59,7 +59,7 @@ export function TutorMainDashboard({ user }: Props) {
     }
     return [
       ...baseOptions,
-      { id: 'colegio', icon: School, title: 'Información del Colegio', description: 'Datos y estadísticas de tu institución.' } as const,
+      { id: 'estudiantes', icon: GraduationCap, title: 'Estudiantes', description: 'Revisa el progreso y los resultados de tus estudiantes.' } as const,
     ];
   }, [isIndependentTutor]);
 
@@ -68,14 +68,21 @@ export function TutorMainDashboard({ user }: Props) {
     switch (selectedView) {
       case 'inicio':
         return <HomeView />;
-      case 'colegio':
-        return <InstitutionView />;
+      case 'estudiantes':
+        return <StudentsView />;
       case 'grupo':
         return <GroupView />;
       default:
-        return null;
+        // Por defecto, mostramos la vista de inicio si no hay nada seleccionado
+        return <HomeView />;
     }
   };
+  
+  const handleSelectView = (viewId: View) => {
+    // Permite al usuario volver a la vista de inicio si hace clic en la pestaña activa
+    setSelectedView(selectedView === viewId ? 'inicio' : viewId);
+  };
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -118,43 +125,29 @@ export function TutorMainDashboard({ user }: Props) {
           <motion.div
             layout
             key="options-container"
-            className={`grid gap-8 w-full max-w-4xl mx-auto px-4 sm:px-6 md:px-8 ${selectedView ? `grid-cols-${options.length}` : 'grid-cols-1 md:grid-cols-2'}`}
+            className={`grid gap-8 w-full max-w-4xl mx-auto px-4 sm:px-6 md:px-8 grid-cols-${options.length}`}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
             {options.map((option) => (
               <motion.div
                 layout
                 key={option.id}
-                onClick={() => setSelectedView(option.id)}
-                className={`cursor-pointer overflow-hidden rounded-lg ${selectedView ? '' : 'bg-card/80 backdrop-blur-sm border text-left hover:border-primary/50 transition-all transform hover:-translate-y-1'}`}
+                onClick={() => handleSelectView(option.id)}
+                className="cursor-pointer overflow-hidden rounded-lg"
                 initial={{ borderRadius: '0.75rem' }}
               >
                 <div
                     className={
-                        `p-6 ${selectedView === option.id ? 'bg-primary text-primary-foreground rounded-lg' 
-                        : selectedView ? 'bg-muted hover:bg-muted/80 rounded-lg' 
-                        : 'flex flex-col items-center text-center gap-4'} ${selectedView ? 'flex items-center justify-center gap-2' : ''}`
+                        `p-6 flex items-center justify-center gap-2 ${selectedView === option.id ? 'bg-primary text-primary-foreground rounded-lg' 
+                        : 'bg-muted hover:bg-muted/80 rounded-lg'}`
                     }
                   >
                     <motion.div layout="position">
-                        <option.icon className={selectedView ? "w-5 h-5" : "w-10 h-10 text-primary"} />
+                        <option.icon className="w-5 h-5" />
                     </motion.div>
                     
                     <div className="flex flex-col">
-                      <motion.h2 layout="position" className={`font-bold ${selectedView ? 'text-sm' : 'text-2xl'}`}>{option.title}</motion.h2>
-                      <AnimatePresence>
-                        {!selectedView && (
-                          <motion.p 
-                            layout 
-                            className="text-muted-foreground mt-2"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                          >
-                            {option.description}
-                          </motion.p>
-                        )}
-                      </AnimatePresence>
+                      <motion.h2 layout="position" className="font-bold text-sm">{option.title}</motion.h2>
                     </div>
                   </div>
               </motion.div>
@@ -177,9 +170,11 @@ export function TutorMainDashboard({ user }: Props) {
         </div>
       </main>
 
-      <div className="fixed bottom-20 right-6 z-30 flex flex-col items-end gap-4">
-        {user && <Inbox user={user} />}
-      </div>
+      {user && (
+        <div className="fixed bottom-20 right-6 z-30 flex flex-col items-end gap-4">
+          <Inbox user={user} />
+        </div>
+      )}
     </div>
   );
 }
