@@ -104,7 +104,7 @@ export function VocationalFormModal({ setPredictionResult, savedGrades }: Props)
     setDocumentNonBlocking(predictionDocRef, {
         userId: user.uid,
         grades: data,
-        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
     }, { merge: true });
 
     toast({
@@ -113,7 +113,7 @@ export function VocationalFormModal({ setPredictionResult, savedGrades }: Props)
     });
     
     setIsSaving(false);
-    setIsOpen(false); // Cierra el modal después de guardar
+    setIsOpen(false);
   };
 
 
@@ -139,18 +139,33 @@ export function VocationalFormModal({ setPredictionResult, savedGrades }: Props)
       
       // Si tiene éxito, guarda las notas y la predicción
       setPredictionResult(result);
-      setDocumentNonBlocking(predictionDocRef, {
+      const predictionData = {
         userId: user.uid,
         grades: data,
         prediction: result,
-        createdAt: serverTimestamp(),
-      }, { merge: true });
+        updatedAt: serverTimestamp(),
+      };
+      setDocumentNonBlocking(predictionDocRef, predictionData, { merge: true });
 
       toast({
         title: "¡Predicción Exitosa! 🎉",
         description: `Carrera recomendada: ${result}`,
       });
       
+      // --- INTEGRACIÓN DEL ENDPOINT /enviar-reporte-academico/ ---
+      try {
+        await api.post('/enviar-reporte-academico/', {
+            email: user.email,
+            nombre_estudiante: user.displayName,
+            facultad_academica: result,
+            recomendacion_academica: "Basado en tus calificaciones, esta carrera se alinea con tus fortalezas. ¡Sigue explorando tus opciones!"
+        });
+      } catch (emailError: any) {
+        console.error("Failed to send academic report email:", emailError.message);
+        // We don't show a toast here to not confuse the user, as the main prediction was successful.
+      }
+      // --- FIN DE LA INTEGRACIÓN ---
+
       setTimeout(() => {
         addNotification({
             type: 'academic_test_complete',
@@ -169,7 +184,7 @@ export function VocationalFormModal({ setPredictionResult, savedGrades }: Props)
           userId: user.uid,
           grades: data,
           prediction: null,
-          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
       }, { merge: true });
       
       // Notifica al usuario que las notas se guardaron pero la predicción falló
