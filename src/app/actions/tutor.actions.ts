@@ -16,6 +16,7 @@ import {
 import { revalidatePath } from 'next/cache';
 import { getAuthenticatedAppForUser, generateUniqueCode, getFirebaseErrorMessage, type State } from './utils';
 import { redirect } from 'next/navigation';
+import api from '@/lib/api-client';
 
 export async function registerHeroTutor(prevState: State, formData: FormData): Promise<State> {
     const { firestore } = await getAuthenticatedAppForUser();
@@ -150,6 +151,23 @@ export async function approveTutorRequest(requestId: string) {
             createdAt: serverTimestamp(),
         };
         await addDoc(collection(firestore, 'independentTutorGroups'), groupData);
+        
+        // --- INTEGRACIÓN DEL ENDPOINT /enviar-codigo/ ---
+        try {
+          await api.post('/enviar-codigo/', {
+            email: requestData.email,
+            nombre_estudiante: requestData.firstName, // Using tutor's first name
+            institucion: groupData.name, // The group name is the institution
+            region: groupData.region,
+            unique_code: groupData.uniqueCode,
+            director_name: groupData.tutorName, // The tutor is the "director" of the group
+            teaching_modality: 'independiente', // Use a placeholder or appropriate value
+          });
+        } catch (emailError: any) {
+            // Log the error but don't block the main success message
+            console.error('Failed to send tutor welcome email:', emailError.message);
+        }
+        // --- FIN DE LA INTEGRACIÓN ---
 
         // 4. Update the request status
         await updateDoc(requestRef, { status: 'approved' });
