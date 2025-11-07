@@ -15,6 +15,7 @@ import {
 } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
 import { getAuthenticatedAppForUser, generateUniqueCode } from './utils';
+import api from '@/lib/api-client';
 
 export async function createInstitution(formData: FormData) {
   const { firestore } = await getAuthenticatedAppForUser();
@@ -51,6 +52,23 @@ export async function createInstitution(formData: FormData) {
       ...data,
       createdAt: serverTimestamp(),
     });
+
+    // --- INTEGRACIÓN DEL ENDPOINT /enviar-codigo/ ---
+    try {
+      await api.post('/enviar-codigo/', {
+        email: data.directorEmail,
+        nombre_estudiante: data.directorName, // Usamos el nombre del director aquí
+        institucion: data.name,
+        region: data.region,
+        unique_code: data.uniqueCode,
+        director_name: data.directorName,
+        teaching_modality: data.teachingModality,
+      });
+    } catch (emailError: any) {
+        // Log the error but don't block the main success message
+        console.error('Failed to send welcome email:', emailError.message);
+    }
+    // --- FIN DE LA INTEGRACIÓN ---
     
     // Create notification for admin
     await addDoc(collection(firestore, 'notifications'), {
