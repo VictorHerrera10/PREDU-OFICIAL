@@ -185,7 +185,7 @@ function StudentRow({ student }: { student: UserProfile }) {
                         >
                             <div className="p-4 border-t space-y-4">
                                 <StudentSectionForm studentId={student.id} currentSection={student.section} />
-                                <StudentProgressCard studentId={student.id} studentName={student.username} />
+                                <StudentProgressCard studentId={student.id} studentName={student.username} studentEmail={student.email} />
                             </div>
                         </motion.div>
                     )}

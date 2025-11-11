@@ -12,6 +12,7 @@ import { ResultsDisplay } from '@/app/student-dashboard/views/ResultsDisplay';
 import { SavedGradesView } from '@/app/student-dashboard/views/SavedGradesView';
 import { HollandQuestion } from '@/app/student-dashboard/views/psychological-test-data';
 import { Progress } from '@/components/ui/progress';
+import { TutorValidationForm } from './TutorValidationForm';
 
 type AcademicPrediction = {
     prediction: string;
@@ -31,9 +32,10 @@ type PsychologicalPrediction = {
 type StudentProgressCardProps = {
     studentId: string;
     studentName: string;
+    studentEmail: string;
 };
 
-export function StudentProgressCard({ studentId, studentName }: StudentProgressCardProps) {
+export function StudentProgressCard({ studentId, studentName, studentEmail }: StudentProgressCardProps) {
     const firestore = useFirestore();
 
     const academicRef = useMemo(() => {
@@ -139,6 +141,11 @@ export function StudentProgressCard({ studentId, studentName }: StudentProgressC
             </div>
             {academicPrediction?.grades && <SavedGradesView grades={academicPrediction.grades} />}
             {psychPrediction?.results && questions && <ResultsDisplay answers={psychPrediction.answers || {}} questions={[questions]} />}
+            
+            <TutorValidationForm 
+                studentName={studentName}
+                studentEmail={studentEmail}
+            />
         </div>
     );
 }
