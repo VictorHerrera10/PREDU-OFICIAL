@@ -15,6 +15,7 @@ import {
   where,
   getDocs,
   limit,
+  getDoc,
 } from 'firebase/firestore';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
@@ -196,6 +197,8 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
         let isInstitution = false;
         let isGroup = false;
         let institutionData: any;
+        let tutorEmail: string | null = null;
+        let tutorName: string | null = null;
 
         // First, try to find a matching institution
         const institutionsQuery = query(collection(firestore, 'institutions'), where('uniqueCode', '==', institutionCode), limit(1));
@@ -206,6 +209,9 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
             const institutionDoc = institutionSnap.docs[0];
             institutionData = institutionDoc.data();
             const institutionId = institutionDoc.id;
+            
+            tutorEmail = institutionData.directorEmail;
+            tutorName = institutionData.directorName;
 
             const studentsQuery = query(collection(firestore, 'users'), where('institutionId', '==', institutionId), where('role', '==', 'student'));
             const studentsSnap = await getDocs(studentsQuery);
@@ -227,6 +233,16 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
                 const groupDoc = groupSnap.docs[0];
                 institutionData = groupDoc.data();
                 const groupId = groupDoc.id;
+
+                 // Fetch tutor details to get their email
+                if (institutionData.tutorId) {
+                    const tutorProfileRef = doc(firestore, 'users', institutionData.tutorId);
+                    const tutorSnap = await getDoc(tutorProfileRef);
+                    if (tutorSnap.exists()) {
+                        tutorEmail = tutorSnap.data().email;
+                        tutorName = tutorSnap.data().username;
+                    }
+                }
 
                 const studentsQuery = query(collection(firestore, 'users'), where('institutionId', '==', groupId), where('role', '==', 'student'));
                 const studentsSnap = await getDocs(studentsQuery);
@@ -257,8 +273,24 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
                 });
             } catch (emailError: any) {
                 console.error("Failed to send institution joining email:", emailError.message);
-                // Non-critical, so we don't block the profile update
             }
+             // --- INTEGRACIÓN DEL ENDPOINT /enviar-estudiante-agregado-tutor/ ---
+             if (tutorEmail && tutorName) {
+                try {
+                    await api.post('/enviar-estudiante-agregado-tutor/', {
+                        email_tutor: tutorEmail,
+                        nombre_tutor: tutorName,
+                        nombre_estudiante: `${firstName} ${lastName}`,
+                        grado: grade,
+                        correo: auth.currentUser.email,
+                        telefono: phone,
+                        logo_url: institutionData.logoUrl || ''
+                    });
+                } catch (tutorEmailError: any) {
+                     console.error("Failed to send new student notification to tutor:", tutorEmailError.message);
+                }
+            }
+            // --- FIN DE LA INTEGRACIÓN ---
         }
     }
       
@@ -417,13 +449,29 @@ export async function upgradeToHero(userId: string) {
   if (!userId) {
     return { success: false, message: "User not found." };
   }
-  const { firestore } = await getAuthenticatedAppForUser();
+  const { firestore, auth } = await getAuthenticatedAppForUser();
   const userProfileRef = doc(firestore, 'users', userId);
 
   try {
     await updateDoc(userProfileRef, {
       isHero: true,
     });
+
+     // --- INTEGRACIÓN DEL ENDPOINT /enviar-subida-plan/ ---
+    if (auth.currentUser) {
+        try {
+          await api.post('/enviar-subida-plan/', {
+            email: auth.currentUser.email,
+            nombre_estudiante: auth.currentUser.displayName,
+            nuevo_plan: 'Héroe'
+          });
+        } catch (emailError: any) {
+          console.error("Failed to send plan upgrade email:", emailError.message);
+          // Non-blocking error, so we just log it.
+        }
+    }
+    // --- FIN DE LA INTEGRACIÓN ---
+
     revalidatePath('/student-dashboard');
     return { success: true };
   } catch (error: any) {

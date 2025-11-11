@@ -51,19 +51,6 @@ export default function PaymentPage() {
       if (result.success) {
         setIsPaid(true);
 
-        // --- INTEGRACIÓN DEL ENDPOINT /enviar-subida-plan/ ---
-        try {
-          await api.post('/enviar-subida-plan/', {
-            email: user.email,
-            nombre_estudiante: user.displayName,
-            nuevo_plan: 'Héroe'
-          });
-        } catch (emailError: any) {
-          console.error("Failed to send plan upgrade email:", emailError.message);
-          // Non-blocking error, so we just log it.
-        }
-        // --- FIN DE LA INTEGRACIÓN ---
-
         setTimeout(() => {
           router.push('/student-dashboard');
         }, 5000); // Redirect after 5 seconds
