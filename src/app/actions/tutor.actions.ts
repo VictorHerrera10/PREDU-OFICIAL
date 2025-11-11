@@ -286,3 +286,27 @@ export async function sendAcademicValidation(prevState: any, formData: FormData)
         return { success: false, message: 'No se pudo enviar el correo de validación académica. Inténtalo más tarde.' };
     }
 }
+
+export async function sendPsychologicalValidation(prevState: any, formData: FormData) {
+    const email = formData.get('email') as string;
+    const studentName = formData.get('studentName') as string;
+    const tutorName = formData.get('tutorName') as string;
+    const tutorAdvice = formData.get('tutorAdvice') as string;
+
+    if (!email || !studentName || !tutorName || !tutorAdvice) {
+        return { success: false, message: 'Faltan datos para enviar la validación psicológica.' };
+    }
+
+    try {
+        await api.post('/enviar-validacion-psicologica-tutor/', {
+            email: email,
+            nombre_estudiante: studentName,
+            nombre_tutor: tutorName,
+            consejo_tutor: tutorAdvice,
+        });
+        return { success: true, message: 'Correo de validación psicológica enviado con éxito.' };
+    } catch (error: any) {
+        console.error('Failed to send psychological validation email:', error.message);
+        return { success: false, message: 'No se pudo enviar el correo de validación psicológica. Inténtalo más tarde.' };
+    }
+}

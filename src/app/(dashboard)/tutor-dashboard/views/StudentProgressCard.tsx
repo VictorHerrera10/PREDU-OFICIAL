@@ -14,6 +14,7 @@ import { HollandQuestion } from '@/app/student-dashboard/views/psychological-tes
 import { Progress } from '@/components/ui/progress';
 import { TutorValidationForm } from './TutorValidationForm';
 import { TutorAcademicValidationForm } from './TutorAcademicValidationForm';
+import { TutorPsychologicalValidationForm } from './TutorPsychologicalValidationForm';
 
 type AcademicPrediction = {
     prediction: string;
@@ -149,6 +150,11 @@ export function StudentProgressCard({ studentId, studentName, studentEmail }: St
             />
 
             <TutorAcademicValidationForm
+                studentName={studentName}
+                studentEmail={studentEmail}
+            />
+
+            <TutorPsychologicalValidationForm
                 studentName={studentName}
                 studentEmail={studentEmail}
             />
