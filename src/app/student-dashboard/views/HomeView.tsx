@@ -8,6 +8,7 @@ import { Loader2, Lightbulb, Compass, BrainCircuit } from 'lucide-react';
 import { getRecommendation } from './recommendation-data';
 import { useNotifications } from '@/hooks/use-notifications';
 import { ForumView } from '@/components/forum/ForumView';
+import api from '@/lib/api-client';
 
 type AcademicPrediction = {
     prediction: string;
@@ -64,9 +65,10 @@ export default function HomeView() {
     }, [academicPrediction, psychologicalPrediction]);
 
     useEffect(() => {
-        if (isLoading || recommendation === null || userProfile === undefined) return;
+        const sendCombinedReport = async () => {
+             if (isLoading || !recommendation || !userProfile || userProfile.hasSeenInitialReport || !user) return;
 
-        if (userProfile && !userProfile.hasSeenInitialReport) {
+            // Send notification
             setTimeout(() => {
                 addNotification({
                     type: 'report_ready',
@@ -75,21 +77,30 @@ export default function HomeView() {
                     emoji: '📊'
                 });
             }, 6000);
+
+            // Send combined report email via API
+            try {
+                await api.post('/enviar-reporte-resultado/', {
+                    email: user.email,
+                    nombre_estudiante: user.displayName,
+                    facultad_academica: academicPrediction?.prediction,
+                    facultad_psicologica: psychologicalPrediction?.result
+                });
+            } catch (emailError: any) {
+                console.error("Failed to send combined report email:", emailError.message);
+                // Non-blocking error
+            }
+
+            // Mark report as seen
             if (userProfileRef) {
                 updateDoc(userProfileRef, { hasSeenInitialReport: true });
             }
-        } else if (userProfile) { // Ensure userProfile is not null/undefined before this block
-            setTimeout(() => {
-                addNotification({
-                    type: 'next_level',
-                    title: '¿Listo para el siguiente nivel?',
-                    description: 'Explora nuestro plan de mejora para obtener análisis más profundos y herramientas exclusivas.',
-                    emoji: '🌟'
-                });
-            }, 6000);
-        }
+        };
+        
+        sendCombinedReport();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isLoading, recommendation, userProfile]);
+    }, [isLoading, recommendation, userProfile, user, academicPrediction, psychologicalPrediction]);
 
 
     if (isLoading) {
