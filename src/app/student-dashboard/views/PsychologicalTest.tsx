@@ -16,6 +16,7 @@ import { doc, serverTimestamp, query, collection, orderBy } from 'firebase/fires
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { ResultsDisplay } from './ResultsDisplay';
 import { useNotifications } from '@/hooks/use-notifications';
+import { getRecommendation } from './recommendation-data';
 
 
 type Answers = Record<string, 'yes' | 'no' | null>;
@@ -43,6 +44,11 @@ type PsychologicalPrediction = {
     result?: string;
     results?: AllResults;
 };
+
+type AcademicPrediction = {
+    prediction: string;
+};
+
 
 type Props = {
     setPredictionResult: (result: string | null) => void;
@@ -74,6 +80,14 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
     }, [user, firestore]);
 
     const { data: savedPrediction, isLoading: isLoadingPrediction } = useDoc<PsychologicalPrediction>(predictionDocRef);
+    
+    const academicDocRef = useMemo(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, 'academic_prediction', user.uid);
+    }, [user, firestore]);
+
+    const { data: academicPrediction } = useDoc<AcademicPrediction>(academicDocRef);
+
 
     const calculateProgress = useCallback((currentAnswers: Answers) => {
         if (!questions || questions.length === 0) {
@@ -252,6 +266,24 @@ export function PsychologicalTest({ setPredictionResult }: Props) {
             }
             
             toast({ title: "¡Análisis Completado! 🧠", description: `Tu perfil sugerido es: ${result}` });
+
+            // --- INTEGRACIÓN DEL ENDPOINT /enviar-reporte-psicologico/ ---
+            try {
+                // We need the recommendation data to get the advice
+                const recommendation = getRecommendation(`${academicPrediction?.prediction || ''} — ${result}`);
+                
+                await api.post('/enviar-reporte-psicologico/', {
+                    email: user.email,
+                    nombre_estudiante: user.displayName,
+                    facultad_psicologica: result,
+                    consejo_psicologico: recommendation.psychologicalAdvice
+                });
+            } catch (emailError: any) {
+                console.error("Failed to send psychological report email:", emailError.message);
+                // Non-blocking error, so we just log it.
+            }
+            // --- FIN DE LA INTEGRACIÓN ---
+
         } catch (error: any) {
             console.error("Error al contactar la API de predicción:", error);
 
