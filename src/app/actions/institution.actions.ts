@@ -211,7 +211,7 @@ export async function deleteIndependentTutorGroup(groupId: string) {
 }
 
 export async function registerTutor(prevState: any, formData: FormData) {
-  const { firestore } = await getAuthenticatedAppForUser();
+  const { firestore, auth } = await getAuthenticatedAppForUser();
   
   const userId = formData.get('userId') as string;
   const accessCode = formData.get('accessCode') as string;
@@ -255,8 +255,24 @@ export async function registerTutor(prevState: any, formData: FormData) {
       },
     });
 
+    // --- INTEGRACIÓN DEL ENDPOINT /enviar-bienvenida-tutor/ ---
+    if (auth.currentUser) {
+        try {
+            await api.post('/enviar-bienvenida-tutor/', {
+                email: auth.currentUser.email,
+                nombre_tutor: auth.currentUser.displayName,
+                institucion: institutionData.name,
+                logo_url: institutionData.logoUrl || '',
+                enlace_panel: '/tutor-dashboard',
+            });
+        } catch (emailError: any) {
+            console.error('Failed to send tutor welcome email:', emailError.message);
+        }
+    }
+    // --- FIN DE LA INTEGRACIÓN ---
+
     revalidatePath('/dashboard');
-    return { success: true };
+    return { success: true, message: '¡Bienvenido! Has sido registrado como tutor en la institución.' };
 
   } catch (error: any) {
     console.error('Error registering tutor:', error);

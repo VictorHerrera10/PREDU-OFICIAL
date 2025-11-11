@@ -167,6 +167,19 @@ export async function approveTutorRequest(requestId: string) {
             // Log the error but don't block the main success message
             console.error('Failed to send tutor welcome email:', emailError.message);
         }
+
+        // --- INTEGRACIÓN DEL ENDPOINT /enviar-bienvenida-tutor/ ---
+        try {
+            await api.post('/enviar-bienvenida-tutor/', {
+                email: requestData.email,
+                nombre_tutor: requestData.firstName,
+                institucion: groupData.name,
+                logo_url: '', // No logo for independent tutors
+                enlace_panel: '/tutor-dashboard',
+            });
+        } catch (emailError: any) {
+             console.error('Failed to send tutor welcome email:', emailError.message);
+        }
         // --- FIN DE LA INTEGRACIÓN ---
 
         // 4. Update the request status
