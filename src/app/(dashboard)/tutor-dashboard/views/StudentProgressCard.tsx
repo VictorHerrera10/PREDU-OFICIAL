@@ -13,6 +13,7 @@ import { SavedGradesView } from '@/app/student-dashboard/views/SavedGradesView';
 import { HollandQuestion } from '@/app/student-dashboard/views/psychological-test-data';
 import { Progress } from '@/components/ui/progress';
 import { TutorValidationForm } from './TutorValidationForm';
+import { TutorAcademicValidationForm } from './TutorAcademicValidationForm';
 
 type AcademicPrediction = {
     prediction: string;
@@ -143,6 +144,11 @@ export function StudentProgressCard({ studentId, studentName, studentEmail }: St
             {psychPrediction?.results && questions && <ResultsDisplay answers={psychPrediction.answers || {}} questions={[questions]} />}
             
             <TutorValidationForm 
+                studentName={studentName}
+                studentEmail={studentEmail}
+            />
+
+            <TutorAcademicValidationForm
                 studentName={studentName}
                 studentEmail={studentEmail}
             />

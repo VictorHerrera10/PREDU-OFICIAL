@@ -50,7 +50,8 @@ import {
     approveTutorRequest,
     rejectTutorRequest,
     verifyTutorAndLogin,
-    sendTutorValidation
+    sendTutorValidation,
+    sendAcademicValidation
 } from './tutor.actions';
 
 import { generateUniqueCode, getAuthenticatedAppForUser, getFirebaseErrorMessage } from './utils';
@@ -111,7 +112,8 @@ export {
   approveTutorRequest,
   rejectTutorRequest,
   verifyTutorAndLogin,
-  sendTutorValidation
+  sendTutorValidation,
+  sendAcademicValidation
 };
 
 // Utils (These are not server actions but can be used by them)
