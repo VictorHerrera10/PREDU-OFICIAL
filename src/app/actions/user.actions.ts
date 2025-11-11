@@ -193,13 +193,18 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
 
   try {
     if (institutionCode) {
+        let isInstitution = false;
+        let isGroup = false;
+        let institutionData: any;
+
         // First, try to find a matching institution
         const institutionsQuery = query(collection(firestore, 'institutions'), where('uniqueCode', '==', institutionCode), limit(1));
         const institutionSnap = await getDocs(institutionsQuery);
 
         if (!institutionSnap.empty) {
+            isInstitution = true;
             const institutionDoc = institutionSnap.docs[0];
-            const institutionData = institutionDoc.data();
+            institutionData = institutionDoc.data();
             const institutionId = institutionDoc.id;
 
             const studentsQuery = query(collection(firestore, 'users'), where('institutionId', '==', institutionId), where('role', '==', 'student'));
@@ -218,15 +223,16 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
             const groupSnap = await getDocs(groupsQuery);
             
             if (!groupSnap.empty) {
+                isGroup = true;
                 const groupDoc = groupSnap.docs[0];
-                const groupData = groupDoc.data();
+                institutionData = groupDoc.data();
                 const groupId = groupDoc.id;
 
                 const studentsQuery = query(collection(firestore, 'users'), where('institutionId', '==', groupId), where('role', '==', 'student'));
                 const studentsSnap = await getDocs(studentsQuery);
                 const currentStudentCount = studentsSnap.size;
 
-                if (currentStudentCount >= groupData.studentLimit) {
+                if (currentStudentCount >= institutionData.studentLimit) {
                     return { success: false, message: 'El límite de estudiantes para este grupo ha sido alcanzado. Contacta a tu tutor. 🚫' };
                 }
                 
@@ -236,14 +242,32 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
                 return { success: false, message: 'El código ingresado no es válido para ninguna institución o grupo de tutor.' };
             }
         }
+        
+        // If joined either an institution or group, send email
+        if ((isInstitution || isGroup) && auth.currentUser?.email) {
+            try {
+                await api.post('/enviar-union-institucion/', {
+                    email: auth.currentUser.email,
+                    nombre_estudiante: firstName,
+                    nombre_institucion: institutionData.name,
+                    lugar: institutionData.region,
+                    nombre_encargado: isInstitution ? institutionData.directorName : institutionData.tutorName,
+                    logo_url: institutionData.logoUrl || '',
+                    mensaje_motivador: `¡Bienvenido a ${institutionData.name}! Estamos emocionados de tenerte. Aprovecha al máximo todas las herramientas que tenemos para ti.`
+                });
+            } catch (emailError: any) {
+                console.error("Failed to send institution joining email:", emailError.message);
+                // Non-critical, so we don't block the profile update
+            }
+        }
     }
       
-      await updateDoc(userProfileRef, dataToUpdate);
+    await updateDoc(userProfileRef, dataToUpdate);
       
       // Send profile update email
-      if (auth.currentUser?.email) {
-          await sendProfileUpdateEmail(auth.currentUser.email, firstName, formData);
-      }
+    if (auth.currentUser?.email) {
+        await sendProfileUpdateEmail(auth.currentUser.email, firstName, formData);
+    }
 
 
   } catch (error: any) {
@@ -450,7 +474,7 @@ export async function forgotPassword(prevState: any, formData: FormData) {
     );
   } else {
     redirect(
-      '/login?message=Si existe una cuenta para este correo, hemos enviado un mensaje 🧑‍🏫 para restablecer tu contraseña.'
+      '/login?message=Si existe una cuenta para este correo, hemos enviado un mensaje 🧑‍🏫 para restablecer tu contraseña.`
     );
   }
 }
