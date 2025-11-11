@@ -182,6 +182,24 @@ export async function approveTutorRequest(requestId: string) {
         }
         // --- FIN DE LA INTEGRACIÓN ---
 
+        // --- INTEGRACIÓN DEL ENDPOINT /enviar-tutor-cuenta-aprobada/ ---
+        try {
+            const approvalDate = new Date().toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+            });
+            await api.post('/enviar-tutor-cuenta-aprobada/', {
+                email: requestData.email,
+                nombre_tutor: requestData.firstName,
+                fecha_aprobacion: approvalDate,
+                logo_url: '', // No logo for independent tutors
+            });
+        } catch (emailError: any) {
+            console.error('Failed to send tutor account approval email:', emailError.message);
+        }
+        // --- FIN DE LA INTEGRACIÓN ---
+
         // 4. Update the request status
         await updateDoc(requestRef, { status: 'approved' });
 
