@@ -474,7 +474,7 @@ export async function forgotPassword(prevState: any, formData: FormData) {
     );
   } else {
     redirect(
-      '/login?message=Si existe una cuenta para este correo, hemos enviado un mensaje 🧑‍🏫 para restablecer tu contraseña.`
+      '/login?message=Si existe una cuenta para este correo, hemos enviado un mensaje 🧑‍🏫 para restablecer tu contraseña.'
     );
   }
 }
