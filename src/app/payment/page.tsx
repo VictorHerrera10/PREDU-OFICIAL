@@ -15,6 +15,7 @@ import { useUser } from '@/firebase';
 import { upgradeToHero } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import api from '@/lib/api-client';
+import { format, addYears } from 'date-fns';
 
 export default function PaymentPage() {
   const router = useRouter();
@@ -32,7 +33,7 @@ export default function PaymentPage() {
 
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
+    if (!user || !user.email || !user.displayName) {
         toast({
             variant: "destructive",
             title: "Usuario no encontrado",
@@ -46,15 +47,32 @@ export default function PaymentPage() {
     // Simulate payment processing
     setTimeout(async () => {
       const result = await upgradeToHero(user.uid);
-      setIsProcessing(false);
-
+      
       if (result.success) {
+        // --- Send Payment Confirmation Email ---
+        try {
+            const expirationDate = addYears(new Date(), 1);
+            await api.post('/enviar-pago-finalizado/', {
+                email: user.email,
+                nombre_estudiante: user.displayName,
+                tipo_cuenta: 'Héroe',
+                fecha_fin: format(expirationDate, 'dd/MM/yyyy'),
+                logo_url: '',
+            });
+        } catch (emailError: any) {
+             console.error("Failed to send payment confirmation email:", emailError.message);
+             // Non-critical, so we don't block the UI for this.
+        }
+        // --- End of Integration ---
+
+        setIsProcessing(false);
         setIsPaid(true);
 
         setTimeout(() => {
           router.push('/student-dashboard');
         }, 5000); // Redirect after 5 seconds
       } else {
+        setIsProcessing(false);
         toast({
             variant: "destructive",
             title: "Error en la Compra",
