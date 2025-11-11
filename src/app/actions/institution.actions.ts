@@ -271,6 +271,25 @@ export async function registerTutor(prevState: any, formData: FormData) {
     }
     // --- FIN DE LA INTEGRACIÓN ---
 
+    // --- INTEGRACIÓN DEL ENDPOINT /enviar-tutor-agregado-grupo/ ---
+     if (auth.currentUser) {
+        try {
+            await api.post('/enviar-tutor-agregado-grupo/', {
+                email_destino: institutionData.directorEmail,
+                nombre_grupo: institutionData.name,
+                nombre_tutor: auth.currentUser.displayName,
+                tipo_tutor: roleInInstitution,
+                correo: auth.currentUser.email,
+                telefono: 'No disponible', // Phone not available in this context
+                logo_url: institutionData.logoUrl || '',
+            });
+        } catch (groupEmailError: any) {
+             console.error('Failed to send new tutor notification to director:', groupEmailError.message);
+        }
+    }
+    // --- FIN DE LA INTEGRACIÓN ---
+
+
     revalidatePath('/dashboard');
     return { success: true, message: '¡Bienvenido! Has sido registrado como tutor en la institución.' };
 
