@@ -323,3 +323,29 @@ export async function sendPsychologicalValidation(prevState: any, formData: Form
         return { success: false, message: 'No se pudo enviar el correo de validación psicológica. Inténtalo más tarde.' };
     }
 }
+
+export async function sendTutorWelcomeEmail(prevState: any, formData: FormData) {
+    const email = formData.get('email') as string;
+    const tutorName = formData.get('tutorName') as string;
+    const institution = formData.get('institution') as string;
+    const logoUrl = formData.get('logoUrl') as string;
+    const panelLink = formData.get('panelLink') as string;
+
+    if (!email || !tutorName || !institution) {
+        return { success: false, message: 'Faltan datos para enviar el correo de bienvenida.' };
+    }
+
+    try {
+        await api.post('/enviar-bienvenida-tutor/', {
+            email: email,
+            nombre_tutor: tutorName,
+            institucion: institution,
+            logo_url: logoUrl || '',
+            enlace_panel: panelLink || '/tutor-dashboard',
+        });
+        return { success: true, message: 'Correo de bienvenida para tutor enviado con éxito.' };
+    } catch (error: any) {
+        console.error('Failed to send tutor welcome email:', error.message);
+        return { success: false, message: 'No se pudo enviar el correo de bienvenida. Inténtalo más tarde.' };
+    }
+}
