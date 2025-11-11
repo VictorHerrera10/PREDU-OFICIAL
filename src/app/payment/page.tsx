@@ -14,6 +14,7 @@ import { Crown, CreditCard, User, Calendar, Lock, Loader2, PartyPopper, ArrowLef
 import { useUser } from '@/firebase';
 import { upgradeToHero } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
+import api from '@/lib/api-client';
 
 export default function PaymentPage() {
   const router = useRouter();
@@ -49,6 +50,20 @@ export default function PaymentPage() {
 
       if (result.success) {
         setIsPaid(true);
+
+        // --- INTEGRACIÓN DEL ENDPOINT /enviar-subida-plan/ ---
+        try {
+          await api.post('/enviar-subida-plan/', {
+            email: user.email,
+            nombre_estudiante: user.displayName,
+            nuevo_plan: 'Héroe'
+          });
+        } catch (emailError: any) {
+          console.error("Failed to send plan upgrade email:", emailError.message);
+          // Non-blocking error, so we just log it.
+        }
+        // --- FIN DE LA INTEGRACIÓN ---
+
         setTimeout(() => {
           router.push('/student-dashboard');
         }, 5000); // Redirect after 5 seconds
