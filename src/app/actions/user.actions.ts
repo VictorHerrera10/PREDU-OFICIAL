@@ -113,8 +113,50 @@ export async function updateUserRole(userId: string, role: 'student' | 'tutor') 
   }
 }
 
+async function sendProfileUpdateEmail(email: string, studentName: string, formData: FormData) {
+    const fieldLabels: { [key: string]: string } = {
+        firstName: 'Nombres',
+        lastName: 'Apellidos',
+        dni: 'DNI',
+        age: 'Edad',
+        grade: 'Grado',
+        city: 'Ciudad',
+        phone: 'Teléfono',
+        gender: 'Género',
+        institutionCode: 'Código de Institución',
+        profilePictureUrl: 'Foto de Perfil',
+        workArea: 'Área de Trabajo',
+    };
+
+    const changes: string[] = [];
+    for (const [key, value] of formData.entries()) {
+        // We only care about fields that have a label and are not the userId
+        if (fieldLabels[key] && value) {
+            if (key === 'profilePictureUrl') {
+                 changes.push('Foto de Perfil');
+            } else if (key !== 'userId') {
+                changes.push(fieldLabels[key]);
+            }
+        }
+    }
+    
+    if (changes.length === 0) return;
+
+    try {
+        await api.post('/enviar-actualizacion-perfil/', {
+            email: email,
+            nombre_estudiante: studentName,
+            cambios_realizados: changes
+        });
+    } catch (error: any) {
+        console.error("Failed to send profile update email:", error.message);
+        // This is a non-critical error, so we don't return a message to the user.
+    }
+}
+
+
 export async function updateStudentProfile(prevState: any, formData: FormData) {
-  const { firestore } = await getAuthenticatedAppForUser();
+  const { firestore, auth } = await getAuthenticatedAppForUser();
   
   const userId = formData.get('userId') as string;
   const firstName = formData.get('firstName') as string;
@@ -197,6 +239,12 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
     }
       
       await updateDoc(userProfileRef, dataToUpdate);
+      
+      // Send profile update email
+      if (auth.currentUser?.email) {
+          await sendProfileUpdateEmail(auth.currentUser.email, firstName, formData);
+      }
+
 
   } catch (error: any) {
       console.error('Error updating student profile:', error);
@@ -209,7 +257,7 @@ export async function updateStudentProfile(prevState: any, formData: FormData) {
 
 
 export async function updateTutorProfile(prevState: any, formData: FormData) {
-  const { firestore } = await getAuthenticatedAppForUser();
+  const { firestore, auth } = await getAuthenticatedAppForUser();
   
   const userId = formData.get('userId') as string;
   const firstName = formData.get('firstName') as string;
@@ -242,6 +290,12 @@ export async function updateTutorProfile(prevState: any, formData: FormData) {
       }
       
       await updateDoc(userProfileRef, dataToUpdate);
+
+      // Send profile update email
+      if (auth.currentUser?.email) {
+          await sendProfileUpdateEmail(auth.currentUser.email, firstName, formData);
+      }
+
 
       return { success: true };
   } catch (error: any) {
