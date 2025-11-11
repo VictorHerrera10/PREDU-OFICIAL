@@ -16,6 +16,7 @@ import {
     upgradeToHero,
     updateUser,
     updateStudentSection,
+    sendProfileUpdateEmail
 } from './user.actions';
 
 import { sendMessage, markChatAsRead } from './chat.actions';
@@ -49,6 +50,7 @@ import {
     registerHeroTutor,
     approveTutorRequest,
     rejectTutorRequest,
+    rejectTutorRequestWithReason,
     verifyTutorAndLogin,
     sendTutorValidation,
     sendAcademicValidation,
@@ -74,7 +76,8 @@ export {
   createStudent,
   upgradeToHero,
   updateUser,
-  updateStudentSection
+  updateStudentSection,
+  sendProfileUpdateEmail
 };
 
 // Chat Actions
@@ -113,6 +116,7 @@ export {
   registerHeroTutor,
   approveTutorRequest,
   rejectTutorRequest,
+  rejectTutorRequestWithReason,
   verifyTutorAndLogin,
   sendTutorValidation,
   sendAcademicValidation,

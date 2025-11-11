@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 
-import { approveTutorRequest, rejectTutorRequest } from '@/app/actions';
+import { approveTutorRequest, rejectTutorRequestWithReason } from '@/app/actions';
 
 import {
   Table,
@@ -35,8 +35,23 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogTrigger
+  DialogTrigger,
+  DialogFooter,
+  DialogClose,
 } from '@/components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 type TutorRequest = {
   id: string;
@@ -58,6 +73,7 @@ export function TutorRequestsTable() {
   const { toast } = useToast();
   
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
 
   const requestsCollectionRef = useMemo(() => {
     if (!firestore) return null;
@@ -84,13 +100,18 @@ export function TutorRequestsTable() {
   };
 
   const handleReject = async (requestId: string) => {
+    if (!rejectionReason.trim()) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Debes proporcionar un motivo para el rechazo.' });
+        return;
+    }
     setIsProcessing(requestId);
-    const result = await rejectTutorRequest(requestId);
+    const result = await rejectTutorRequestWithReason(requestId, rejectionReason);
     if (result.success) {
       toast({ title: 'Solicitud Rechazada ❌', description: 'La solicitud ha sido marcada como rechazada.' });
     } else {
       toast({ variant: 'destructive', title: 'Error al Rechazar 😵', description: result.message });
     }
+    setRejectionReason(''); // Clear reason
     setIsProcessing(null);
   };
   
@@ -144,59 +165,89 @@ export function TutorRequestsTable() {
                 <TableCell>{renderStatusBadge(req.status)}</TableCell>
                 <TableCell>
                   <Dialog>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button aria-haspopup="true" size="icon" variant="ghost" disabled={isProcessing === req.id}>
-                          {isProcessing === req.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreHorizontal className="h-4 w-4" />}
-                          <span className="sr-only">Toggle menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                         <DialogTrigger asChild>
-                           <DropdownMenuItem><Eye className="mr-2 h-4 w-4" />Ver Detalles</DropdownMenuItem>
-                         </DialogTrigger>
-                        {req.status === 'pending' && (
-                          <>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleApprove(req.id)} className="text-green-500 focus:text-green-500 focus:bg-green-500/10">
-                              <Check className="mr-2 h-4 w-4" />Aprobar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleReject(req.id)} className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                              <X className="mr-2 h-4 w-4" />Rechazar
-                            </DropdownMenuItem>
-                          </>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    <DialogContent className="max-w-lg">
-                        <DialogHeader>
-                            <DialogTitle>Detalles de la Solicitud</DialogTitle>
-                            <DialogDescription>De {req.firstName} {req.lastName} ({req.username})</DialogDescription>
-                        </DialogHeader>
-                        <div className="grid gap-2 text-sm">
-                            <div className="grid grid-cols-[100px_1fr] items-center">
-                                <span className="text-muted-foreground">DNI:</span>
-                                <span>{req.dni}</span>
+                     <AlertDialog>
+                        <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost" disabled={isProcessing === req.id}>
+                            {isProcessing === req.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreHorizontal className="h-4 w-4" />}
+                            <span className="sr-only">Toggle menu</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                            <DialogTrigger asChild>
+                            <DropdownMenuItem><Eye className="mr-2 h-4 w-4" />Ver Detalles</DropdownMenuItem>
+                            </DialogTrigger>
+                            {req.status === 'pending' && (
+                            <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => handleApprove(req.id)} className="text-green-500 focus:text-green-500 focus:bg-green-500/10">
+                                <Check className="mr-2 h-4 w-4" />Aprobar
+                                </DropdownMenuItem>
+                                <AlertDialogTrigger asChild>
+                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                                        <X className="mr-2 h-4 w-4" />Rechazar
+                                    </DropdownMenuItem>
+                                </AlertDialogTrigger>
+                            </>
+                            )}
+                        </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <DialogContent className="max-w-lg">
+                            <DialogHeader>
+                                <DialogTitle>Detalles de la Solicitud</DialogTitle>
+                                <DialogDescription>De {req.firstName} {req.lastName} ({req.username})</DialogDescription>
+                            </DialogHeader>
+                            <div className="grid gap-2 text-sm">
+                                <div className="grid grid-cols-[100px_1fr] items-center">
+                                    <span className="text-muted-foreground">DNI:</span>
+                                    <span>{req.dni}</span>
+                                </div>
+                                <div className="grid grid-cols-[100px_1fr] items-center">
+                                    <span className="text-muted-foreground">Teléfono:</span>
+                                    <span>{req.phone}</span>
+                                </div>
+                                <div className="grid grid-cols-[100px_1fr] items-center">
+                                    <span className="text-muted-foreground">Región:</span>
+                                    <span>{req.region}</span>
+                                </div>
+                                <div className="grid grid-cols-[100px_1fr] items-center">
+                                    <span className="text-muted-foreground">Grupo:</span>
+                                    <span>{req.groupName}</span>
+                                </div>
+                                <div className="grid grid-cols-1">
+                                    <span className="text-muted-foreground">Razón de uso:</span>
+                                    <p className="border bg-muted/50 p-2 rounded-md mt-1">{req.reasonForUse}</p>
+                                </div>
                             </div>
-                            <div className="grid grid-cols-[100px_1fr] items-center">
-                                <span className="text-muted-foreground">Teléfono:</span>
-                                <span>{req.phone}</span>
+                        </DialogContent>
+                        
+                        <AlertDialogContent>
+                             <AlertDialogHeader>
+                                <AlertDialogTitle>Rechazar Solicitud</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Por favor, especifica el motivo del rechazo. Esta información será enviada al solicitante.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <div className="space-y-2">
+                                <Label htmlFor="rejectionReason">Motivo del Rechazo</Label>
+                                <Textarea 
+                                    id="rejectionReason"
+                                    value={rejectionReason}
+                                    onChange={(e) => setRejectionReason(e.target.value)}
+                                    placeholder="Ej: La información proporcionada no es suficiente..."
+                                />
                             </div>
-                             <div className="grid grid-cols-[100px_1fr] items-center">
-                                <span className="text-muted-foreground">Región:</span>
-                                <span>{req.region}</span>
-                            </div>
-                            <div className="grid grid-cols-[100px_1fr] items-center">
-                                <span className="text-muted-foreground">Grupo:</span>
-                                <span>{req.groupName}</span>
-                            </div>
-                             <div className="grid grid-cols-1">
-                                <span className="text-muted-foreground">Razón de uso:</span>
-                                <p className="border bg-muted/50 p-2 rounded-md mt-1">{req.reasonForUse}</p>
-                            </div>
-                        </div>
-                    </DialogContent>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel onClick={() => setRejectionReason('')}>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleReject(req.id)} disabled={isProcessing === req.id || !rejectionReason.trim()}>
+                                    {isProcessing === req.id ? <Loader2 className="animate-spin mr-2"/> : null}
+                                    Confirmar Rechazo
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                   </Dialog>
                 </TableCell>
               </motion.tr>

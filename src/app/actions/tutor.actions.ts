@@ -225,6 +225,49 @@ export async function rejectTutorRequest(requestId: string) {
     }
 }
 
+export async function rejectTutorRequestWithReason(requestId: string, reason: string) {
+    const { firestore } = await getAuthenticatedAppForUser();
+    const requestRef = doc(firestore, 'tutorRequests', requestId);
+
+    if (!reason.trim()) {
+        return { success: false, message: "El motivo del rechazo no puede estar vacío." };
+    }
+
+    try {
+        const requestSnap = await getDoc(requestRef);
+        if (!requestSnap.exists()) {
+            throw new Error("Solicitud no encontrada.");
+        }
+        const requestData = requestSnap.data();
+
+        await updateDoc(requestRef, { status: 'rejected' });
+        
+        try {
+            const reviewDate = new Date().toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+            });
+            await api.post('/enviar-tutor-cuenta-rechazada/', {
+                email: requestData.email,
+                nombre_tutor: requestData.firstName,
+                motivo_rechazo: reason,
+                fecha_revision: reviewDate,
+                logo_url: '', // No logo for independent tutors
+            });
+        } catch (emailError: any) {
+             console.error("Failed to send rejection email:", emailError.message);
+            // Don't block the main flow, but maybe log it
+        }
+
+        revalidatePath('/admin/requests');
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error rejecting tutor request:", error);
+        return { success: false, message: error.message };
+    }
+}
+
 
 export async function verifyTutorAndLogin(prevState: any, formData: FormData) {
   const { firestore } = await getAuthenticatedAppForUser();
