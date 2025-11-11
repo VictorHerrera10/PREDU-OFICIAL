@@ -21,6 +21,7 @@ import { revalidatePath } from 'next/cache';
 import { getAuthenticatedAppForUser, getFirebaseErrorMessage, type State } from './utils';
 import { addDoc } from 'firebase/firestore';
 import { headers } from 'next/headers';
+import api from '@/lib/api-client';
 
 
 export async function checkIfUserExists(email: string): Promise<boolean> {
@@ -72,6 +73,17 @@ export async function register(prevState: State, formData: FormData): Promise<St
         createdAt: serverTimestamp(),
         read: false,
     });
+
+    // --- INTEGRACIÓN DEL ENDPOINT /enviar-bienvenida/ ---
+    try {
+        await api.post('/enviar-bienvenida/', {
+            email: email,
+            nombre_estudiante: username,
+        });
+    } catch (emailError: any) {
+        console.error("Failed to send welcome email:", emailError.message);
+    }
+    // --- FIN DE LA INTEGRACIÓN ---
 
 
     return { success: true, username: username };
