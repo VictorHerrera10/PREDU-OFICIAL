@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { TutorProfileForm } from './tutor-profile-form';
 import { TutorMainDashboard } from './tutor-main-dashboard';
 import { Button } from '@/components/ui/button';
