@@ -6,20 +6,35 @@ import { useToast } from '@/hooks/use-toast';
 import { updateTutorProfile } from '@/app/actions';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useStorage } from '@/firebase';
+import { useStorage, useFunctions, useAuth } from '@/firebase';
+import { httpsCallable } from 'firebase/functions';
 import { uploadFile } from '@/lib/storage';
 import Image from 'next/image';
+import { handleLogout } from '@/components/logout-button';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Briefcase, VenetianMask, X, User as UserIcon, CaseSensitive, Hash, Phone, Mail, GraduationCap, Upload, Loader2 } from 'lucide-react';
+import { Briefcase, VenetianMask, X, User as UserIcon, CaseSensitive, Hash, Phone, Mail, GraduationCap, Upload, Loader2, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+
 
 type UserProfile = {
     firstName?: string;
@@ -42,10 +57,13 @@ export function TutorProfileForm({ user, profileData }: Props) {
     const { toast } = useToast();
     const router = useRouter();
     const storage = useStorage();
+    const functions = useFunctions();
+    const auth = useAuth();
 
     const isEditing = !!profileData?.firstName;
     const [selectedGender, setSelectedGender] = useState(profileData?.gender);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(profileData?.profilePictureUrl || null);
     const [uploadProgress, setUploadProgress] = useState(0);
@@ -103,6 +121,29 @@ export function TutorProfileForm({ user, profileData }: Props) {
             });
         }
         setIsSubmitting(false);
+    };
+
+    const handleDeleteAccount = async () => {
+        if (!user || !functions) return;
+        setIsDeleting(true);
+        try {
+            const deleteUserFunction = httpsCallable(functions, 'deleteUser');
+            await deleteUserFunction({ uid: user.uid });
+            toast({
+                title: 'Cuenta Eliminada',
+                description: 'Tu cuenta ha sido eliminada permanentemente. Te extrañaremos.',
+            });
+            // Perform logout after successful deletion
+            handleLogout(auth, router, toast);
+        } catch (error: any) {
+             toast({
+                variant: 'destructive',
+                title: 'Error al Eliminar',
+                description: error.message || 'No se pudo eliminar tu cuenta.',
+            });
+        } finally {
+            setIsDeleting(false);
+        }
     };
 
     return (
@@ -217,6 +258,35 @@ export function TutorProfileForm({ user, profileData }: Props) {
                         </div>
                     </form>
                 </CardContent>
+                {isEditing && (
+                <CardFooter className="flex-col items-center gap-4 pt-6 mt-6 border-t border-dashed">
+                     <Separator />
+                     <h3 className="font-semibold text-destructive">Zona de Peligro</h3>
+                     <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                             <Button variant="destructive" className="w-full max-w-xs mx-auto">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Eliminar mi Cuenta
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Esta acción es irreversible. Se eliminará permanentemente tu cuenta y todos tus datos asociados. Nadie podrá recuperarlos. 💀
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleDeleteAccount} disabled={isDeleting}>
+                                     {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                    {isDeleting ? 'Eliminando...' : 'Sí, eliminar mi cuenta'}
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </CardFooter>
+                 )}
             </Card>
         </main>
     );
