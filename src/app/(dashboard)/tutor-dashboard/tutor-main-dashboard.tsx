@@ -12,7 +12,7 @@ import { doc } from 'firebase/firestore';
 import { Inbox } from '@/components/chat/Inbox';
 
 import HomeView from './views/HomeView';
-import StudentsView from './views/StudentsView'; // Renombrado de InstitutionView
+import StudentsView from './views/StudentsView'; 
 import { InstitutionHeader } from './institution-header';
 import { GroupHeader } from './group-header';
 import GroupView from './views/GroupView';
@@ -35,7 +35,7 @@ type Props = {
 };
 
 export function TutorMainDashboard({ user }: Props) {
-  const [selectedView, setSelectedView] = useState<View | null>('inicio');
+  const [selectedView, setSelectedView] = useState<View>('inicio');
   const firestore = useFirestore();
 
   const userProfileRef = useMemo(() => {
@@ -79,8 +79,7 @@ export function TutorMainDashboard({ user }: Props) {
   };
   
   const handleSelectView = (viewId: View) => {
-    // Permite al usuario volver a la vista de inicio si hace clic en la pestaña activa
-    setSelectedView(selectedView === viewId ? 'inicio' : viewId);
+    setSelectedView(viewId);
   };
 
 
@@ -100,28 +99,6 @@ export function TutorMainDashboard({ user }: Props) {
 
       <main className="flex-grow pt-32">
         <LayoutGroup>
-          <AnimatePresence>
-            {!selectedView && (
-              <motion.div
-                key="welcome-header"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5 }}
-                className="text-center px-4 mb-8"
-              >
-                <CardHeader>
-                  <CardTitle className="text-3xl md:text-4xl font-bold text-foreground">
-                    ¡Hola de nuevo, {user?.displayName}! 🚀
-                  </CardTitle>
-                  <CardDescription className="text-lg text-muted-foreground mt-2">
-                    Este es tu centro de mando para guiar a tus estudiantes. ¿Qué quieres hacer hoy?
-                  </CardDescription>
-                </CardHeader>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          
           <motion.div
             layout
             key="options-container"
@@ -164,7 +141,7 @@ export function TutorMainDashboard({ user }: Props) {
                     exit={{ y: -20, opacity: 0 }}
                     transition={{ duration: 0.3 }}
                 >
-                    {selectedView && renderContent()}
+                    {renderContent()}
                 </motion.div>
             </AnimatePresence>
         </div>

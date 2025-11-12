@@ -2,10 +2,10 @@
 
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { useUser, useFirestore, useCollection, useDoc } from '@/firebase';
-import { collection, query, where, doc } from 'firebase/firestore';
+import { collection, query, where, doc, getDocs } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Mail, MessageSquare, ChevronDown, CheckCircle, Clock, Hash, Save, Loader2, BookOpen, Filter } from 'lucide-react';
+import { Mail, MessageSquare, ChevronDown, CheckCircle, Clock, Hash, Save, Loader2, BookOpen, Filter, FileDown } from 'lucide-react';
 import { ChatWindow } from '@/components/chat/ChatModal';
 import { Button } from '@/components/ui/button';
 import { User as FirebaseUser } from 'firebase/auth';
@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import { updateStudentSection } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CSVLink } from 'react-csv';
 
 type UserProfile = {
   id: string;
@@ -36,6 +37,15 @@ type AcademicPrediction = {
 
 type PsychologicalPrediction = {
     result?: string;
+};
+
+type ExportData = {
+    "Nombre de Estudiante": string;
+    "Email": string;
+    "Grado": string;
+    "Sección": string;
+    "Test Académico": string;
+    "Test Psicológico": string;
 };
 
 function StudentSectionForm({ studentId, currentSection }: { studentId: string; currentSection?: string }) {
@@ -209,6 +219,7 @@ export default function StudentsList() {
     
     const [gradeFilter, setGradeFilter] = useState('all');
     const [sectionFilter, setSectionFilter] = useState('all');
+    const [exportData, setExportData] = useState<ExportData[]>([]);
 
     const userProfileRef = useMemo(() => {
         if (!user || !firestore) return null;
@@ -244,6 +255,41 @@ export default function StudentsList() {
 
         return { uniqueGrades: grades, uniqueSections: sections, filteredStudents: filtered };
     }, [students, gradeFilter, sectionFilter]);
+
+    const prepareExportData = async () => {
+        if (!firestore || filteredStudents.length === 0) return;
+
+        const studentIds = filteredStudents.map(s => s.id);
+
+        const academicQuery = query(collection(firestore, 'academic_prediction'), where('__name__', 'in', studentIds));
+        const psychQuery = query(collection(firestore, 'psychological_predictions'), where('__name__', 'in', studentIds));
+
+        const [academicSnap, psychSnap] = await Promise.all([
+            getDocs(academicQuery),
+            getDocs(psychQuery),
+        ]);
+
+        const academicData = new Map(academicSnap.docs.map(d => [d.id, d.data() as AcademicPrediction]));
+        const psychData = new Map(psychSnap.docs.map(d => [d.id, d.data() as PsychologicalPrediction]));
+
+        const dataForCsv: ExportData[] = filteredStudents.map(student => ({
+            "Nombre de Estudiante": student.username,
+            "Email": student.email,
+            "Grado": student.grade || 'N/A',
+            "Sección": student.section || 'N/A',
+            "Test Académico": academicData.get(student.id)?.prediction ? 'Completado' : 'Pendiente',
+            "Test Psicológico": psychData.get(student.id)?.result ? 'Completado' : 'Pendiente',
+        }));
+
+        setExportData(dataForCsv);
+    };
+
+    useEffect(() => {
+        if (filteredStudents.length > 0) {
+            prepareExportData();
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filteredStudents, firestore]);
 
     if (isLoading) {
         return (
@@ -293,6 +339,12 @@ export default function StudentsList() {
                         </Select>
                     </div>
                 </div>
+                 <Button variant="outline" asChild>
+                    <CSVLink data={exportData} filename={`lista-estudiantes-${new Date().toISOString().slice(0,10)}.csv`}>
+                        <FileDown className="mr-2" />
+                        Exportar a CSV
+                    </CSVLink>
+                </Button>
             </div>
 
             {filteredStudents && filteredStudents.length > 0 ? (

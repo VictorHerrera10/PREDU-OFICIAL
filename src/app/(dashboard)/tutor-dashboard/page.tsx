@@ -8,6 +8,7 @@ import { TutorProfileForm } from './tutor-profile-form';
 import { TutorMainDashboard } from './tutor-main-dashboard';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { TutorAdminLoader } from '@/components/tutor-admin-loader';
 
 type UserProfile = {
     id: string;
@@ -29,12 +30,7 @@ function TutorDashboardPage() {
     const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
     if (isUserLoading || isProfileLoading) {
-        return (
-            <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-                <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                <p className="mt-4 text-muted-foreground">Cargando tu perfil de tutor...</p>
-            </div>
-        );
+        return <TutorAdminLoader loadingText="Cargando tu perfil de tutor..." />;
     }
     
     // Role validation
